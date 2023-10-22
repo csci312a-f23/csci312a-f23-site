@@ -1,0 +1,465 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/lecture4-reacttopdown.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="react-from-the-top-down">React From the Top Down</h1>
+
+<p>Just as we implemented packages from the top-down, i.e. starting with a
+skeleton, we will build React applications from the top-down using the
+<code>create-react-app</code> (CRA) skeleton tool.
+<a href="https://create-react-app.dev">CRA</a> sets up a fully functional
+React application with all the necessary supporting infrastructure (e.g.
+Webpack for packaging production assets and Babel for transpiling). CRA is not
+the only way to setup a React application, and as with some of our other tools,
+e.g. the AirBnB ESLint configuration, we may not agree with some of the choices
+made by the CRA developers. However, it provides a robust starting point with many best practices built in.</p>
+
+<p>More generally, we often want to seek out a skeleton when starting a project
+(not just with React) to get up and going quickly (and hopefully with best
+practices).</p>
+
+<p>Getting started with CRA:</p>
+
+<pre><code>npx create-react-app my-app
+cd my-app
+npm start
+</code></pre>
+
+<p>The above command sequence creates the application and starts a development
+server with your application at <a href="http://localhost:3000">http://localhost:3000</a>. You can also run your
+tests via <code>npm test</code> and create an optimized bundle for deployment via <code>npm
+run build</code>.</p>
+
+<p>Over the course of the semester we will learn about some of the nice features
+of this skeleton. Your assignment skeletons have all been created with CRA. Our motivating example today with be a CRA-based implementation of the</p>
+
+<h2 id="react-and-">React and ...</h2>
+
+<h3 id="react-and-jsx">React and JSX</h3>
+
+<p>Since rendering is tightly coupled with other UI logic in React, React provides
+JSX, a syntax extension to JavaScript, for describing the elements in the UI.
+These elements can be simple HTML:</p>
+
+<pre><code class="language-jsx">const heading = &lt;h1&gt;Hello, world!&lt;/h1&gt;;
+</code></pre>
+
+<p>or React components:</p>
+
+<pre><code class="language-jsx">const person = &lt;Person name={p.name} address={p.addr} /&gt;;
+</code></pre>
+
+<p>The curly braces specify embedded JavaScript. The attributes becomes the props
+object for the component.</p>
+
+<p>Since JSX is an extension to JavaScript, we will need a compiler to convert it
+to standard JavaScript. CRA integrates the Babel compiler to transpile JSX (and support
+features of ES6). We will primarily use JSX in our components (as it is much
+more concise and clear). Try out the above examples in the <a href="https://babeljs.io/repl#?babili=false&amp;browsers=&amp;build=&amp;builtIns=false&amp;spec=false&amp;loose=false&amp;code_lz=PTAEFEA8EMFsAcA2BTUAJAKgWQDICgBjAewDsBnAF1AAtloATASxIHNQBeUAHmoEYA-NMkSIiAGlAB3IgCdE9AIRdgffgG48ICDAQpQxBKWQkKhUpVDxkMsqQ7cACtdslQJOMnYBveADp3sMgAvqAM9DLIZGTefmEyIcDqQA&amp;debug=false&amp;forceAllTransforms=false&amp;shippedProposals=false&amp;circleciRepo=&amp;evaluate=false&amp;fileSize=false&amp;timeTravel=false&amp;sourceType=module&amp;lineWrap=true&amp;presets=es2015%2Creact%2Cstage-2&amp;prettier=false&amp;targets=&amp;version=7.2.2">Babel repl</a>.</p>
+
+<p>Check out the color picker implemented with <a href="https://github.com/csci312a-s19/react-color-picker-cra">JSX (and CRA)</a>.</p>
+
+<h3 id="react-and-proptypes">React and PropTypes</h3>
+
+<p>JavaScript is dynamically typed, and as such, it is easier to introduce
+type-errors than in a statically typed language. To catch typing errors there
+are JavaScript extensions like <a href="https://www.typescriptlang.org/">TypeScript</a>
+and <a href="https://flowtype.org/">Flow</a> that provide static type checking. React
+provides a form of dynamic type checking for props via
+<a href="https://reactjs.org/docs/typechecking-with-proptypes.html">PropTypes</a> that runs in development mode.</p>
+
+<div class="card border-warning explanation">
+  <div class="card-header bg-warning">Version Note</div>
+  <div class="card-body">
+
+    <p>With React 16, <code>PropTypes</code> were moved to a separate package <code>prop-types</code>. And
+thus needs to be installed with <code>npm install --save prop-types</code> and imported
+with <code>import PropTypes from 'prop-types';</code>. You will still see <code>React.PropTypes</code>
+in examples, though.</p>
+
+  </div>
+</div>
+
+<p>Each component as a <code>propTypes</code> object that specifies validators for the props.
+<code>PropTypes</code> provides a wide range of potential validators. For example, for the
+<code>LabeledSlider</code> in the color picker we could specify:</p>
+
+<pre><code class="language-javascript">LabeledSlider.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]).isRequired,
+  setValue: PropTypes.func.isRequired,
+};
+</code></pre>
+
+<p>The more specific we can make these requirements the more likely we are to
+catch type errors (generally true for all kinds of validation). Note that
+validation isn’t the only purpose for providing <code>PropTypes</code>. Doing so is also a
+way of documenting the “type signature” of the component (analogous to a
+function signature in a statically typed language).</p>
+
+<p>The need for <code>oneOfType</code>, and that the types could be inconsistent, is a “code
+smell”, that is an approach that doesn’t seem quite right. The value is
+conceptually an integer, however the underlying value type of HTML input
+elements is specified to be a string (even if it is an input of type “number”).
+Instead of allowing both, let’s instead always convert the string to an
+integer.</p>
+
+<p>To do so, let’s adopt a “TDD-like” approach in which we first update the
+“test”, the <code>PropTypes</code>, verify we have an error then fix that error. If we
+require <code>value</code> to just be a number (i.e. <code>value: PropTypes.number.isRequired</code>)
+and move the slider, we should see an error in the browser’s JavaScript console
+like:</p>
+
+<pre><code>index.js:1446 Warning: Failed prop type: Invalid prop `value` of type `string` supplied to `LabeledSlider`, expected `number`.
+    in LabeledSlider (at App.js:52)
+    in ColorPicker (at App.js:81)
+    in App (at src/index.js:6)
+</code></pre>
+
+<p>Then we can update the slider <code>onChange</code> callback to to parse the string into
+an integer:</p>
+
+<pre><code class="language-jsx">onChange={event =&gt; setValue(parseInt(event.target.value, 10))}
+</code></pre>
+
+<p>Now we should no longer observe a <code>PropTypes</code> error. To eliminate the chance
+for obtaining fractional values from the slider I also explicitly set the step to be an
+integer.</p>
+
+<h3 id="react-and-css">React and CSS</h3>
+
+<p>How can we style our application?</p>
+
+<ul>
+  <li>We can include a static CSS file as an asset, i.e. the traditional approach.
+But this approach is not very modular and doesn’t necessarily work well with
+a component-based design as we would to have merge the styles for all
+components.</li>
+  <li>
+    <p>We can “import” CSS files (using features of Webpack to bundle that CSS into
+the JavaScript file) for each component. The challenge is that by default the
+imported CSS exports all class names into the global selector scope creating a
+potential for naming collisions. We can either incorporate the “scope” into
+the class naming (using different formal naming schemes) or use
+<a href="https://github.com/webpack-contrib/css-loader#scope">extensions</a> to specify
+CSS classes as <code>:local</code> and thus automatically create unique identifiers (the
+latter, however, requires customizing our CSS for Webpack).</p>
+
+    <pre><code class="language-javascript">  import './ColorPicker.css';
+</code></pre>
+  </li>
+  <li>
+    <p>Implement CSS-in-JS. CSS-in-JS integrates styling into the components as
+JavaScript code (similar to our previous example in which we created the
+styles as JavaScript objects but with many more features, like handling
+differences in browsers). For example, using the <a href="https://www.styled-components.com">styled
+components</a> library. First we install the library</p>
+
+    <pre><code>  npm install --save styled-components
+</code></pre>
+
+    <p>and then add the neccessary import <code>import styled from 'styled-components';'</code>.</p>
+
+    <p>We create a styled “semantic” component for the previous <code>.color-label</code>
+  class</p>
+
+    <pre><code class="language-javascript">  const ColorLabel = styled.div`
+  display: inline-block;
+  width: 50px;
+  text-align: left;
+  `;
+</code></pre>
+
+    <p>and use it in place of the <code>&lt;div&gt;</code> in the JSX:</p>
+
+    <pre><code class="language-jsx">  &lt;ColorLabel&gt;{props.label}:&lt;/ColorLabel&gt;
+</code></pre>
+
+    <p>Because these “styles” are just code, we can adapt the CSS based on props,
+  etc., e.g.</p>
+
+    <pre><code class="language-javascript">  const ColorSwatch = styled.div`
+  width: 100px;
+  height: 100px;
+  border: 1px solid black;
+  background: ${props =&gt; `rgb(${props.red},${props.green},${props.blue})`};
+  `;
+</code></pre>
+
+    <p>and use the corresponding component:</p>
+
+    <pre><code class="language-jsx">  &lt;ColorSwatch red={red} green={green} blue={blue} /&gt;
+</code></pre>
+
+    <p><em>Note</em> that in JSX, React components, including Style Components, need to
+  start with a <a href="https://reactjs.org/docs/jsx-in-depth.html#specifying-the-react-element-type">capital
+  letter</a>.
+  That is how the JSX compiler distinguishes between HTML and React
+  components. I suggest defining your Styled Components outside of your React
+  components. If you create your Style Component inside of the component
+  function, for instance, it appears that React sees the component as
+  entirely different in each re-render and so rebuilds that portion of the
+  DOM. While the page will still look correct, inputs will lose focus (and
+  potentially other undesirable behavior).</p>
+
+    <p>Check out the <a href="https://github.com/csci312-common/example-react-color-picker">example
+  repository</a>
+  to see prop types and styled components libraries in action.</p>
+  </li>
+</ul>
+
+<p>The subtleties of CSS are left as an exercise for the reader, but much of the
+debate about the best approach to CSS is a debate about <em>separation of
+concerns</em>. <a href="https://en.wikipedia.org/wiki/Separation_of_concerns">Separation of
+Concerns</a> (SoC) will be a
+recurring topic this semester, but in short, SoC is a design principle that
+each “unit” in a program should address a different and non-overlapping
+concern.</p>
+
+<p>In this context, a common SoC argument around HTML/CSS is that HTML should
+specify content (only) and CSS should specify the style (only), i.e. separate style from
+content. Proponents of CSS-in-JS also make a SoC argument, but that one
+component should be entirely separate from the others.</p>
+
+<h2 id="deployment-closing-the-loop">Deployment: Closing the loop</h2>
+
+<p>Programs that are never deployed (for whatever relevant definition of deployed)
+have not solved their motivating problem. Thus we need to get to deployment!</p>
+
+<p>To do so we must first answer several questions:</p>
+<ul>
+  <li>Are we ready? Is our application in a working state?
+Do we have the necessary resources, e.g. webservers, databases, etc. to
+actually deploy our application?</li>
+  <li>How do we actually deploy our application to its production setting?</li>
+</ul>
+
+<p>We will be at our most efficient when we minimize the “delta” between the
+current “version” of the application and the next “version” of the application.
+Why? Small integrations (e.g. of a single new feature) into the master branch
+will be fast and predictable. Bugs will hopefully be identified sooner, in a
+smaller subset of the codebase (you only changed a small part of the system),
+while the changes are still fresh in your mind.</p>
+
+<p>To do so we will practice <em>Continuous Integration</em> (CI), that is merging small
+changes frequently instead of merging a large change at the end of the
+development cycle.</p>
+
+<p>Similarly we will be most efficient when we can automatically provision the
+necessary compute resources and automatically deploy our application to those
+resources. To do so we will practice a “DevOps culture”, that is the tight
+integration of development and operations, to facilitate easy (and frequent)
+deployment.</p>
+
+<p>In both cases the goal is to make what was a rare, and thus a difficult and
+scary process, routine.</p>
+
+<h3 id="continuous-integration-with-travis-ci-and-continuous-delivery">Continuous Integration (with Travis CI) and Continuous Delivery</h3>
+
+<p><a href="https://martinfowler.com/articles/continuousIntegration.html#PracticesOfContinuousIntegration">Key practices of Continuous
+Integration:</a>:</p>
+
+<ul>
+  <li>Maintain a single source repository</li>
+  <li>Automate the Build (and the Build becomes a proper noun)</li>
+  <li>Make your build self-testing</li>
+  <li>Everyone commits to the mainline every day</li>
+  <li>Every commit should build the mainline on an integration machine</li>
+  <li>Fix broken builds immediately</li>
+  <li>Keep the build fast</li>
+  <li>Test in a clone of the production environment</li>
+  <li>Make it easy for anyone to get the latest executable</li>
+  <li>Everyone can see what’s happening</li>
+  <li>Automate deployment</li>
+</ul>
+
+<p>We will use a combination of convention and tooling to support our CI workflow.
+First convention: we will treat the master branch as the deployable branch. We
+want to then to keep it “green”, that is make sure all commits build and all
+tests pass. We will develop new features on “feature branches” to segregate those changes until they are complete and ready to be integrated into the master branch (i.e. all tests pass, etc.).</p>
+
+<p>A quick summary of our workflow:</p>
+<ol>
+  <li>Create a feature branch, e.g. <code>git checkout -b my-feature</code> (combining branch
+creation with <code>-b</code> and checkout)</li>
+  <li>Edit, add, commit ... (with tests!)</li>
+  <li>Make sure all tests pass</li>
+</ol>
+
+<p>If you are working alone you can “integrate” your new feature back into the master branch with:</p>
+<ol>
+  <li><code>git checkout master</code></li>
+  <li><code>git merge my-feature</code></li>
+</ol>
+
+<p>But we are rarely working alone. On a team we need to make sure we stay in sync
+and create opportunities to get a second pair of eyes on our code (i.e. create
+opportunities for code review).</p>
+<ol>
+  <li><code>git pull origin master</code> to fetch changes in upstream master branch and
+merge them into your feature branch (note that this doesn’t update your
+local master branch). Resolve any conflicts and make sure tests pass.</li>
+  <li><code>git push origin my-feature</code> to make your changes visible to your teammates</li>
+  <li>Create a pull request on GitHub with your changes to obtain feedback.
+Depending on the review, revise before merge or withdraw request.</li>
+  <li>
+    <p>After a successful code review merge your pull request on GitHub and update your local repository (see the <a href="practial-deploy-cra.html">practical</a> for more detail):</p>
+
+    <pre><code> git checkout master
+ git pull --prune
+ git branch -d my-feature
+</code></pre>
+  </li>
+</ol>
+
+<p>How do the tools support this workflow? We will use <a href="https://travis-ci.com/">Travis
+CI</a> to automate the build and testing. We add a YAML
+file, <code>.travis.yml</code>, to our repository that specifies how to build and test the
+application. If all the steps complete without an error, then our build
+succeeds and is “green”. If the tests fail there is a problem that needs to be
+fixed before we are ready to integrate the pull request. This file ensure that
+the application always builds in a consistent environment(s) that is similar to
+the eventual production environment.</p>
+
+<p>When we enable a repository in Travis, the service monitors the repository for
+commits and pull requests. For the latter, Travis will build and test the code
+that <em>would be</em> created by the pull request, ensuring it is “safe” to merge.
+Travis will notify the authors and update the pull request with the results of
+the build so that “everyone can see what is happening”.</p>
+
+<p>There are two related
+<a href="https://martinfowler.com/bliki/ContinuousDelivery.html">concepts</a>:</p>
+<ul>
+  <li><em>Continuous Deployment</em>: Every change automatically gets put into production,
+and thus there are many production deployments each day.</li>
+  <li><em>Continuous Delivery</em>: An extension of CI in which SW is deployable
+throughout its lifecycle, the team prioritizes keeping SW deployable, and it
+is possible to automatically deploy SW on demand.</li>
+</ul>
+
+<p>We will be aiming for a Continuous Delivery-like workflow in which our
+applications start and stay deployable throughout the development process. As
+with CI, this reduces the complexity (and risk) of deployment by enabling us to
+do so in small increments. And Continuous Delivery facilitates getting user
+feedback by frequently getting working SW in front of real users. Although to
+mitigate risk companies will often first deploy for a small subset of users.</p>
+
+<h3 id="devops-with-heroku">DevOps (with Heroku)</h3>
+
+<p>What is DevOps? Like Agile, DevOps is not <em>a</em> process or approach but instead a
+set of values (or a culture or philosophy). There is no one definition, but
+generally its core principles
+<a href="https://landing.google.com/sre/book/chapters/introduction.html">are</a>:</p>
+
+<ul>
+  <li>Involvement of the operations function in each phase of a system’s design and
+development,</li>
+  <li>Heavy reliance on automation versus human effort,</li>
+  <li>The application of engineering practices and tools to operations tasks</li>
+</ul>
+
+<p>In furtherance of the first principle, in some settings there is a single team
+that is responsible for the entire application lifecycle from development to
+testing to deployment. The role of automation is to improve efficiency, reduce
+the chance for human error and provide always up-to-date documentation of the
+workflow.</p>
+
+<p>The cloud has made large-scale HW widely available with minimal barrier to
+entry. Providers like AWS offer Infrastructure-as-a-Service, that is you can
+rent HW and services by the hour, GB, etc; all provisioned via APIs. You are
+still responsible for connecting (in a virtual sense) and administering those
+resources - a non-trivial task. The ability to programmatically provision
+resources (the corresponding opportunities for automation) has accelerated the
+adoption of DevOps approaches.</p>
+
+<p>There are several common architectural “design patterns” for web applications,
+e.g. the <a href="https://en.wikipedia.org/wiki/Multitier_architecture#Three-tier_architecture">“Three Tier
+Architecture”</a>.
+That commonality can be “factored out” to create “higher level” platforms for
+deploying specific kinds of applications, often termed Platform-as-a-Service (PaaS).</p>
+
+<p><a href="https://www.heroku.com">Heroku</a> is one of the best known of these PaaS
+offerings. Heroku makes it easy to allocate resources, e.g. computational
+units, databases, etc. and then automatically deploy your application with a
+push to a Git repository.</p>
+
+<p>Heroku itself runs on top of Amazon AWS. Initially there was a considerable gap
+between the interface Heroku offered and what AWS offered. Increasingly though
+AWS and other IaaS providers are offering more PaaS-like features, bridging
+that gap.</p>
+
+<p>Heroku offers a very capable free tier that we will use in class for production
+deployment (alternately you can use <a href="http://basin.cs.middlebury.edu">http://basin.cs.middlebury.edu</a>).</p>
+
+<p>You could deploy the CRA color picker to Heroku with (from within your
+application directory):</p>
+
+<pre><code>heroku create --buildpack https://github.com/mars/create-react-app-buildpack.git
+git push heroku master
+</code></pre>
+
+<p>The first command creates the Heroku app (including defining a <code>heroku</code> remote
+in our Git repository. Here we use a specific
+<a href="https://devcenter.heroku.com/articles/buildpacks">“buildpack”</a>, customized to
+deploy CRA apps. “Buildpacks are responsible for transforming deployed code
+into a slug, which can then be executed on a dyno.” The <code>push</code> actually deploys
+your application!</p>
+
+<p>In a more complex application, we may allocate additional resources, like a
+database, in between creating the application and deploying it.</p>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2020-02-19 18:32:09 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

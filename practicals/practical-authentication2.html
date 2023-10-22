@@ -1,0 +1,685 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 Practical: Authentication</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-authentication2.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="authenticating-with-google">Authenticating with Google</h1>
+
+<p>
+<strong>Initial Due Date: 2023-04-27 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-05-05 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+<ul>
+  <li>Learn how to use Google to allow users to sign in to your application</li>
+  <li>Learn about tokens for maintaining authentication across multiple communications with the server</li>
+  <li>Implement required authentication of specific API routes</li>
+  <li>Practice extending an existing RDBMS-backed server</li>
+  <li>Implement additional associations using an ORM</li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>In this practical you will adapt your practical 8 solution (“RDBMS”) to implement authentication. Instead of starting with a skeleton repository, you are going to clone your practical solution (thereby creating a copy) and refactor it. <strong>Be careful as you are copying and pasting the code snippets below! These are derived from the solution which may not match you approach exactly. Often you will need to add, modify or otherwise incorporate code from your implementation.</strong></p>
+
+<ol>
+  <li>Clone the repository of your practical 8 solution. You can do so locally on your computer by executing  <code>💻 git clone &lt;practical 8 directory&gt; &lt;practical directory&gt;</code> replacing <code>&lt;practical 8 directory&gt;</code> with the path to your practical 8 and providing a meaningful name for the copy. For example for me it would be <code>💻 git clone practical08-rdbms-mlinderm practical10-auth-mlinderm</code> (where <code>mlinderm</code> is my GitHub username). Alternately you can clone your practical 8 solution from GitHub. If you do so, append the desired practical directory to the clone command to create a new copy locally, e.g., <code>💻 git clone git... practical10-auth-mlinderm</code>.</li>
+  <li>Open up the <code>package.json</code> file in your newly created copy and change your package name to be “practical-auth”</li>
+  <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
+  <li>Initialize the database by executing <code>💻 npx knex migrate:latest</code> in the your practical directory.</li>
+</ol>
+
+<h2 id="background">Background</h2>
+
+<p>In this practical you will add authentication to Simplepedia’s server using Google’s Oauth2 implementation. <a href="https://en.wikipedia.org/wiki/OAuth">OAuth</a> is designed to allow applications to request tokens on behalf of resource owners (users) so they can access those resources. Imagine you had written an application that made use of users’ Google data (like their calendar, for example). Users shouldn’t trust your app with their account passwords, but if they want to allow the application to have access to their data, they could log into Google and allow your application to access their Google data, and then Google would then give your application a token that could be used to request the account data.</p>
+
+<p>We can use OAuth to perform authentication. We ask the user to log into the Google (or another provider), and we use the token as proof that the person is the same Google user that originally created the account. There are a couple of reasons for us to do this:</p>
+
+<ul>
+  <li>Getting security right is hard. This is a situation where DIY is not the way to go. Use something tested and trustworthy.</li>
+  <li>Middlebury has a “G Suite” domain. In other words, the school subscribes to Google’s cloud collection. The advantage for us is that we can restrict the authentication to only allow users with Middlebury credentials.</li>
+</ul>
+
+<h2 id="client-side-authentication">Client-side authentication</h2>
+
+<p>We will start by implementing the login on the client side. We will use the NextAuth package to implement the client-side authentication workflow. <a href="https://next-auth.js.org/">NextAuth</a> supports multiple providers, but here we will only use Google.</p>
+
+<p>Start by install the NextAuth package: <code>💻 npm install --save next-auth</code>. Then we will add an API route for use by NextAuth in the authentication workflow. Create a file <tt>src/pages/api/auth/[...nextauth].js</tt> (sometimes the three periods get copied as a single “ellipse” character, make sure the filename contains three actual period characters). Recall that this creates a dynamic route handler at the <code>/api/auth</code> root. Create your handler as shown below. This specifies we are using <a href="https://next-auth.js.org/providers/google">Google</a> as a (the) authentication provider and further adding a callback that executes on sign-in to check if the user is signing in from a Middlebury account. To allow users outside Middlebury you would delete that callback and setup your associated Google project to allow users outside the organization (in practice, we might need to use a different provider due to Google’s verification requirements). Notice that this code references environment variables, e.g., <code>process.env.GOOGLE_CLIENT_ID</code>, instead of hard-coding those secrets into our application. As we did before we will create a separate file that is excluded from version control to manage those secrets.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">import NextAuth from "next-auth"
+import GoogleProvider from "next-auth/providers/google";
+
+export const authOptions = {
+  // Configure one or more authentication providers
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET
+    }),
+  ],
+  callbacks: {
+    async signIn({ account, profile }) {
+      if (account.provider === "google") {
+        return profile.email_verified &amp;&amp; profile.email.endsWith("@middlebury.edu")
+      }
+      return true // Do different verification for other providers that don't have `email_verified`
+    },
+  }
+}
+
+export default NextAuth(authOptions)
+</code></pre>
+
+<p>To use Google as a provider in your application you will need to create a client ID for your application (you can do so at <a href="https://console.developers.google.com/apis/credentials">https://console.developers.google.com/apis/credentials</a>). For simplicity we will use the one I created. For more details, read Google’s primer on <a href="https://developers.google.com/identity/sign-in/web/">adding Google sign-in to your web app</a>. You can download the <tt>.env.local</tt> file from Ed (save that file in the root directory of your application and note that filename, including the leading period, matters). In addition to the Google client ID and secret, the file contains <code>NEXTAUTH_SECRET</code>, a random string used by <a href="https://next-auth.js.org/configuration/options#secret">NextAuth to encrypt tokens</a>.</p>
+
+<p><em>Note that these Google credentials are configured for a project called ‘CS312 authn example’ and expects to be run locally (i.e., the origin and callbacks are configured for <code>localhost:3000</code>). For a deployed project you would need to add your application domain to the authorized Javascript origins and authorized redirect URIs.</em></p>
+
+<p>For reference, to obtain these credentials, I logged into the Google API console and navigated to the <a href="https://console.developers.google.com/apis/credentials">credentials tab</a>. There I created an “OAuth client ID” with the following settings:</p>
+<ul>
+  <li>Application Type: Web Application</li>
+  <li>Name: A relevant name for your application</li>
+  <li>Authorized JavaScript origins: The URL of your app homepage. In development mode it is <code>http://localhost:3000</code>. In production it would be the deployed domain for your application.</li>
+  <li>Authorized redirect URIs: The URL users will be redirected to after authenticating with Google. In development mode it is <code>http://localhost:3000/api/auth/callback/google</code>. In production it would likely be the same path, but with your deployed domain.</li>
+</ul>
+
+<p>In production mode NextAuth also requires you to specify the <code>NEXTAUTH_URL</code> environment variable with the canonical URL of your site. You only want to specify that variable in a production setting, e.g., as a secret in your deployed application, not locally during development.</p>
+
+<h3 id="logging-in-and-out">Logging in (and out)</h3>
+
+<p>We first add a <code>SessionProvider</code> to <tt>_app.js</tt>. This makes the session data available to all the pages in the application (via the <code>useSession</code> hook) and keeps the session in sync across browser windows and tabs. Update <tt>src/pages/_app.js</tt> with:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">import { SessionProvider } from "next-auth/react"
+
+export default function App({ Component, pageProps: { session, ...pageProps } }) {
+  
+  return (
+    &lt;SessionProvider session={session}&gt;
+      &lt;Component {...pageProps} /&gt;
+    &lt;/SessionProvider&gt;
+  );
+}
+</code></pre>
+
+<p>The sessions itself looks something like:</p>
+
+<pre><code class="language-javascript">{
+  expires: '2055-12-07T09:56:01.450Z',
+  user: {
+    email: "panther@middlebury.edu",
+    image: "https://...",
+    name: "Middlebury Panther',
+  }
+}
+</code></pre>
+
+<p>Create a new component <code>LoginWidget</code> in <tt>src/components/LoginWidget.js</tt>, as shown below, which will encapsulate the login and logout buttons provided by NextAuth. Here we use the <code>useSession</code> hook to determine if there is a current, valid, session and if not, render a button for initiating the sign-in process.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">import { signIn, signOut, useSession } from "next-auth/react"
+
+export default function LoginWidget() {
+  const { data: session } = useSession()
+
+  if (session) {
+    return (&lt;div&gt;
+      &lt;p&gt;Signed in as {session.user.email} &lt;button onClick={signOut}&gt;Sign out&lt;/button&gt; &lt;/p&gt;
+    &lt;/div&gt;);
+  } else {
+    return (&lt;div&gt;
+      &lt;button onClick={() =&gt; signIn("google")}&gt;Sign in&lt;/button&gt;
+    &lt;/div&gt;);
+  }
+}
+</code></pre>
+
+<p>Add your new component to <tt>src/pages/index.js</tt>, after the <code>h1</code>. Start the development server. You should see a “Sign In” button. When you click that button you should be redirected to Google to authenticate and give our application permission to access your basic account information (name, e-mail, a picture).</p>
+
+<h3 id="using-the-session">Using the session</h3>
+
+<p>We can use the NextAuth session on both the client and server to restrict access to specific resources. We already saw an example in <code>LoginWidget</code> of how we can use the session to change what we render client side. The <code>useSession</code> hook has optional argument to require authentication. If a user navigates to that page without logging in, they will automatically be redirected to sign in. To test this out create a <tt>src/pages/secure.js</tt> with the implementation below. Then “Sign Out” and try to navigate to <a href="http://localhost:3000/secure">http://localhost:3000/secure</a>; you should be redirected to login. If you are already logged in, you should be able to navigate to the restricted page.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">import { useSession } from "next-auth/react"
+export default function SecurePage() {
+  const { data: session, status } = useSession({ required: true });
+
+  if (status === "loading") {
+    return &lt;div&gt;Loading...&lt;/div&gt;
+  }
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Secure Page&lt;/h2&gt;
+      &lt;pre&gt;{JSON.stringify(session, null, 2)}&lt;/pre&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+
+<p>Recall that restricting access to client-side functionality does not make our application secure. This is all JavaScript running in the user’s browser, under the user’s control. (Almost) anyone could tweak the code a little so it skips the authentication. For that matter, they could just make requests to the server’s endpoints directly. Any sensitive operation needs to be authenticated and authorized on the server (where as the application developer we are in control).</p>
+
+<p>NextAuth provide similar tools for accessing the session server-side. Let’s start by restricting new article creation to logged in users. In <tt>src/api/articles/index.js</tt> import the server side session access and the <code>authOptions</code></p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]"
+</code></pre>
+
+<p>Then modify your <code>POST /api/articles</code> endpoint to get the session and restrict inserting new articles to logged in users, e.g.,</p>
+
+<pre><code class="language-javascript">const session = await getServerSession(req, res, authOptions)
+if (session) {
+  // Perform insert and send article
+} else {
+  res.status(403).end("You must be signed in to access this endpoint.");
+} 
+</code></pre>
+
+<p>To test this out, add a button in <tt>src/pages/index.js</tt> to initiate a POST request to create a new article and display the resulting message on the page. For example, your <code>MainApp</code> component could look like:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">import { useState } from "react";
+import Head from "next/head";
+import LoginWidget from "@/components/LoginWidget";
+
+export default function MainApp() {
+  const [serverResponse, setServerResponse] = useState("");
+  
+  const sendPost = async () =&gt; {
+    const newArticle = {
+      title: "A new article",
+      contents: "Article body",
+      edited: "2016-11-19T22:57:32.639Z",
+    };
+    const resp = await fetch("/api/articles", {
+      method: "POST",
+      headers: new Headers({
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify(newArticle),
+    });
+    if (resp.ok) {
+      setServerResponse(JSON.stringify(await resp.json(), null, 2));
+    } else {
+      setServerResponse(await resp.text());
+    }
+  }
+  
+  return (
+    &lt;&gt;
+      &lt;Head&gt;
+        &lt;title&gt;Authentication Practical&lt;/title&gt;
+        &lt;meta name="description" content="Generated by create next app" /&gt;
+        &lt;meta name="viewport" content="width=device-width, initial-scale=1" /&gt;
+        &lt;link rel="icon" href="/favicon.ico" /&gt;
+      &lt;/Head&gt;
+      &lt;main&gt;
+        &lt;h1&gt;Authentication Practical&lt;/h1&gt;
+        &lt;LoginWidget /&gt;
+        &lt;button onClick={sendPost}&gt;Create New Article&lt;/button&gt;
+        &lt;div&gt;&lt;pre&gt;{serverResponse}&lt;/pre&gt;&lt;/div&gt;
+      &lt;/main&gt;
+    &lt;/&gt;
+  );
+}
+</code></pre>
+
+<p>Sign out and then try to create a new article. Hopefully you see the expected error message! Now sign in again, you should be able to successfully add a new article!</p>
+
+<h3 id="making-users-our-own">Making users our own</h3>
+
+<p>At this point users have authenticated with Google, but they are still just Google’s users not ours. We don’t have any record of who they are and so cannot connect them to other data in our application. Our next step, then, is to create, or find, user entries in our database for individuals when they sign in and then make that information available in the session. There are multiple approaches we could use to do so. For example, NextAuth can create and manage a user’s table in our database. For simplicity, however, we are going to continue to use default NextAuth approach with JSON Web Token-based sessions, but add our user ID to that token.</p>
+
+<p>To start, we need to create the associated database table. Make a new migration <code>💻 npx knex migrate:make users</code> and implement the simple User model shown below with attributes for the id, name and e-mail provided by Google. We will use the <code>googleId</code> attribute to identify users from the information Google sends back when they authenticate. Then run the migrations to bring the database schema up -to-date: <code>💻 npx knex migrate:latest</code>.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">exports.up = function (knex) {
+  return knex.schema.createTable("User", (table) =&gt; {
+    table.increments("id").primary();
+    table.string("googleId");
+    table.string("name");
+    table.text("email");
+  });
+};
+
+exports.down = function (knex) {
+  return knex.schema.dropTableIfExists("User");
+};
+</code></pre>
+
+<p>Next create a corresponding objection.js <code>User</code> model in <tt>models/User.js</tt>. Notice that we are overriding the <code>$formatJson</code> method provided by Objection.js. We do so to strip out (in an aspect-oriented way) the google ID so it doesn’t appear in objects sent to the client (e.g., as part of Article, etc). where it is not needed (and would leak information about our users).</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">/* eslint-disable camelcase */
+import BaseModel from "./BaseModel";
+
+export default class User extends BaseModel {
+  static get tableName() {
+    return "User";
+  }
+
+  static get jsonSchema() {
+    return {
+      type: "object",
+      required: ["googleId"],
+
+      properties: {
+        id: { type: "integer" },
+        googleId: { type: "string" },
+        name: { type: "string" },
+        email: { type: "string" },
+      },
+    };
+  }
+
+  // Override this method to exclude googleId
+  $formatJson(json) {
+    json = super.$formatJson(json);
+    delete json.googleId;
+    return json;
+  }
+}
+</code></pre>
+
+<p>To create users, we use the <code>jwt</code> and <code>session</code> callbacks provided by NextAuth. In <tt>src/pages/api/auth/[...nextauth].js</tt>, in the <code>callbacks</code> section of <code>authOptions</code> implement the two following callbacks (note you will need to import your newly created <code>User</code> model). The <code>jwt</code> callback adds the user id into the token, creating the user entry if it doesn’t already exist. The <code>jwt</code> callback is invoked anytime a JWT token is created or updated. The former occurs at sign-in. In that invocation the <code>user</code> property is defined (but not in subsequent calls). NextAuth sets <code>user.id</code> to be the unique ID maintained by Google. We use that to find the corresponding user, or create one if needed. We then stick the id generated by the database into the token. The second callback copies that id from the token to the session. NextAuth only includes a subset of the token data in the session, any data that we want to make available in the session has to be explicitly forwarded in the <code>session</code> callback.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">async jwt({token, user}) {
+  if (user) {
+    let localUser = await User.query().findOne("googleId", user.id);
+    if (!localUser) {
+      // Create new user record in the database
+      localUser = await User.query().insertAndFetch({
+        googleId: user.id,
+        name: user.name,
+        email: user.email,
+      });
+    }
+    // Add user id to the token
+    token.id = localUser.id;
+  }
+  return token;
+},
+async session({ session, token }) {
+  // Add user id to the session
+  session.user.id = token.id;
+  return session;
+},
+</code></pre>
+
+<p>At this point you should be able to create a new user. Sign in again (first signing out if needed). That should trigger the user creation. Optionally, if you have <code>sqlite3</code> installed, you can query your development database to see the newly created user. The output I observe is below (edited to remove my Google ID).</p>
+
+<pre><code class="language-plaintext">% sqlite3 simplepedia.db 
+SQLite version 3.40.0 2022-11-16 12:10:08
+Enter ".help" for usage hints.
+sqlite&gt; select * from User;
+1|*|Michael Linderman|mlinderman@middlebury.edu
+</code></pre>
+
+<h3 id="aspect-oriented-authentication">Aspect-oriented authentication</h3>
+
+<p>We want to be able to use that session information in our handlers (for authentication and other purposes). Add the following function to your <tt>src/lib/middleware.js</tt> file. This provides a piece of middleware that extracts the user id from the session, finds the corresponding <code>User</code> and attaches that instance to the request for subsequent handlers. If the user it is not authenticated it sends an error response and terminates the handler chain.</p>
+
+<pre><code class="language-javascript">import { getServerSession } from "next-auth/next";
+import { authOptions } from "../pages/api/auth/[...nextauth]";
+import User from "../../models/User";
+
+// Previous code...
+
+export async function authenticated(request, response, next) {
+  const session = await getServerSession(request, response, authOptions);
+  if (session) {
+    request.user = await User.query()
+      .findById(session.user.id)
+      .throwIfNotFound();
+    next(); // Authenticated, proceed to the next handler
+  } else {
+    response.status(403).end("You must be signed in to access this endpoint.");
+  }
+}
+</code></pre>
+
+<p>We can insert this middleware into any request handler we want to restrict to authenticated users. For example, instead of the manual checking as we did before in the <code>POST /api/articles</code> handler, we can import this middleware and add it to the <code>post</code> handler like shown below. Do this for both your <code>POST /api/articles</code> and <code>PUT /api/articles/:id</code> handlers (removing the manual checking, i.e., the <code>if</code> statement you added earlier). This restricts “editing” routes to logged in users. Note that our <code>post</code>, <code>get</code>, etc. methods can take multiple response functions that are executed in series. We use that selectively incorporate the authentication middleware into specific endpoints.</p>
+
+<pre><code class="language-javascript">.post(authenticated, async (req, res) =&gt; {...})
+</code></pre>
+
+<h3 id="testing">Testing</h3>
+
+<p>If we run our tests again they will - should - fail (since we added the authentication component). To test our authenticated API we will need to add some additional testing infrastructure.</p>
+
+<ol>
+  <li>In <tt>knex/seeds/test/load-test-articles.js</tt> modify the seed function to reset both the <code>Article</code> and <code>User</code> tables and insert a test user. Note that we reset the auto-increment id to ensure ids are consistent and tests are repeatable.
+    <pre><code class="language-javascript"> return knex("sqlite_sequence")
+   .whereIn("name", ["Article", "User"])
+   .update({ seq: 0 })
+   .then(() =&gt; knex("Article").del())
+   .then(() =&gt; knex.batchInsert("Article", data, 100))
+   .then(() =&gt; knex("User").del())
+   .then(() =&gt; knex("User").insert({ googleId: "1234567890", name: "Middlebury Panther", email: "panther@middlebury.edu" }));
+</code></pre>
+  </li>
+  <li>In <tt>src/__tests__/api.test.js</tt> we will need switch jest environments to mimic running on server instead of in the browser (and thus get server versions of libraries). Add the following to the very top of the file:
+    <pre><code class="language-javascript">/**
+* @jest-environment node
+* 
+* Use Node environment for server-side tests to avoid loading browser libraries
+*/   
+</code></pre>
+
+    <p>Looking forward you will want separate your client-side and server-side tests, i.e., any given test file should contain one or the other, but not both. You will want to include the above at the top of any server-side testing file to ensure the tests execute in the correct environment (with the libraries available on the server).</p>
+  </li>
+  <li>In <tt>src/__tests__/api.test.js</tt> we will need to mock the <code>getServerSession</code> function to ensure the tests are fast, independent and repeatable. At the very top level, import <code>getServerSession</code> from <code>next-auth/next</code> and use <code>jest</code> to mock that that module:
+    <pre><code class="language-javascript"> import { getServerSession } from "next-auth/next"
+ jest.mock("next-auth/next");
+</code></pre>
+  </li>
+  <li>In <tt>src/__tests__/api.test.js</tt> update the “before” and “after” methods to initialize the mock (return a user with id of 1) and reset it. The four methods should look as follows.
+    <pre><code class="language-javascript"> beforeAll(() =&gt; {
+   // Ensure test database is initialized before an tests
+   return knex.migrate.rollback().then(() =&gt; knex.migrate.latest());
+ });
+
+ afterAll(() =&gt; {
+   // Ensure database connection is cleaned up after all tests
+   return knex.destroy();
+ });
+
+ beforeEach(() =&gt; {
+   // Mock nex-auth getServerSession with id of test user
+   getServerSession.mockResolvedValue({
+     user: {
+       id: 1, 
+     }
+   }); 
+   return knex.seed.run();
+ });
+
+ afterEach(() =&gt; {
+   getServerSession.mockReset();
+ });
+</code></pre>
+  </li>
+  <li>In the “PUT /api/articles/[id] operations”, “Should update article” test, change <code>resolves.toStrictEquals</code> to <code>resolves.toMatchObject</code>. This will make our tests more flexible for the additions to come.</li>
+</ol>
+
+<p>With the additions in place, it should now appear that there is an authenticated user for all requests. Rerun the tests. They should all pass! However the existing tests only verify that authenticated requests are accepted, not that unauthenticated requests are rejected. Let’s add tests of unauthenticated edit actions. Add a new <code>describe</code> block within the outer <code>describe</code> block (so it is uses the same setup functions) to test unauthenticated requests. Here we set the mock <code>getServerSession</code> to return <code>undefined</code>, i.e., the requestor is not authenticated, and expect the requests to fail with status code 403. These new tests should also pass!</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">describe("Unauthenticated edits are rejected", () =&gt; {
+    beforeEach(() =&gt; {
+      getServerSession.mockResolvedValue(undefined);
+    });
+
+    test("Unauthenticated POST", async () =&gt; {
+      const newArticle = {
+        title: "A new article",
+        contents: "Article body",
+        edited: "2016-11-19T22:57:32.639Z",
+      };
+      await testApiHandler({
+        rejectOnHandlerError: false, // We want to assert on the error
+        handler: articles_endpoint,
+        test: async ({ fetch }) =&gt; {
+          const res = await fetch({
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(newArticle),
+          });
+          expect(res.ok).toBe(false);
+          expect(res.status).toBe(403);
+        },
+      });
+    });
+
+    test("Unauthenticated PUT", async () =&gt; {
+      const newArticle = { id: 1, ...data[0], title: "New title" }; // Article at index 0 has id 1
+      await testApiHandler({
+        rejectOnHandlerError: false, // We want to assert on the error
+        handler: article_endpoint,
+        paramsPatcher: (params) =&gt; (params.id = newArticle.id),
+        test: async ({ fetch }) =&gt; {
+          const res = await fetch({
+            method: "PUT",
+            headers: {
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(newArticle),
+          });
+          expect(res.ok).toBe(false);
+          expect(res.status).toBe(403);
+        },
+      });
+    });
+  });
+</code></pre>
+
+<h3 id="update-lasteditedby">Update lastEditedBy</h3>
+
+<p>To briefly show you how we can use the session data beyond authentication, we will add a <code>lastEditedBy</code> field to our Articles to track the last editor.</p>
+
+<p>To practice TDD lets first create tests that verify edits (creating a new article or updating an existing article) set the <code>lastEditedBy</code> attribute to an article. In the case of the update we want to make sure the previous value for <code>lastEditedBy</code> is different and the update sets it to the authenticated user’s id. Add a new <code>describe</code> block within the outer <code>describe</code> block (so it is uses the same setup functions) to test the <code>lastEditedBy</code> field.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">describe("Edits updated lastEditedBy", () =&gt; {
+  test("Should create a new article", async () =&gt; {
+    const newArticle = {
+      title: "A new article",
+      contents: "Article body",
+      edited: "2016-11-19T22:57:32.639Z",
+    };
+
+    await testApiHandler({
+      rejectOnHandlerError: true,
+      handler: articles_endpoint,
+      test: async ({ fetch }) =&gt; {
+        const res = await fetch({
+          method: "POST",
+          headers: {
+            "content-type": "application/json", // Must use correct content type
+          },
+          body: JSON.stringify(newArticle),
+        });
+        const resArticle = await res.json();
+        expect(resArticle).toMatchObject({
+          ...newArticle,
+          id: expect.any(Number),
+          lastEditedBy: 1,
+        });
+      },
+    });
+  });
+
+  test("PUT updates lastEditedBy", async () =&gt; {
+    const oldArticle = await Article.query().findById(1);
+    expect(oldArticle.lastEditedBy).not.toBe(1);
+    
+    const newArticle = { ...oldArticle, title: "New title" }; 
+    await testApiHandler({
+      rejectOnHandlerError: true,
+      handler: article_endpoint,
+      paramsPatcher: (params) =&gt; (params.id = newArticle.id),
+      test: async ({ fetch }) =&gt; {
+        const res = await fetch({
+          method: "PUT",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(newArticle),
+        });
+        await expect(res.json()).resolves.toMatchObject({... newArticle, lastEditedBy: 1});
+      },
+    });
+  });
+});
+</code></pre>
+
+<p>The tests should fail. Now let’s add the feature and ensure the tests pass. First create a new migration to add the relevant column to the <code>Article</code> table via <code>💻 npx knex migrate:make add_editedby</code>. The migration below adds a column to <code>Article</code> to implement the “has many/belongs to” association for “last edited by” (a User has edited many Articles, an Article was last edited by one User). The foreign key goes in the “has many” side, e.g., in <code>Article</code>. Then run the migration via <code>💻 npx knex migrate:latest</code>.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">exports.up = function (knex) {
+  return knex.schema.table("Article", (table) =&gt; {
+    table.integer("lastEditedBy");
+    table.foreign("lastEditedBy").references("User.id").onDelete("SET NULL");
+  });
+};
+
+exports.down = function (knex) {
+  return knex.schema.table("Article", (table) =&gt; {
+    table.dropColumn("lastEditedBy");
+  });
+};
+</code></pre>
+
+<p>Add the corresponding association to the <code>relationMappings</code> in the <code>Article</code> model. We are specifying the “belongs to one” side of the association in <code>Article</code>. This will enable us to query for the associated user via an <code>Article</code>.</p>
+
+<pre><code class="language-javascript">editedBy: {
+  relation: Model.BelongsToOneRelation,
+  modelClass: User,
+  join: {
+    from: "Article.lastEditedBy",
+    to: "User.id"
+  }
+}
+</code></pre>
+
+<p>In our API handlers, the user data is present in <code>req.user</code> (with the id available via <code>req.user.id</code>). To add this field to our article data we could do something like the following. Set or update the <code>lastEditedBy</code> field in handlers that create or edit articles.</p>
+
+<pre><code class="language-javascript">{ ...req.body, lastEditedBy: req.user.id };
+</code></pre>
+
+<p>To obtain this information when querying for a specific article modify your <code>GET /api/articles/id</code> handler to fetch both the related Articles and the User who last edited this article via <code>.withGraphFetched("[related, editedBy]")</code>. Try creating an article via the button your created earlier and then performing a fetch in the browser to the URL to get your newly created article. It should show you as the last editor!</p>
+
+<h2 id="not-working-some-common-issues">Not working? Some common issues...</h2>
+
+<h4 id="the-development-server-seems-out-of-sync-with-the-database">The development server seems out of sync with the database</h4>
+
+<p>If the database file, i.e., <code>simplepedia.db</code> is deleted while the development server is running, the server can and will continue accessing the previous file and this will not observe as changes you make through migrations, etc. If it seems like the development server has a stale version of the database, try restarting the development server.</p>
+
+<h2 id="secure-at-last">Secure at last?</h2>
+
+<p>An obvious question would be to ask if the application is now fully locked down. Sadly, the answer is no. It is better than it was, but all of our communications between the client and the server is done using <code>HTTP</code> instead of <code>HTTPS</code>. As a result, some bad actor could sniff the traffic and use the cookies/token to pretend to be the real user. We can only really trust the cookie data when we have end-to-end encryption between the client and the server.</p>
+
+<p>Unfortunately, switching to <code>HTTPS</code> is not completely trivial. In order to implement a secure communication, the server needs to have an <code>SSL</code> certificate that the user would trust. You can generate your own, but then the user would have no reason to trust it (at least they shouldn’t). So, the best solution is to get one from a trusted certificate authority that signs the certificate in a way that your browser can verify independently. This used to cost money, but now <a href="https://letsencrypt.org">Let’s Encrypt</a> offers certificates for free. Platforms like Fly.io also typically offer HTTPS for applications.</p>
+
+<h2 id="finishing-up">Finishing Up</h2>
+
+<ol>
+  <li>Add and commit your changes.</li>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/vTaOauzV">accepting the assignment from GitHub Classroom</a>. This will create an empty repository for you (unlike previous practicals that had an initial skeleton).</li>
+  <li>Replace the origin remote to point to the address of the newly created repository
+    <pre><code class="language-plaintext"> 💻 git remote set-url origin &lt;GitHub address you would use to clone&gt;
+</code></pre>
+  </li>
+  <li>Push your changes to the new GitHub repository.</li>
+  <li>Submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</li>
+</ol>
+
+<h2 id="grading">Grading</h2>
+
+<p>Required functionality:</p>
+<ul>
+  <li>Add authentication to your RDBMS practical</li>
+  <li>Implement secured API routes and NextJS pages</li>
+  <li>Add <code>lastEditedBy</code> to your <code>Article</code> model</li>
+  <li>Pass all tests</li>
+  <li>Pass all ESLint checks</li>
+</ul>
+
+<p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-05-11 09:38:08 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

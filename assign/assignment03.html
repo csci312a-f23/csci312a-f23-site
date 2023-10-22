@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312: Programming Assignment 3</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/assign/assignment03.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="cs312---assignment-three">CS312 - Assignment Three</h1>
+
+<p>
+<strong>Initial Due Date: 2023-03-09 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-03-31 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+
+<ul>
+  <li>Practice implementing React components, including incorporating PropTypes, by adding editing functionality (to create or update articles).</li>
+  <li>Advance your understanding of the division of responsibilities and state between components</li>
+  <li>Practice “agile” development when requirements change over time</li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>This assignment builds on the work of assignment 2. As such, you should not start it until you have <strong>passed all of the tests for assignment 2</strong>.</p>
+
+<ol>
+  <li>Click the GitHub classroom <a href="https://classroom.github.com/a/IVEPaIIk">link</a> and then clone the repository GitHub classroom creates to your local computer (in your shell, execute <code>💻 git clone</code> followed by the address of the repository).</li>
+  <li>Update the <code>package.json</code> file with your name and e-mail</li>
+  <li>Install the package dependencies with <code>💻 npm install</code></li>
+</ol>
+
+<p>Once you have the dependencies installed you can start the development server with <code>💻 npm run dev</code>.</p>
+
+<h2 id="background">Background</h2>
+
+<p>This assignment, the next part of creating Simplepedia, starts where assignment two left off. As with previous assignments an initial set of (failing) tests are provided as part of the skeleton (run with <code>💻 npm test</code>). These tests are intended to help you as you develop your application and to ensure that the grading scripts can successfully test your assignment. Code that passes all of the provided tests is not guaranteed to be correct. However, code that fails one or more these tests does not meet the specification. You are not expected to write any additional tests for this assignment.</p>
+
+<p>As a general bit of advice, worrying too much about the flow of interactions through your application can lead your astray. While information flow is important, focusing on it will have you tied in knots try pass information between components. Practice compartmentalization and trusting that other components will work. Recall the philosophy of React. Focus on “given the current state and props, what should I render?” and “how do I update that state in response to user actions”. React will take care of triggering the necessary re-rendering.</p>
+
+<h2 id="assignment">Assignment</h2>
+
+<h3 id="part-0-port-over-assignment-2">Part 0: Port over Assignment 2</h3>
+
+<p>Update the Assignment 3 skeleton with the code you wrote for assignment 2. Be a little cautious as you do this, there are some changes and you don’t want to just replace the files with your old ones. Specifically:</p>
+<ol>
+  <li>The article collection is now a prop of <code>Simplepedia</code> instead of being state. If you take a look in <code>_app.js</code> you will find the data’s new home.</li>
+  <li>What will become common layout (e.g., title, footer) has been pulled into <code>_app.js</code> to reduce duplication in the other components.</li>
+</ol>
+
+<p>Make sure that your code has all of the functionality from assignment 2 before proceeding. <em>Note that some of the tests are the same, but many are testing for the new functionality and you many need to use skip and only to prune down to tests for the old behavior.</em></p>
+
+<h3 id="part-1-add-proptypes">Part 1: Add PropTypes</h3>
+
+<p>Please add PropTypes to your existing modules. You will find that ESLint is now checking for PropTypes, so your code will no longer pass the linter without them.</p>
+
+<p>When adding PropTypes, be as specific as possible. There are <a href="https://reactjs.org/docs/typechecking-with-proptypes.html#proptypes">a lot of different validators</a>. Note that these cover specifying the contents of arrays and the structure of objects. For example, for the <code>Article</code> component, don’t just specify that it receives an object prop, specify what fields are required in that object. If you have an <code>Array</code> propr, specify what type should be in the array.</p>
+
+<p>As a starting point I’ve provided <code>ArticleShape.js</code> in components (and an example of its use in <code>index.js</code> for the <code>Simplepedia</code> component). This is a full description of the article type, and you can use it in your PropType descriptors. After you implemented your PropTypes, make sure that eslint and jest agree that you have added PropTypes for everything.</p>
+
+<h3 id="part-2-switch-to-routing-requirements-change">Part 2: Switch to routing (requirements change!)</h3>
+
+<p>Simplepedia has a critical limitation: you can’t bookmark a particular article or share a link to it. We are going to fix that with routing. (You can read about Next routing in the <a href="https://nextjs.org/docs/routing/introduction">Next documentation</a>, but read through this section first).</p>
+
+<p>After this change, every article will now have a unique URL. For example, the article on ‘Pierre Desrey’ will now be located at <a href="http://localhost:3000/articles/42">http://localhost:3000/articles/42</a>. Rather than storing a <code>currentArticle</code> as state, we will the use the URL to keep track of which article we are looking at (if any).</p>
+
+<p>We will use a “RESTful” API with the following initial URLs:</p>
+
+<table class="table table-sm table-bordered table-auto">
+  <thead>
+    <tr>
+      <th>URL</th>
+      <th>View</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>/articles/</code></td>
+      <td>Main entry point showing sections, but with no section or article selected.</td>
+    </tr>
+    <tr>
+      <td><code>/articles/[id]</code></td>
+      <td>Show article with <code>id</code> and corresponding section.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="dynamic-routes">Dynamic routes</h4>
+
+<p>In class we discussed how we could make a new .js files in <code>pages</code> and they would become “pages” in our single-page application. We are <strong>not</strong> going to make a new page for every single article. Instead, we are going to use a facility in Next called dynamic routes. Dynamic routes are essentially matchers. They allow us to introduce variables into the route that are available to our code.</p>
+
+<p>We specify a dynamic route by putting the name in square brackets. We are going to use different forms of dynamic routing, including a special form called an “optional catch all dynamic route”. Don’t get sidetracked by all the possible features of Next.js, for this assignment, please focus on implementing the following steps:</p>
+
+<ol>
+  <li>Make a directory within <code>pages</code>, named <code>articles</code> (recall routes are determined by the file structure within the <code>pages</code> directory).</li>
+  <li>Move your current <code>index.js</code> to be a file named <code>[[...id]].js</code>, within the <code>articles</code> directory. This will now match <code>/articles</code>, <code>/articles/42</code>, etc. At this point (assuming you have the development serving running) you will likely see a 404 error in the browser. Try updating the URL to the <a href="http://localhost:3000/articles">http://localhost:3000/articles</a>. Your application should still work.</li>
+</ol>
+
+<p>The <code>id</code> in the file name is actually a variable, and we would like to know what it is so we can display the right article. To do that, we are going to use the <code>useRouter</code> hook to access the Next router state. In anticipation of adding a second page, we are going to extract the article id in <code>_app.js</code>.</p>
+
+<p>Within <code>_app.js</code>:</p>
+<ol>
+  <li>Import <code>useRouter</code> with <code>import { useRouter } from "next/router";</code></li>
+  <li>Add <code>const router = useRouter();</code> to the top of the component</li>
+  <li>Access the <code>id</code> variable with <code>const { id } = router.query;</code> (note the destructuring assignment) in the body of the <code>MainApp</code> function.</li>
+</ol>
+
+<p><em>Try console logging the <code>id</code> and navigating to <a href="http://localhost:3000/articles/42">http://localhost:3000/articles/42</a> in your browser to make sure you can extract the id from the URL.</em></p>
+
+<h4 id="determine-and-update-currentarticle-from-id">Determine (and update) <code>currentArticle</code> from <code>id</code></h4>
+
+<p>Create a new <code>currentArticle</code> variable in <code>MainApp</code>. Use the <code>id</code> you obtained from the router to look up the article in the collection. The <code>find</code> function would be a good choice. Note that:</p>
+<ul>
+  <li>Sometimes <code>id</code> will be <code>undefined</code> (e.g., when there is no id), in which case just set your <code>currentArticle</code> variable to undefined.</li>
+  <li><code>id</code> will be a <strong>string</strong>, while the ids of the articles will be <strong>numbers</strong>, and they will need to be the same type if you use <code>===</code>.</li>
+</ul>
+
+<p>Similar create a function <code>setCurrentArticle(article)</code> inside the <code>MainApp</code> component to use as the setter. This function will be responsible for programmatically changing the URL. To change the URL we will use the <code>router.push()</code> method with the route we wish to visit as the argument. Thus to view the article with the <code>id</code> of 42, we would invoke <code>router.push("/articles/42")</code>. If we want to clear the current article (i.e., someone calls the function with no arguments), we can call <code>router.push("/articles")</code>. <a href="#router-push" data-bs-toggle="collapse">Why push?</a></p>
+
+<div id="router-push" class="collapse">
+
+  <p>The router exposes a <code>push</code> method because we think about the sequence of sites that we visit as a <strong>stack</strong> of pages. The “Back” button is essentially popping the last page off of the stack revealing where we were immediately before.</p>
+
+</div>
+
+<p>Then add <code>currentArticle</code> and <code>setCurrentArticle</code> to the props created in <code>MainApp</code> and to the props expected by the <code>Simplepedia</code> component (<code>[[...id]].js</code>). At this point you should be able to remove the current article state you previously implemented in <code>Simplepedia</code> (i.e., with <code>useState</code>). <em>If you originally used a different name for that state than <code>currentArticle</code> and <code>setCurrentArticle</code>, update those names to be consistent with the new props you added</em>.</p>
+
+<p>At this point you should be able to visit individual articles by URL, e.g. <a href="http://localhost:3000/articles/42">http://localhost:3000/articles/42</a>!</p>
+
+<h4 id="remap-application-entry-point">Remap application entry point</h4>
+
+<p>If you try to navigate to <a href="http://localhost:3000">http://localhost:3000</a>, you will get a 404 error (“This page could not be found”), since we moved the <code>index.js</code> file that was loaded for that URL. In our new version, <code>/articles</code> is really the starting point of the application. We will utilize Next’s redirect feature to redirect all requests to the root page <code>/</code> to <code>/articles</code>. Create a file in the root directory of your application named <code>next.config.js</code> with the following contents. Note that you will need to restart the development server for this change to take effect. When you do so, entering <a href="http://localhost:3000">http://localhost:3000</a> should automatically redirect you to <a href="http://localhost:3000/articles">http://localhost:3000/articles</a>.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">module.exports = {
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/articles",
+        permanent: false,
+      },
+    ];
+  },
+};
+</code></pre>
+
+<h3 id="part-3-allow-the-user-to-create-new-articles">Part 3: Allow the user to create new articles</h3>
+
+<p>You will find a new <code>Editor</code> component in <code>src/components/Editor.js</code>. It should allow the user to create a new article (note that this is just the form to enter in a new article, it doesn’t handle the actual storage). In this part you should pass a single prop to the <code>Editor</code> component: a “required” callback named <code>complete</code> that takes an article object as its argument and creates the article (note the skeleton implements a second prop that we will use later).</p>
+
+<p><strong>Make sure to use these names (and any others specified in the assignment) to facilitate automated testing. While there may be different, equally valid designs, you are expected to code to these specifications.</strong></p>
+
+<p><img src="/~mlinderman/courses/cs312/s23/assets/assignment03-editing.png" class="img-fluid" style="max-width: 960px" /></p>
+
+<p>Your component should use an <code>&lt;input&gt;</code> of type “text” to allow the user to enter in a new title and a <code>&lt;textarea&gt;</code> to allow the user to write the body of the article. Recall that <a href="https://reactjs.org/docs/forms.html">form elements</a> in React are implemented as controlled components. Your component should have two buttons (your editor styling does not need to match the example above). The first should be a “Save” button. When the user clicks the “Save” button, the article should be added to the collection, and you should automatically navigate ot the newly created article. The date on the article should be set to the current date and time (as an ISOString via the <code>toISOString()</code> method on <code>Date</code> objects). The second should be a “Cancel” button. When the user clicks cancel, the new article should be discarded and the primary interface should be restored. Keep in mind the newly created article might not belong to an existing section.</p>
+
+<p>There is one form validation required. If the title is not set, you should not let the user save the article by disabling the “Save” button. UX best practices are to also provide a message explaining the validation error (as close in time and space to the error as possible), however for simplicity in this assignment you will just disable the “Save” button. To help the user, provide meaningful initial placeholder text in both input elements.</p>
+
+<p>Recall that we use [controlled components]. Store the state of the values you are getting from the user and use those value and <code>onChange</code> call backs to keep the input elements in sync with the state (see the ColorPicker example). You should not extract the values from the underlying DOM elements. You do not need to wrap our inputs tags in a <code>&lt;form&gt;</code> tag. Doing so can create problems for saving the data.</p>
+
+<h4 id="routing-to-the-editor">Routing to the editor</h4>
+
+<p>Just as we are now using routing to switch between articles, we would like to use routing to switch to the editor. Specifically, <a href="http://localhost:3000/edit">http://localhost:3000/edit</a> should bring up a blank editor, and <a href="http://localhost:3000/articles/42/edit">http://localhost:3000/articles/42/edit</a> should allow us to edit the article with id 42 (we will get to that shortly).</p>
+
+<p>Create a new page in pages named  <code>edit.js</code>. Inside, create a new component named <code>SimplepediaCreator</code> (the name is important, the tests are expecting it). Your component will be similar to <code>Simplepedia</code> (in <code>pages/articles/[[...id]].js</code>), but will have <code>collection</code>, <code>setCollection</code>, and <code>setCurrentArticle</code> props and render an <code>Editor</code> component. The <code>setCollection</code> prop has already been implemented in <code>_app.js</code> and will update the collection when passed an array.</p>
+
+<h4 id="update-the-collection">Update the collection</h4>
+
+<p>Your Editor component expects a complete callback. You will write it in <code>SimplepediaCreator</code>. This callback should check if there is an article. If there is, add it to the collection (remember that you can’t just push it on the end of the array, you need to create a new array to trigger the rerendering). Before you add the new article to the collection, you will need to give it a unique <code>id</code>. Scan through the collection to find the largest <code>id</code>, and give your new article an id that is one more than that. Once the article is added, invoke the <code>setCurrentArticle</code> callback to render the newly created article. If the article argument is missing (undefined), then the user canceled. Invoke <code>router.back()</code> to return to the previous page.</p>
+
+<h3 id="part-4-add-some-buttons">Part 4: Add some buttons</h3>
+
+<p>The <code>Simplepedia</code> component will be responsible for switching between adding and viewing. Create a new component in <code>src/components</code> named <code>ButtonBar</code>. It should display a single button called “Add”. The component will take a single callback prop named <code>handleClick</code>. When the button is clicked, the component should call the function, passing “add” as an argument (i.e.,<code> handleClick("add")</code>). Add this new component to Simplepedia underneath the Article component.</p>
+
+<p>In <code>Simplepedia</code> write the <code>handleClick</code> callback so that when it receives the command “add”, it uses the router to take the user to the editor.</p>
+
+<p><img src="/~mlinderman/courses/cs312/s23/assets/assignment03-newarticle.png" class="img-fluid" style="max-width: 960px" /></p>
+
+<h3 id="part-5-updating-indexbar">Part 5: Updating IndexBar</h3>
+
+<p>We want to ensure that the <code>IndexBar</code> section is consistent with the new “current article”, i.e. it is showing all the titles in the same section as the newly created article. Pass <code>currentArticle</code> to <code>IndexBar</code> as a prop (there are other ways to accomplish this goal, but this is the approach we will use in our assignment). Unfortunately, you can’t just use the first character of the title to determine the section, because then we couldn’t switch sections.  Instead, we will use an effect hook to update the section state whenever the <code>currentArticle</code> prop changes. We will discuss <code>useEffect</code> in class shortly.</p>
+
+<p>The basic concept is that we register a function to be called under certain circumstances (when state or prop values change). The <code>useEffect()</code> function takes two arguments, the first is the function to run and the second is the list of variables to watch for changes. You will want to watch for changes to  <code>currentArticle</code>, changing the section if appropriate. This will mean that the section will change when the article changes, but can then be also changed independently when the user selects a new section.</p>
+
+<pre><code class="language-javascript">useEffect(() =&gt; {
+  // Code to update section state appropriately
+}, [currentArticle]);
+</code></pre>
+
+<p>It is possible for the user to create a new article with the same title as a current article. We will ignore that problem in this assignment as we will fix it in the next assignment when we introduce a server (which will validate that the title is unique).</p>
+
+<h3 id="part-6-allow-editing-of-existing-articles">Part 6: Allow editing of existing articles</h3>
+
+<p>Once you can successfully add new articles, you will adapt the interface to allow editing of articles. Add an “Edit” button to the <code>ButtonBar</code> to request the current article be edited. When clicked, the edit button should call <code>handleClick</code> with the string <code>"edit"</code>. When <code>handleClick</code> is invoked with “edit”, you should route to <code>/articles/[id]/edit</code>, with the id of the article to be edited (e.g., <code>/articles/42/edit</code>).</p>
+
+<p>Create the page in the file <code>pages/articles/[id]/edit.js</code> (i.e., a directory named <code>[id]</code> inside the <code>articles</code> directory containing a file named <code>edit.js</code>). Since this route is more specific than the catch all route we created earlier it will take precedence. This page will be similar to the <code>edit.js</code> you create previously, but the component will be named <code>SimplepediaEditor</code> and take an additional prop <code>currentArticle</code>.</p>
+
+<p>Pass <code>currentArticle</code> to <code>Editor</code> as the <code>article</code> prop. Modify <code>Editor</code> to initialize the values of the form fields with the current title and body. Similar to above we will implement a <code>useEffect</code> hook to set the state values used in <code>Editor</code> if the <code>article</code> prop changes, but not prevent subsequent editing. This is particularly needed here because Next may render the components before extracting the <code>id</code> from the URL.</p>
+
+<pre><code class="language-javascript">useEffect(() =&gt; {
+   // Set controlled form values from article appropriately
+}, [article]);
+</code></pre>
+
+<p>On “Save”, the date should be updated and the changes saved (and the newly edited article displayed). On “Cancel”, the changes should be discarded leaving the article unmodified and the previous article view should be restored (displaying the original, unedited, article).</p>
+
+<h3 id="part-7-improve-the-ux">Part 7: Improve the UX</h3>
+
+<p>One principle in user experience (UX) design is to not allow the user to perform actions when the actions don’t make sense. We have already done this in <code>Editor</code>, where the “Save” button isn’t enabled unless the user has added a title. The user also shouldn’t be able to edit if there isn’t a current article. Add another prop to <code>ButtonBar</code> named <code>allowEdit</code>. When <code>true</code>, the “Edit” button should be visible. When <code>false</code>, it shouldn’t be visible. Note we are not just disabling the button, but actually not showing if there isn’t a current article.</p>
+
+<h3 id="finishing-up">Finishing up</h3>
+
+<p>Your submission should not have ESLint warnings or errors when run with <code>💻 npm run lint</code>. Remember than you can fix many errors automatically with <code>💻 npm run lint -- --fix</code> (although since ESLint can sometimes introduce errors during this process, we suggest committing your code before running “fix” so you can rollback any changes). The assignment skeleton includes the Prettier package and associated hooks to automatically reformat your code to a consistent standard when you commit. Thus do not be surprised if your code looks slightly different after a commit.</p>
+
+<p>Submit your assignment by pushing all of your committed changes to the GitHub classroom via <code>💻 git push --all origin</code> and then submitting your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/assign/gradescope.html">here</a>. You can submit (push to GitHub and submit to Gradescope) multiple times.</p>
+
+<p>Portions of your assignment will undergo automated grading. Make sure to follow the specifications exactly, otherwise the tests will fail (even if your code generally works as intended). Use the provided test suite (run with <code>💻 npm test</code>) to get immediate feedback on whether your code follows the specification. Because of the increased complexity of a React application, Gradescope can take minutes to run all of the tests. Thus you will be more efficient testing locally and only submitting to Gradescope when you are confident your application meets the specification.</p>
+
+<h2 id="grading">Grading</h2>
+
+<table class="table table-sm table-bordered table-auto">
+  <thead>
+    <tr>
+      <th>Assessment</th>
+      <th>Requirements</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>R</strong>evision needed</td>
+      <td>Some but not all tests as passing.</td>
+    </tr>
+    <tr>
+      <td><strong>M</strong>eets Expectations</td>
+      <td>All tests pass, including linter analysis (without excessive deactivations).</td>
+    </tr>
+    <tr>
+      <td><strong>E</strong>xemplary</td>
+      <td>All requirements for <em>Meets Expectations</em> and your implementation is clear, concise, readily understood, and maintainable.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="faq">FAQ</h2>
+
+<h5 id="do-i-need-to-implement-unit-testing">Do I need to implement unit testing?</h5>
+
+<p>We will learn later in the semester how to unit test React components. For this assignment you are not expected to implement any of your own unit tests. The skeleton includes some unit tests to assist you in your development and to ensure that the grading scripts can automatically test your submission.</p>
+
+<h5 id="what-if-the-tests-and-assignment-specification-appear-to-be-in-conflict">What if the tests and assignment specification appear to be in conflict?</h5>
+
+<p>Please post to Ed so that we can resolve any conflict or confusion ASAP.</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-11 11:59:01 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

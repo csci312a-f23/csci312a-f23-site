@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 Practical: React page</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-react.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="practical-react-page">Practical: React page</h1>
+
+<p>
+<strong>Initial Due Date: 2023-02-28 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+
+<ul>
+  <li>Create your first React page</li>
+  <li>Create a list of components using <code>map</code></li>
+  <li>Utilize the <code>useState</code> hook</li>
+  <li>Add some simple styling with CSS</li>
+</ul>
+
+<h2 id="prerequisite">Prerequisite</h2>
+
+<ol>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/XLBMJPBO">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Clone the repository to you computer with <code>💻 git clone</code> (get the URL of the repository from GitHub).</li>
+  <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
+  <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
+</ol>
+
+<h2 id="overview">Overview</h2>
+
+<p>In this practical, you are going to put together a basic React app that shows the courses in the CS catalog. It looks like this:</p>
+
+<p><img src="/~mlinderman/courses/cs312/s23/assets/practical03-course-catalog.png" class="img-fluid" style="max-width: 600px" /></p>
+
+<h2 id="getting-situated">Getting situated</h2>
+
+<p>I’ve provided you with the framework of the application, which was created with the <code>create-next-app</code> tool. For the moment, we will ignore many of the features of the Next framework. Our focus today is the  <code>index.js</code> file in <code>src/pages</code> that is the root React component for your site and the <code>components</code> directory in <code>src</code>, where you will find the individual components.</p>
+
+<h3 id="the-development-server">The development server</h3>
+
+<p>To run the development server, execute <code>💻 npm run dev</code> in the terminal (or click the “play” button next to <code>dev</code> in the NPM Scripts section VSCode). As we discussed in class, there is a certain degree of translation that needs to happen to make your code runnable in the browser. The development server will handle that processing in real time as you update your code and serve your web pages as if it were a normal web server.</p>
+
+<p>Once the development server spins up, you can visit the site in your browser at <code>localhost:3000</code>.</p>
+
+<h3 id="testing">Testing</h3>
+
+<p>I encourage you to test your code in two ways. Running the development server and interacting with the web page you are building is essential to really understand what is going on. However, I have also given you a collection of tests for your work that you can run with <code>💻 npm test</code> on the command line. You can practice TDD as the tests will all initially fail and then you can slowly get them to pass by following the directions below.</p>
+
+<p>When you start, the number of errors can be daunting, so you can focus your testing a little.</p>
+
+<p>You can run just one test file by putting its name after <code>💻 npm test</code>. For example, <code>💻 npm test CourseEntry</code> will only run the tests in <code>CourseEntry.test.js</code>. Notice that I didn’t specify the path or even the whole name. Jest will pattern match and run all test files that match. <code>💻 npm test Course</code> will run both <code>CourseEntry.test.js</code> and <code>CourseList.test.js</code>. You can certainly add the path to make this more specific.</p>
+
+<p>You can also target individual tests inside of a file. You can add <code>.only</code> after <code>test</code> or <code>describe</code> (right before the parentheses) to only run that test or that test suite. Alternately, you can skip a test or test suite by adding <code>.skip</code>.</p>
+
+<h3 id="pages">pages</h3>
+
+<p>Open up <code>src/pages/index.js</code>. This is where we will put the “root” of the application. You will see that the JSX in this file matches what you can see in the development server. Try a simple interaction by adding the following below the “h1” header:</p>
+
+<pre><code class="language-html">&lt;h2&gt;Don't Panic!&lt;/h2&gt;
+</code></pre>
+
+<p>When you save the file, the contents displayed in your web browser should change. <em>Once you have seen this, remove <code>&lt;h2&gt;Don't Panic!&lt;/h2&gt;</code>.</em></p>
+
+<h3 id="the-data">The data</h3>
+
+<p>We are including the course catalog data as a JSON file. You will find it in <code>data/cs-courses.json</code>. If you open it up, you will see that it is an array of objects, one per class. The objects have properties for <code>number</code>, <code>name</code>, <code>description</code>, and optionally, <code>prerequisites</code>. Prerequisites are listed as an array of numbers. Example:</p>
+
+<pre><code class="language-json">{
+    "number": 431,
+    "name": "Computer Networks",
+    "description":"Computer networks have had a profound impact on modern society. This course will investigate how computer networks are designed and how they work. Examples from the Internet as well as our own campus network will be discussed.",
+    "prerequisites": [200,315]
+}
+</code></pre>
+
+<p>Some prerequisites can be satisfied with one of a collection of options. This is represented using another object with an <code>or</code> property like this:</p>
+
+<pre><code class="language-json">{
+    "number": 201,
+    "name": "Data Structures",
+    "description":"In this course we will study the ideas and structures helpful in designing algorithms and writing programs for solving large, complex problems. The Java programming language and object-oriented paradigm are introduced in the context of important abstract data types (ADTs) such as stacks, queues, trees, and graphs. We will study efficient implementations of these ADTs, and learn classic algorithms to manipulate these structures for tasks such as sorting and searching. Prior programming experience is expected, but prior familiarity with the Java programming language is not assumed.",
+    "prerequisites":[{"or": [145, 150]}]
+   }
+</code></pre>
+
+<h2 id="the-components">The components</h2>
+
+<p>You are going to add two components to the application: <code>CourseEntry</code> (which represents a single class), and <code>CourseList</code> (which represents the entire list of classes). I have started these already, and you will find the relevant files in <code>src/components</code>.</p>
+
+<h4 id="courseentry">CourseEntry</h4>
+
+<p>Take a look at <code>CourseEntry</code>. I’ve given you a working implementation of the component with some basic functionality.</p>
+
+<pre><code class="language-jsx">export default function CourseEntry({ course }) {
+  let summaryClass = "";
+  return (
+    &lt;details className={styles.description}&gt;
+      &lt;summary className={summaryClass}&gt;CSCI {course.number} - {course.name} &lt;/summary&gt;
+      &lt;p&gt;{course.description}&lt;/p&gt;
+    &lt;/details&gt;
+  );
+}
+</code></pre>
+
+<p>This makes use of the <a href="https://www.w3schools.com/TAGS/tag_details.asp">details</a> HTML tag, which is a less well known HTML tag. It is a simple interactive widget that shows a text summary which can expand to show more detail.</p>
+
+<div>
+<details>
+  <summary>This is a simple details example (click me)</summary>
+  <p>When you click it, it expands to show more, well... details. It is actually three separate tags. There is the main <code>details</code> tag around everything. Then there is the <code>summary</code> tag which contains the collapsed view. Finally, there is whatever is holding the details themselves, usually a <code>p</code> tag.</p>
+</details>
+</div>
+
+<pre><code class="language-html">&lt;div&gt;
+&lt;details&gt;
+  &lt;summary&gt;This is a simple details example (click me)&lt;/summary&gt;
+  &lt;p&gt;When you click it, it expands to show more, well... details. It is actually three separate tags. There is the main &lt;code&gt;details&lt;/code&gt; tag around everything. Then there is the &lt;code&gt;summary&lt;/code&gt; tag which contains the collapsed view. Finally, there is whatever is holding the details themselves, usually a &lt;code&gt;p&lt;/code&gt; tag.&lt;/p&gt;
+&lt;/details&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>Looking at the component, you can see that <code>CourseEntry</code> takes in a single course as a prop (with the name <code>course</code>). It then uses the values in that object to populate the JSX with data.</p>
+
+<div class="alert alert-info" role="alert">
+  <h4 class="alert-heading">Javascript Note</h4>
+
+  <p class="mb-0">The component function is expecting a single object as an argument. By writing the function definition as <code>function CourseEntry({ course }) {</code>, we are “destructuring” that single object argument into individual variables by name, i.e., the values of the <code>courses</code> property is assigned to the <code>courses</code> variable.</p>
+</div>
+
+<h4 id="courselist">CourseList</h4>
+
+<p>The <code>CourseList</code> component is not as far along. You can see that the component takes in a prop called <code>courses</code> (the full list of course objects), but that is all that is included in the skeleton.</p>
+
+<pre><code class="language-javascript">export default function CourseList({ courses }) {
+  return (&lt;&gt;&lt;/&gt;);
+}
+</code></pre>
+
+<div class="alert alert-info" role="alert">
+  <h4 class="alert-heading">JSX Note</h4>
+
+  <p class="mb-0">The empty tags are a convenience in JSX that allow us to have components that are just placeholders (we can also use them to get around the “can only return one element” rule). They don’t show up on the web page itself.</p>
+
+</div>
+
+<h2 id="make-a-list">Make a list</h2>
+
+<p>Now we can flesh out <code>CourseList</code>. We need to transform the array of course objects into an array of <code>CourseEntry</code> components. Hopefully you immediately thought, <code>map</code>! Before the return statement, we are going to build the list of <code>CourseEntry</code> components. The basic structure will look like this:</p>
+
+<pre><code class="language-jsx">const items = courses.map((course) =&gt; ());
+</code></pre>
+
+<p>The question is, what is that inner function returning? Well, we want it to be a <code>CourseEntry</code> component, and, as it turns out, we aren’t restricted to using JSX only in return statements, we can put them anywhere where it makes sense to be talking about a component. Here are we are creating an array of <code>CourseEntry</code> components.</p>
+
+<pre><code class="language-jsx">const items = courses.map((course) =&gt; (&lt;CourseEntry /&gt;));
+</code></pre>
+
+<p>To use <code>CourseEntry</code> in this component, we need to import its definition from the file where it is defined:</p>
+
+<pre><code class="language-javascript">import CourseEntry from "./CourseEntry";
+</code></pre>
+
+<p>Now that we have the component imported, we can return to creating our <code>CourseEntry</code> components. We need to give the <code>CourseEntry</code> the course we want it to display, so we will add that as a prop (i.e., within the angle brackets). Recall that we specify props by name and provide the values in curly brackets. Anything within the curly brackets in JSX is Javascript code, in this case a reference to the <code>courses</code> variable.</p>
+
+<pre><code class="language-javascript">const items = courses.map((course) =&gt; (&lt;CourseEntry course={course}/&gt;));
+</code></pre>
+
+<p>When we make a list of React components, it is important that we add a <code>key</code> property so that React can uniquely identify individual child components during rendering. When React is diff’ing the virtual DOM and the actual DOM, it needs to have a quick way to tell which component(s) has changed. Without a key, React falls back on simple ordering, and weird things happen if you delete an element out of the middle of a list. The <a href="https://reactjs.org/docs/lists-and-keys.html">React documentation on lists</a> goes into more detail. The key can be anything, provided it is a unique identifier. In this case, course number will work well (though if we incorporated courses from other departments we would want to use the full name, e.g., “CSCI312”). Note that although <code>key</code> is specified like other props, it is not passed through to the component, it is one of several properties used by React itself.</p>
+
+<pre><code class="language-javascript">const items = courses.map((course) =&gt; (&lt;CourseEntry key={course.number} course={course}/&gt;));
+</code></pre>
+
+<p>Now that we have the items, we want to return them. We can only return a single component, so we need a wrapper around all of our <code>CourseEntry</code> components. In this instance, a <code>div</code> is a good choice. Change the return statement to return a <code>div</code>. To put the list of <code>CourseEntry</code> components into the <code>div</code>, you just need to stick the <code>items</code> variable in there (remembering to surround it with curly braces since it is JavaScript). We are going to style the <code>div</code> a little, so add <code>className={styles.listContainer}</code>as an attribute of the <code>div</code> tag (we will learn more about this shortly).</p>
+
+<pre><code class="language-jsx">return (&lt;div className={styles.listContainer}&gt;{items}&lt;/div&gt;);
+</code></pre>
+
+<p>To see the list, you need to put it on the page. Return to <code>index.js</code>. First we need to import the <code>CourseList</code> component. At the top of the page, add an import statement.</p>
+
+<pre><code class="language-javascript">import CourseList from "../components/CourseList";
+</code></pre>
+
+<p>While you are doing that, take a moment to notice that the JSON file holding the course data has been imported as the variable <code>courses</code>. This is a little trick performed by the development tools where the JSON is parsed into JavaScript if we import it like this. Add a <code>CourseList</code> component to the page and pass it the <code>courses</code> as a prop like shown below. Recall that we can create React components in JSX, just like we do HTML tags. You should now have a list of courses on your web page.</p>
+
+<pre><code class="language-jsx">&lt;CourseList courses={courses} /&gt;
+</code></pre>
+
+<h2 id="showing-prerequisites">Showing Prerequisites</h2>
+
+<p>We are going to add a little bit of interaction to the page. As the user hovers over different courses, we are going to highlight the courses that serve as prerequisites. Since <em>all</em> of the <code>CourseEntry</code> components will need to see which entry is being hovered over, we are going to need a piece of state that lives above all of them in the hierarchy (i.e., in <code>CourseList</code>).</p>
+
+<p>Let’s call this piece of state <code>currentCourse</code>. At the top of the <code>CourseList</code> component, add:</p>
+
+<pre><code class="language-javascript">const [currentCourse, setCurrentCourse] = useState(null);
+</code></pre>
+
+<p>This gives us our state variable (<code>currentCourse</code>) and the method for setting it (<code>setCurrentCourse</code>). We passed an initial value of <code>null</code> to set the default course selection as no selection.</p>
+
+<p>We need to import <code>useState</code> to use it, so put the following line at the top of the file. The curly brace notation is how we <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import">import items</a> that are exported from their modules, but that aren’t the default export.</p>
+
+<pre><code class="language-javascript">import { useState } from "react";
+</code></pre>
+
+<h3 id="push-the-props-down">Push the props down</h3>
+
+<p>We need to get the state information to the <code>CourseEntry</code> components, so we need to add some new props. In the <code>CourseList</code> component, where you create the <code>CourseEntry</code> components, add a <code>currentCourse</code> property and a <code>setCurrentCourse</code> property to the <code>CourseEntry</code> component and set their values appropriately (i.e., using the values created by <code>useState</code>). This will tell each <code>CourseEntry</code> component what the current course is and also provide a way to change it if the component needs to. Finish adding the new properties by going to the <code>CourseEntry</code> component and adding them to the destructured <code>props</code> argument. Do not use different names for the props as it will break the automated tests.</p>
+
+<h3 id="changing-the-current-course">Changing the current course</h3>
+
+<p>We want the current course to change when we hover over it. One of the events we can listen for is the cursor moving over an element on the page. We register a callback for it with <code>onMouseEnter</code>, which fires the moment the cursor enters the region defined by the component.</p>
+
+<p>When the cursor enters the region of our <code>details</code> component in <code>CourseEntry.js</code>, we want it to call <code>setCurrentCourse</code> with the course associated with the component. Add the <code>onMouseEnter</code> listener to the <code>details</code> as shown below.</p>
+
+<pre><code class="language-jsx">&lt;details lassName={styles.description} onMouseEnter={() =&gt; setCurrentCourse(course)} &gt;
+</code></pre>
+
+<p>Now, as the user mouses over the list, the listener will “fire”, invoking the <code>setCurrentCourse</code> callback to update the current course. To see this in action, add a <code>console.log(currentCourse)</code> to the <code>CourseList</code> component and then open up the console tab in the browser developer tools (documentation for finding the developer tools <a href="https://developer.chrome.com/docs/devtools/open/">Chrome</a>).</p>
+
+<h3 id="add-some-styling">Add some styling</h3>
+
+<p>Printing things to the console is useful for debugging, we want users to be able to see what they are doing. So, we will change the styling so that the summary of the current course is bolded.</p>
+
+<p>We are using CSS modules for this example, so you will find the stylesheet for <code>CourseEntry</code> in <code>src/styles/CourseEntry.module.css</code>. I would like you to add a new class in that file that sets the <code>font-weight</code> to <code>bold</code> (if you aren’t sure what this says, please <a href="https://www.w3schools.com/Css/">read up on CSS</a>).</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-css">.current {
+  font-weight: bold;
+}
+</code></pre>
+
+<p>Now we need to apply this CSS class to the <code>summary</code> element in <code>CourseEntry</code>.To access a class from a CSS module, we import the module (which I’ve already done for you), and then we can refer to the class name as <code>styles.class-name</code> (where <code>styles</code> is determined by the import). So, in this instance, it will be <code>styles.current</code>.</p>
+
+<p>We only want the style to applied when the course we are rendering is actually the current course, so we are going to set the value conditionally.  Create a new variable called <code>summaryStyle</code> and initialize it to <code>""</code>, i.e., no style by default. If the <code>course</code> is equal to <code>currentCourse</code>, set the variable to <code>styles.current</code> (don’t forget to use <code>===</code> for the equality check).</p>
+
+<p>Add a <code>className</code> attribute to <code>summary</code> and set it to <code>summaryStyle</code>, e.g, <code>&lt;summary className={summaryStyle} ...&gt;</code>. The courses should now show up bold as you mouse over them.</p>
+
+<h3 id="add-styling-for-prerequisites">Add styling for prerequisites</h3>
+
+<p>Bolding the entry you are over hardly requires state (we could actually do that with pure CSS). We defined state because we are going to also show the prerequisites. Go back to the <code>CourseEntry.modules.css</code> CSS module, and add the following styling for prerequisites:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-css">.prereq {
+  font-weight: bold;
+  background: lightslategray;
+  color:white;
+}
+</code></pre>
+
+<p>Now, back in <code>CourseEntry</code>, we are going to add some more code to check if this course is a prerequisite for the current course. To so we need to check if the course we are rendering is a prerequisite of the current course (either in the pre-requisite list or for an “OR” prerequisite, in the sub list). If the course is a prerequisite of the <code>currentCourse</code>, then we will set the style of the <code>summary</code> element to our new <code>prereq</code> style. A potential implementation is:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">if (currentCourse &amp;&amp; currentCourse.prerequisites) {
+  currentCourse.prerequisites.forEach((req) =&gt; {
+    if (req === course.number) {
+      summaryStyle = styles.prereq;
+    } else if (req.or) {
+      req.or.forEach((altreq) =&gt; {
+        if (altreq === course.number) {
+          summaryStyle = styles.prereq;
+        }
+      });
+    }
+  })
+}
+</code></pre>
+
+<h2 id="finishing-up">Finishing up</h2>
+
+<p>While this isn’t the most complex web application, you now have an example of the React development process and it’s component-based approach. Building a more sophisticated application is the same process, just with more and more complex components.</p>
+
+<p>Commit any changes you may have made and then push your changes to GitHub. You should then submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</p>
+
+<h2 id="grading">Grading</h2>
+
+<p>Required functionality:</p>
+<ul>
+  <li>Should display all courses</li>
+  <li>Hovered over courses should be bolded</li>
+  <li>Pre-requisites should by highlighted</li>
+  <li>Pass all tests</li>
+  <li>Pass all ESLint checks</li>
+</ul>
+
+<p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:30:52 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

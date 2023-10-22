@@ -1,0 +1,12 @@
+{
+	"version": 3,
+	"file": "main.css",
+	"sources": [
+		"main.scss"
+	],
+	"sourcesContent": [
+		"@charset \"utf-8\";\n\n/* Overrides for Bootstrap 4 */\nbody {\n    font-size: 0.875rem;\n}\n\n.blockquote {\n    font-size: 0.875rem;\n    padding: 10px 20px;\n    margin-bottom: 1rem;\n    border-left: 5px solid #eee;\n}\n\n.divider {\n    height: 1px;\n    width:100%;\n    display:block; /* for use on default inline elements like span */\n    margin: 9px 0;\n    overflow: hidden;\n    background-color: #e5e5e5;\n}\n\ntable {\n    .MathJax_Display {\n        margin-top: 0;\n        margin-bottom: 0;\n        text-align: left !important;\n    }\n}\n\n.table-auto {\n    width: auto;\n}\n\n.explanation {\n  margin-bottom: 1rem; \n}\ncard-body p:last-of-type, .explanation .card-body p:last-of-type {\n    margin-bottom: 0; \n}\n\npre > code {\n    padding: 4px;\n    border-radius: 4px;\n}\n\n.code-header {\n    display: block;\n    position: relative;\n    float: right;\n}\n\n.btn-clipboard {\n    position: absolute;\n    top: .65rem;\n    right: .65rem;\n    z-index: 10;\n    display: block;\n}\n"
+	],
+	"names": [],
+	"mappings": "AAEA,+BAA+B;AAC/B,AAAA,IAAI,CAAC,EACD,SAAS,EAAE,QAAQ,GACtB;;AAED,AAAA,WAAW,CAAC,EACR,SAAS,EAAE,QAAQ,EACnB,OAAO,EAAE,SAAS,EAClB,aAAa,EAAE,IAAI,EACnB,WAAW,EAAE,cAAc,GAC9B;;AAED,AAAA,QAAQ,CAAC,EACL,MAAM,EAAE,GAAG,EACX,KAAK,EAAC,IAAI,EACV,OAAO,EAAC,KAAK,EAAE,kDAAkD,CACjE,MAAM,EAAE,KAAK,EACb,QAAQ,EAAE,MAAM,EAChB,gBAAgB,EAAE,OAAO,GAC5B;;AAED,AACI,KADC,CACD,gBAAgB,CAAC,EACb,UAAU,EAAE,CAAC,EACb,aAAa,EAAE,CAAC,EAChB,UAAU,EAAE,eAAe,GAC9B;;AAGL,AAAA,WAAW,CAAC,EACR,KAAK,EAAE,IAAI,GACd;;AAED,AAAA,YAAY,CAAC,EACX,aAAa,EAAE,IAAI,GACpB;;AACD,AAAA,SAAS,CAAC,CAAC,CAAC,YAAY,EAAE,YAAY,CAAC,UAAU,CAAC,CAAC,CAAC,YAAY,CAAC,EAC7D,aAAa,EAAE,CAAC,GACnB;;AAED,AAAA,GAAG,GAAG,IAAI,CAAC,EACP,OAAO,EAAE,GAAG,EACZ,aAAa,EAAE,GAAG,GACrB;;AAED,AAAA,YAAY,CAAC,EACT,OAAO,EAAE,KAAK,EACd,QAAQ,EAAE,QAAQ,EAClB,KAAK,EAAE,KAAK,GACf;;AAED,AAAA,cAAc,CAAC,EACX,QAAQ,EAAE,QAAQ,EAClB,GAAG,EAAE,MAAM,EACX,KAAK,EAAE,MAAM,EACb,OAAO,EAAE,EAAE,EACX,OAAO,EAAE,KAAK,GACjB"
+}

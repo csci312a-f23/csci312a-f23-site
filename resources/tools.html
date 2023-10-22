@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 - Development Tools</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/resources/tools.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="tools">Tools</h1>
+
+<p>Tools play an important role in making us efficient and productive developers.  Almost every developer I’ve ever met had <strong>views</strong> about the tools that they (and others use). There is no one size fits all solution. Some like the “all inclusive” approach taken by IDEs like Eclipse, while others swear that vim and a shell is the One True Way.</p>
+
+<p>In this class, we can do pretty much everything with a good text editor, a terminal emulator and some command line tools. However, you may find that some editors are more productive (for you) for the kind of development we are doing in this class. And there are some other tools that can make version control, etc. easier. In the spirit of <a href="https://usesthis.com">Uses This</a> I will describe some of the additional tools and practices that Prof. Andrews and I have found useful (not that we always agree!), beyond what is described in the <a href="getting_started.html">getting started</a> guide. You are encouraged to participate. If you find an interesting tool or extension, post it to Ed, and if I agree that it seems generally useful, I will add it in here.</p>
+
+<p>I want to encourage you to take a moment to make your development environment as efficient as possible (and to continue to optimize throughout the semester).  While there is no right or wrong setup, an inefficient setup will make your work that much more difficult. Examples of the latter include needing to copy files between systems to test your application, multi-step setup procedures to get started (e.g. open two different SSH connections), etc.</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-02-08 16:29:08 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

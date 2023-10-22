@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/lecture6-rest.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h2 id="obtaining-application-state">Obtaining application state</h2>
+
+<p>It is unusual to embed data directly in an application as we did in the initial versions of Simplepedia and the standalone Film Explorer. More typical is to fetch the data as needed from a server with an AJAX request (Asynchronous JavaScript and XML) and persist new or changed data by sending it back to the server (also via AJAX). AJAX is a technique (with multiple underlying implementations) to request data from a remote resource in the background without reloading the webpage.</p>
+
+<h2 id="client-server">Client-Server</h2>
+
+<p>Web applications are <em>client-server</em> (vs. peer-to-peer) and generally <em>request-response</em> (vs. push, although there are push technologies via WebSocket).</p>
+
+<p>Client-Server is a design pattern:</p>
+<ul>
+  <li>The client enables users to interact with data</li>
+  <li>The server waits for and respond to requests for many clients</li>
+</ul>
+
+<h3 id="underlying-protocols">Underlying protocols</h3>
+
+<p>Recall that TCP/IP provides an abstraction of a reliable stream between IP nodes (addressed by by four octets, e.g. 127.0.0.1). TCP ports enable multiple applications on the same node to use TCP/IP concurrently and independently. These are logical not physical ports. Many protocols have specified “well-known” ports (e.g. 22 for SSH), enabling clients to make connections just knowing the IP address (doesn’t mean those services are provided on every server).</p>
+
+<p>Hypertext Transfer Protocol (HTTP) is a request-response protocol for the Web.
+An HTTP request includes:</p>
+<ul>
+  <li>The request method (GET, POST, etc.)</li>
+  <li>Uniform Resource Identifier (URI)</li>
+  <li>The HTTP protocol version understood by the client</li>
+  <li>Headers (extra information about request, e.g. the kind of response accepted)</li>
+</ul>
+
+<p>While the HTTP response from server includes:</p>
+<ul>
+  <li>Protocol version and status code (2** OK, 3** resource moved, 4** forbidden, etc., 5** error)</li>
+  <li>Headers</li>
+  <li>Body</li>
+</ul>
+
+<p>The HTTP methods or verbs are:</p>
+<ul>
+  <li>GET: Request a resource. Form fields can be sent as the query parameters.</li>
+  <li>HEAD: Similar to GET, but just the response headers</li>
+  <li>POST: Send data to the server. Unlike GET, the data is transmitted in the request body rather than as part of the URL. What is done with the data is up to the server. The response may be a new resource, or just a status code.</li>
+  <li>PUT: Similar to POST, expect that PUT is intended to create or modify the resource at the specified URL, while POST creates or updates a subordinate resource.</li>
+  <li>DELETE: Delete the specified resource</li>
+  <li>PATCH: Partial replacement of a resource, as opposed to PUT which specifies complete replacement.</li>
+</ul>
+
+<h3 id="rest">REST</h3>
+
+<p>REST (Representational State Transfer) is an architectural style rather than a standard. The main idea is that the URI names a resource(s) <em>and</em> operation, not the page. A RESTful API observes 6 constraints listed in Fielding’s 2000 dissertation. By observing these constraints applications gain valuable features such as improved performance and scalability.</p>
+
+<ul>
+  <li>Client-server</li>
+  <li>Stateless:
+    <blockquote class="blockquote">
+      <p>each request from client to server must contain all of the information necessary to understand the request, and cannot take advantage of any stored [session] context on the server. Session state is therefore kept entirely on the client.</p>
+    </blockquote>
+  </li>
+  <li>Cache:
+    <blockquote class="blockquote">
+      <p>data within a response to a request [must] be implicitly or explicitly ålabeled as cacheable or non-cacheable</p>
+    </blockquote>
+  </li>
+  <li>Uniform interface: A RESTful URI is self-contained, i.e. includes an identification of the resource and what to do. If we have representation of a resource, we have enough information to modify it (including delete that resource). Responses may include hyperlinks to discover additional RESTful resources (termed Hypermedia As The Engine Of Application State or HATEOAS).</li>
+  <li>Layered system: Each component can’t see beyond the immediate next layer, enable intermediate layers to support load-balancing and other optimizations.</li>
+  <li>Code on demand: Servers can extend client by transmitting executable code (e.g. JavaScript)</li>
+</ul>
+
+<p>A more approachable definition might be... a RESTful API uses the URI to identify and interact with resources. The URI is typically the “noun” and the HTTP method the “verb”. More specifically:</p>
+<ol>
+  <li>The API is expressed as actions on specific resources (identified in the URI itself, i.e. the URI is self-contained)</li>
+  <li>Use HTTP verbs as actions (in line with their meaning in HTTP specification)</li>
+  <li>Responses can include hyperlinks to discover additional RESTful resources (HATEOAS)</li>
+</ol>
+
+<h3 id="an-api-for-movies">An API for movies</h3>
+
+<p>Consider the movies in our Film Explorer. They have an <code>id</code>, a <code>title</code> and
+several other properties. What are some ways that we could request a movie(s)?</p>
+
+<pre><code>GET /movies/135397
+GET /api/v2/movies/135397
+GET /movies?title=Jurassic+World
+</code></pre>
+
+<p>Note that the first two routes uniquely identifies a resource (i.e. a specific movie) and could be part of a “RESTful” API. The third could identify a unique movie, or not, if there are multiple movies with the same title. It is still “RESTful” but may best describe a “listing” operation instead of a single movie. The <a href="https://cloudplatform.googleblog.com/2017/10/API-design-choosing-between-names-and-identifiers-in-URLs.html">Google Cloud Platform Blog</a> for instance recommends “Identifiers are for look-up. Names are for search.” Thus we could think of the third route as listing all movies with Jurassic World as the (or in the) title.</p>
+
+<p>In all cases the actions would be to read and return the specified data. In what format?  Could be HTML, JSON, etc. depending on the specification of the request (via the <code>Accept</code> header).</p>
+
+<h3 id="example-with-film-explorer">Example with Film Explorer</h3>
+
+<p>Film Explorer API (note we typically use the colon to identify parameters):</p>
+<ul>
+  <li>GET <code>/api/movies</code>: List all the movies</li>
+  <li>GET <code>/api/movies/:id</code>: Read the movie with with id == <code>:id</code></li>
+  <li>PUT <code>/api/movies/:id</code>: Update the movie with id == <code>:id</code> with the request body</li>
+</ul>
+
+<h4 id="crudl">CRUD(L)</h4>
+
+<p>The basic operations on a RESTful resource are typically abbreviated CRUD:
+Create, Read, Update and Delete (along with List).</p>
+
+<p>For the specific resource <code>/movies/135397</code>:</p>
+<ul>
+  <li>GET: Read a representation of the movie with id of 135397 (a GET operation shouldn’t have side effects)</li>
+  <li>PUT: Update the specified movie by replacing it entirely</li>
+  <li>POST: Not used</li>
+  <li>DELETE: Delete the specified movie</li>
+  <li>PATCH: Update part of the specified movie</li>
+</ul>
+
+<p>For the collection of resources ‘/movies’:</p>
+<ul>
+  <li>GET: List all the movies</li>
+  <li>PUT: Update the collection of movies by replacing it entirely with another collection</li>
+  <li>POST: Create a new movie in the collection and return its id (and perhaps other information)</li>
+  <li>DELETE: Delete the collection</li>
+</ul>
+
+<h4 id="non-crud-operations">Non-CRUD operations?</h4>
+
+<p>Search? Think of the resource as the list of movies matching the query...</p>
+
+<pre><code>GET /movies/search?q=Jurassic
+</code></pre>
+
+<p>What about “Add to my favorites” or “Add to shopping cart”? When it seems
+awkward to express an operation in terms of your existing resources, ask
+whether there is another resource type waiting to be defined.</p>
+
+<h2 id="rest-and-react">REST and React</h2>
+
+<p>We are going to make use of React’s other type of hook, <a href="https://reactjs.org/docs/hooks-effect.html">the effect hook</a>. <code>useEffect</code> is intended to execute code that has side effects (such as making AJAX requests, but also subscriptions, timers, logging, etc.). As the React documentation describes:</p>
+<blockquote>
+  <p>side effects are not allowed inside the main body of a function component (referred to as React’s render phase). Doing so will lead to confusing bugs and inconsistencies in the UI.
+The side effects ultimately change the UI by calling a state setter.</p>
+</blockquote>
+
+<pre><code class="language-javascript">// Invoke the callback after component has rendered each time
+useEffect(() =&gt; {
+  // callback that has some type of side effects
+});
+</code></pre>
+
+<p>Normally, the effect hook will run every single time the component is rendered. For our purposes, we want a little bit more control. We can pass a second argument to the hook that is a list of props and state variables. React will only run the hook function if one of the values changes. If the array is left empty, the hook will run a single time when the component has first mounted. Since we will want to populate the list of films when we first start the application we will use the empty array as the dependency (this is similar to the <a href="https://reactjs.org/docs/faq-ajax.html#where-in-the-component-lifecycle-should-i-make-an-ajax-call"><code>componentDidMount</code> lifecycle method</a> in class components).</p>
+
+<pre><code class="language-javascript">// Invoke the callback just after the component has mounted
+useEffect(() =&gt; {
+  // callback that has some type of side effects
+}, []);
+</code></pre>
+
+<p>The function passed to the effect hook is run <em>after</em> the component has rendered. Thus we need to show something on the screen during the render, and during the subsequent period while we are waiting for the fetch to the remote server to complete. This adds a little bit of complexity because we need to consider how to render our component both with and without data. For example:</p>
+
+<pre><code class="language-jsx">let filmContents = (&lt;h2&gt;Loading...&lt;/h2&gt;);
+if (films) {
+  filmContents = (&lt;FilmTableContainer films={films} ... /&gt;);
+}
+</code></pre>
+
+<h3 id="asynchronous-data-access-and-promises">Asynchronous data access (and Promises)</h3>
+
+<p>There are several ways to request remote resources in JavaScript (all based on the same underlying technology). We will use the now widely available <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch"><code>window.fetch</code></a> function. <code>fetch</code> has replaced <code>XMLHttpRequest</code> (XHR) in many settings.</p>
+
+<p><code>fetch()</code> has a number of options, but at its most basic, it is just <code>fetch(url)</code>. The return value is not the response, but a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises">Promise</a> with which we can obtain that response.</p>
+
+<p>Recall that the browser is event-based. A typical pattern is to launch an <em>asynchronous</em> operation, such as a network request, in the background and supply a callback function to be invoked when the result is available. In the meantime the original function returns and execution continues (enabling the UI to remain responsive).</p>
+
+<p>But when you need a callback inside a callback, the deeply nested structured (i.e. callbacks, inside callbacks, inside callbacks), like below, becomes difficult to reason about.</p>
+
+<pre><code class="language-javascript">someAsyncOperation(someParams, (result, error) =&gt; {
+  // Do something with the result or error
+  newAsyncOperation(newParams, (result, error) =&gt; {
+    // Do something more...
+  });
+});
+</code></pre>
+
+<p>Instead we can use a chain of Promises to “flatten” the nested callbacks:</p>
+
+<pre><code class="language-javascript">someAsyncOperation(someParams)
+.then((result) =&gt; {
+  // Do something with the result
+  return newAsyncOperation(newParams);
+})
+.then((result) =&gt; {
+  // Do something more
+})
+.catch((error) =&gt; {
+  // Handle error
+});
+</code></pre>
+
+<p>From <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">MDN</a>:</p>
+
+<blockquote class="blockquote">
+  <p>A Promise is a proxy for a value not necessarily known when the promise is created. It allows you to associate handlers with an asynchronous action’s eventual success value or failure reason. This lets asynchronous methods return values like synchronous methods: instead of immediately returning the final value, the asynchronous method returns a promise to supply the value at some point in the future.</p>
+</blockquote>
+
+<p>Thus a Promise is one of three states:</p>
+<ol>
+  <li>Pending: Initial state, neither fulfilled or rejected</li>
+  <li>Fulfilled: The operation as has completed successfully</li>
+  <li>Rejected: The operation has failed.</li>
+</ol>
+
+<p>A Promise has a <code>then</code> method that invokes the supplied callback when the Promise is <em>fufilled</em> with a concrete value. That callback can return a new Promise, or if it returns a concrete value, that value will be wrapped in a fulfilled Promise. Alternately if there is an error or other failure, the Promise is <em>rejected</em> and the reject function in the chain (supplied to the <code>catch</code> method here) is invoked. The <code>then</code> and <code>catch</code> methods return promises to facilitate the chaining we saw above.</p>
+
+<p>If <code>fetch</code> succeeds, it resolves to a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Response"><code>Response</code></a> object (an HTTP response), from which we can obtain the status of the response, the type, header, and contents (which can be accessed in a variety of formats).</p>
+
+<pre><code class="language-javascript">useEffect(() =&gt; {
+  const fetchData = () =&gt; {
+    fetch('/api/films/')
+      .then(response =&gt; {
+        if (!response.ok) {
+          throw new Error(response.status_text);
+        }
+        return response.json();
+      })
+      .then(data =&gt; {
+        setFilms(List(data));
+      })
+      .catch(err =&gt; console.log(err)); // eslint-disable-line no-console
+    };
+  fetchData();
+}, []);
+</code></pre>
+
+<p>Why not just <code>setFilms(response.json())</code>? <code>response.json()</code> returns a Promise that will resolve with the result of parsing the response as JSON (the parsing is an asynchronous operation).  The second <code>then</code> function will be invoked when the <code>.json()</code> Promise resolves.</p>
+
+<h3 id="now-using-await">Now using await</h3>
+
+<p>There is an alternate syntax that we can use when we are working with Promises that allow us to write what feels like synchronous, imperative, code.</p>
+
+<p>Given a Promise that resolves into a value, instead of using <code>then</code>, we can use <code>await</code> and assign the resolved value like a normal assignment statement. The <code>await</code> keyword pauses execution until the Promise returned by the following expression resolves. If we use <code>await</code>, it has to be inside of an <em>asynchronous function</em>. We mark a function as asynchronous with the <code>async</code> keyword.</p>
+
+<pre><code class="language-javascript">const response = await fetch('/api/films');
+if (!response.ok) {
+  throw new Error(response.statusText);
+}
+
+const data = await response.json();
+setFilms(data);
+</code></pre>
+
+<p>Note that this <em>doesn’t</em> make the code synchronous. It is just an alternative syntax for Promises.</p>
+
+<pre><code class="language-javascript">const getData = async () =&gt; {
+  const response = await fetch('/api/films');
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
+
+  const data = await response.json();
+  setFilms(data);
+};
+
+getData();
+// do next thing
+</code></pre>
+
+<p>We have wrapped all of our asynchronous behavior in a function and labeled it asynchronous. The call to <code>getData()</code> will return immediately, and whatever happens after <code>//do next thing</code> will execute before all the code in <code>getData</code> completes.</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-05 14:32:10 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

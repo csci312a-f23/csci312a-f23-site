@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/lecture8-behavioral.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h2 id="motivating-behavioral-driven-design-bdd">Motivating Behavioral Driven Design (BDD)</h2>
+
+<p>Why do SW projects fail? Failing projects:</p>
+<ul>
+  <li>Don’t do what customers want</li>
+  <li>Or are late</li>
+  <li>Or over budget</li>
+  <li>Or are hard to maintain and evolve</li>
+  <li>Or all of the above</li>
+</ul>
+
+<p>How do Agile processes help us avoid those problems? Recall that in an Agile process you:</p>
+<ul>
+  <li>Work closely and continuously with stakeholders to develop requirements, tests</li>
+  <li>Maintain working prototype while deploying new features every iteration. Iterations are typically 1 or 2 weeks instead of Waterfall’s 5 major phases, each months long.</li>
+  <li>Check with stakeholders on what’s next, to validate building right thing</li>
+</ul>
+
+<p>Behavioral Driven Design (BDD) asks questions about behavior of an application before and during development to reduce miscommunication. BDD is really about having conversations (recall the emphasis on individuals and interactions in the Agile Manifesto).</p>
+
+<blockquote class="blockquote">
+  <p>Individuals and interactions over processes and tools</p>
+</blockquote>
+
+<p>We translate those conversations into <em>user stories</em>, lightweight descriptions of how the application will be used. Those user stores can be translated into <em>scenarios</em> that in turn become automated <em>acceptance tests</em>. Recall that an acceptance test verifies that the SW satisfies the specifications/requirements.</p>
+
+<p>These stories, scenarios and tests describe the behavior of an application <em>not</em> its implementation. In contrast, TDD and unit tests describe the implementation.</p>
+
+<h2 id="user-stories">User Stories</h2>
+
+<p>A <em>user story</em> describes something that the user wants, written:</p>
+<ul>
+  <li>as 1-3 sentences,</li>
+  <li>in plain language,</li>
+  <li>in collaboration with the user,</li>
+  <li>often on a 3x5 index card.</li>
+</ul>
+
+<p>User stories are often written in the Connextra format:</p>
+
+<p>“As a [kind of stakeholder]<br />
+I want to [do some task]<br />
+so that [some result or benefit].”</p>
+
+<p>Why 3x5 cards? Non-threatening to all stakeholders, easy to (re)organize, easy to rewrite as we learn more during development.</p>
+
+<p>An example for our Film Explorer:</p>
+<pre><code>As a user
+I want to click on a movie
+so that I get more information.
+</code></pre>
+
+<p>User stories will play an important role in our Agile approaches. We will maintain a prioritized list (the “product backlog”) of user stories to implement (with possibly 10s-100s of user stories).</p>
+
+<h3 id="smart-user-stories">S.M.A.R.T. user stories</h3>
+
+<ul>
+  <li>Specific</li>
+  <li>Measurable</li>
+  <li>Achievable</li>
+  <li>Relevant</li>
+  <li>Time-bound</li>
+</ul>
+
+<p>The combination of specific and measurable could be translated to “testable”.
+We aim to achieve (implement) each user story in one development iteration
+(i.e. sprint), typically two weeks. If a story will take (is taking) longer
+than one iteration we should split it into sub-stories. That is we should
+“time-bound” each story. If development exceeds the time budget we should give
+up on the story, or split it into smaller stories.</p>
+
+<p>Is our example user story SMART?</p>
+
+<p>Definitely achievable and readily time-bound. Measurable in the sense that we
+could imagine how to test. But both specific and not, and not clearly relevant.</p>
+
+<p>How could we rewrite our story to be more specific and relevant?</p>
+
+<pre><code>As a user
+I want to click on a movie to get a plot summary and other details
+so that I can see if I will like the movie
+</code></pre>
+
+<p>Compared before, our user story is more specific and relevant to the
+stakeholder.</p>
+
+<h3 id="testable-user-stories">Testable User Stories</h3>
+
+<p>Although we made our user story more specific, still more detail is needed to
+actually construct acceptance tests. To do so we can translate the story into a
+series of testable <em>scenarios</em>. A common format is (implemented in the Cucumber
+<a href="https://docs.cucumber.io/gherkin/">Gherkin language</a>):</p>
+
+<p>“Given [a context],<br />
+When [an event happens],<br />
+Then [an outcome should occur].”</p>
+
+<p>Refining our previous story as testable scenarios in this format:</p>
+
+<pre><code>Given a movie summary is shown, 
+when I click on the title,
+then the detail view is shown with the plot overview and poster image,
+</code></pre>
+
+<p>and</p>
+
+<pre><code>Given that the movie detail is shown,
+when I click on the title,
+then the summary view is shown.
+</code></pre>
+
+<p>These scenarios can be turned, nearly directly, into automated acceptance tests
+with <a href="https://cucumber.io">Cucumber</a>. The idea behind Cucumber is to create a
+meeting point between developers and customers. The scenarios are not code so
+that they can be understood by customer, but are sufficiently formalized to be
+executed automatically. A Cucumber test is composed of:</p>
+
+<ol>
+  <li><code>Given</code> steps represent state of world before event, the preconditions</li>
+  <li><code>When</code> steps represent event, e.g. simulate user pushing a button</li>
+  <li><code>Then</code> steps represent expected postconditions, the test expectations
+with <code>And</code> and <code>But</code> extending any previous step.</li>
+</ol>
+
+<p>For example:</p>
+
+<pre><code>Given I open the url 'http://the/test/url'
+When I click on the element 'Jurassic World'
+Then I expect the element 'img[src="http://the/poster"]' is visible
+</code></pre>
+
+<p>The steps are mapped to functions that implement clicking, etc. with
+arguments extracted with regular expressions. In this example, based on
+<a href="https://github.com/webdriverio/cucumber-boilerplate">cucumber boilerplate</a>,
+the quoted expressions with the URL, title, CSS selector, etc. are the
+arguments.</p>
+
+<p>Note that you don’t have to use Cucumber to implement “Given-When-Then”-style
+tests. For simplicity, we will use code (and the Enzyme library) instead of
+trying to incorporate Cucumber (although you could if you wanted to do so in
+your project). Why? Cucumber brings non-trivial overhead (implementing
+functions for the different steps) in an already packed semester.</p>
+
+<h3 id="bdd-perspectives">BDD Perspectives</h3>
+
+<p>A quote that resonated with me...</p>
+
+<blockquote class="blockquote">
+  <p>Having conversations is more important than capturing conversations is more important than automating conversations</p>
+  <footer class="blockquote-footer"><a href="https://www.slideshare.net/lunivore/behavior-driven-development-11754474">Liz Keough</a></footer>
+</blockquote>
+
+<p>Recall that BDD is all about encouraging conversations with stakeholders!</p>
+
+<h2 id="conversations-with-stakeholders-lo-fi-mockups">Conversations with stakeholders: Lo-fi mockups</h2>
+
+<p>SaaS apps often faces users, which inevitably leads to the challenge of how to
+get the customer to participate in UI design so that they are happy with the
+result. Specifically, we are aiming to avoid WISBNWIW (What I said But Not What
+I Wanted). And we want to do so without actually building a prototype.</p>
+
+<p>Lo-Fi mockups and storyboards, i.e. a pencil and paper drawing of the UI that
+show how the UI changes based on user actions, can be very helpful. Think of it
+like a movie storyboard, but non-linear.</p>
+
+<p>I think you will find Lo-Fi mockups have some real advantages compared to
+jumping directly to HTML:</p>
+<ul>
+  <li>Lo-Fi mockups are less intimidating to nontechnical stakeholders</li>
+  <li>Lo-Fi mockups are less likely to confuse nontechnical stakeholder (it looks like a webpage, but doesn’t work like a webpage)</li>
+  <li>The customer is more likely to suggest changes to UI if there isn’t code behind it (i.e. they perceive minimal cost to making a change)</li>
+  <li>The customer is more likely to focus on interaction rather than colors, fonts, etc.</li>
+</ul>
+
+<p>In your projects, you will likely be the customer, but even so, I think you
+will find that above advantages still hold, especially the last two...</p>
+
+<p>Remember that what you think is cool, is not what your customers/users may think
+is valuable. Frequent feedback is essential. Investing lots of time in hi-fi
+mockups will make it harder to get frequent feedback, and potentially make that
+feedback expensive (what if you invested all that time only to get it
+wrong...). Make getting it wrong cheap so that you can quickly iterate to find
+the right solution.</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-10 07:50:57 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

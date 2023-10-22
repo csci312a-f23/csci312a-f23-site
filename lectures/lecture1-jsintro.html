@@ -1,0 +1,486 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/lecture1-jsintro.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="introduction-to-javascript">Introduction to JavaScript</h1>
+
+<p>This is not a comprehensive introduction to JavaScript (JS). Instead I am aiming to highlight some of the common “gotchas” when coming to JS from other languages like Java or Python.</p>
+
+<p>For a more comprehensive introduction to JavaScript, I suggest the (draft) 3rd edition of <a href="http://eloquentjavascript.net/3rd_edition/index.html">Eloquent JavaScript</a>. And for JS features commonly used in React applications, check out <a href="https://kentcdodds.com/blog/javascript-to-know-for-react">Javascript to know for React</a>.</p>
+
+<p>Why do we care about JavaScript? It is the language embedded in the browser that allows us to programmatically manipulate the page (our topic for the next session). Thus we need to use it to create interactive web pages. Keep that role in mind as it drives the design the language. Increasingly JavaScript is also used on the server (that is not just in the browser). We will use it in that role as well (to reduce the number of languages we are learning).</p>
+
+<h2 id="history-and-standardization">History and standardization</h2>
+
+<p>A little context. Java is to JavaScript as Ham is to Hamburger. JavaScript was created in 1995 at Netscape (in 10 days!) and was named as a marketing ploy to capitalize on the growing popularity of Java (although Sun, then Oracle, owned the trademark).</p>
+
+<p>JavaScript was standardized into ECMAScript, and thus JavaScript is a dialect of ECMAScript. After a period of divergence in the browser wars era, the various vendors (namely the browser creators) are now more faithfully implementing the standard.</p>
+
+<p>There were numerous implementations but fewer these days:</p>
+<ul>
+  <li>V8 (Chrome and Node)</li>
+  <li>Spidermonkey (Firefox)</li>
+  <li>JavascriptScore (WebKit, Safari)</li>
+  <li>
+    <strike>Chakra (IE Edge)</strike>
+  </li>
+  <li>...</li>
+</ul>
+
+<p>Not all engines support all features. We will be using ECMAScript 2015 or ES6, an update to the standard that adds numerous helpful features. Fortunately, at this point almost <a href="https://kangax.github.io/compat-table/es6/">all modern browsers</a> support the ES6 specification. That is not necessarily true for newer features (newer than ES6) or older browsers (and wasn’t necessarily true for previous iterations of the course!). Subsequent versions are now named by year. The version of Node that we are using supports a more modern standard.</p>
+
+<p>We will also learn about and use tools, such as <a href="https://babeljs.io">transpilers</a> and polyfills, which mitigate compatibility problem enabling us to write to a single modern standard (ES6). Although as time goes on that is less and less of an issue.</p>
+
+<h2 id="javascript-notes">JavaScript notes</h2>
+
+<p>JavaScript is a very pragmatic language that has evolved to meet user needs as opposed to being formally “designed” (recall the first version created in 10 days...). As a result there is more than one way to do something, and not all are good. There was (is) a quite famous book <a href="http://shop.oreilly.com/product/9780596517748.do">“JavaScript: The Good Parts”</a>, promoted as:</p>
+
+<blockquote class="blockquote">
+  <p>Most programming languages contain good and bad parts, but JavaScript has more than its share of the bad, having been developed and released in a hurry before it could be refined. This authoritative book scrapes away these bad features to reveal a subset of JavaScript that’s more reliable, readable, and maintainable than the language as a whole—a subset you can use to create truly extensible and efficient code.</p>
+</blockquote>
+
+<p>Thus be careful reading online suggestions/tutorials. Some are good, some are outdated, some are opinionated in good ways, some are opinionated in bad ways, and some are just wrong.</p>
+
+<p>We will make use of established style guides, e.g. from <a href="https://github.com/airbnb/javascript">AirBnB</a> and tools like <a href="https://eslint.org">ESLint</a>, which automatically identify potentially problematic code, to help us avoid the “bad parts”.</p>
+
+<p>Some examples of those gotchas mentioned earlier...</p>
+
+<h3 id="semicolons">Semicolons</h3>
+
+<p>Semicolons are optional in JavaScript. If there is a line break without a semicolon, JavaScript will insert one according to a very complicated set of rules. Don’t do it. Always use semicolons to explicitly end a statement.</p>
+
+<h3 id="equality-and-truthiness">Equality (and truthiness)</h3>
+
+<p>Use <code>===</code> instead of <code>==</code> (<a href="https://eslint.org/docs/rules/eqeqeq.html">ESLint</a>).</p>
+
+<pre><code>$ node
+&gt; 5 == "5"
+true
+&gt; 5 === "5"
+false
+</code></pre>
+
+<p>The latter is typesafe, the former does some very tricky and hard to reason about type conversion. Don’t do it.</p>
+
+<h3 id="variable-declarations">Variable declarations</h3>
+
+<p>JavaScript is dynamically typed like Python and can define variables like Python, e.g.</p>
+
+<pre><code class="language-javascript">x = 42;
+</code></pre>
+
+<p>but doing so makes a global variables and pollutes the global namespace (<a href="https://eslint.org/docs/rules/no-undef">ESLint</a>). Instead we should declare all variables as block scoped with <code>const</code>, if possible, or <code>let</code> (<a href="https://eslint.org/docs/rules/prefer-const">ESLint</a>). <code>const</code> specifies that a variable will not be reassigned. However, those are ES6 features and so you will also see <code>var</code> declarations, e.g.</p>
+
+<pre><code class="language-javascript">var x = 42;
+</code></pre>
+
+<p>Prior to ES6, <code>var</code> was the only form of declaration. <code>var</code> has function-level scope (even if you re-declare a variable), instead of the more familiar block-level scope of <code>const</code> and <code>let</code>. That is all <code>var</code>s are “hoisted” to the top of the function (or globally). As a result the latter is preferred to avoid tricky bugs like the following. You should use <code>const</code> or <code>let</code>, but be aware you will likely see examples with <code>var</code>.</p>
+
+<p>As an example compare the two following functions (adapted from MDN):</p>
+
+<pre><code class="language-javascript">function varTest() {
+  var x = 1;
+  if (true) {
+    var x = 2;
+    console.log(x);
+  }
+  console.log(x);  // What will print here?  
+}
+</code></pre>
+
+<pre><code class="language-javascript">function letTest() {
+  let x = 1;
+  if (true) {
+    let x = 2;
+    console.log(x);
+  }
+  console.log(x);  // What will print here?  
+}
+</code></pre>
+
+<h3 id="higher-order-functions">Higher-order functions</h3>
+
+<p>Functions are just another kind of value (a feature adapted from functional programming), e.g.</p>
+
+<pre><code class="language-javascript">const f = function() { };
+</code></pre>
+
+<p>Here we are creating an anonymous function and assigning it to a variable (with regular assignment and a ‘;’) instead of creating a named function, e.g. <code>function f() {}</code>. In general we prefer the first form because it prevents us from referencing a function in a file before it is defined (named functions are “hoisted” to the beginning of the file). The <a href="https://github.com/airbnb/javascript#functions">AirBnB style guide</a> recommends using named function expressions, e.g.,</p>
+
+<pre><code class="language-javascript">const f = function moreDescriptiveNameForF() { };
+</code></pre>
+
+<p>so the function is scoped but will always have an informative name in stack traces (although many engines infer the name from the assignment), etc. Think of that as a “belt and suspenders” approach...</p>
+
+<p>Anonymous functions are a common concept in JavaScript. We create small functions and pass them as arguments to other function. Consider this simple <code>for</code> loop</p>
+
+<pre><code class="language-javascript">const m = [4,6,2,7];
+for (let i = 0; i &lt; m.length; i++) {
+  console.log(m[i]);
+}
+</code></pre>
+
+<p>We would rather write this loop as:</p>
+
+<pre><code class="language-javascript">m.forEach(function(i) { console.log(i); });
+</code></pre>
+
+<p>or using an ES6 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">“arrow” function</a>:</p>
+
+<pre><code class="language-javascript">m.forEach((i) =&gt; console.log(i));
+</code></pre>
+
+<p>Note that arrow functions can have either “concise body”, like above, containing a single expression which becomes the return value, or the “block body” surrounded by curly braces. The latter requires an explicit return statement. Also note that arrow functions and anonymous functions created with <code>function</code> have subtle differences we will learn about as the semester proceeds.</p>
+
+<p>In general arrow functions are preferred for their conciseness. For example, instead of</p>
+
+<pre><code class="language-javascript">const f = function moreDescriptiveNameForF() { };
+</code></pre>
+
+<p>we could write</p>
+
+<pre><code class="language-javascript">const f = () =&gt; { };
+</code></pre>
+
+<p>Some common methods (operations) that use this pattern are <code>map</code>, <code>filter</code>, <code>reduce</code>, and <code>sort</code>.  In each of these examples we are using <em>higher-order functions</em> (that is functions that can passed as arguments to or returned from other functions) to abstract over actions (e.g. filtering an array to keep just those elements that satisfy a predicate) not just values. What do we mean by abstracting over actions? Instead of a writing a function that filters data with specific (and fixed) predicate and applying that function to arbitrary data, we are writing a generic filter function that can be applied to arbitrary data <em>and</em> implement arbitrary predicates (by supplying a different predicate function value). For example:</p>
+
+<pre><code class="language-javascript">const filterPos = (array) =&gt; {
+  let result = [];
+  for (let i=0; i&lt;array.length; i++) {
+    if (array[i] &gt;= 0) {
+        result.push(array[i]);
+    }
+  }
+  return result;
+}
+
+const filterNeg = (array) =&gt; {
+  let result = [];
+  for (let i=0; i&lt;array.length; i++) {
+    if (array[i] &lt; 0) {
+        result.push(array[i]);
+    }
+  }
+  return result;
+}
+
+filterPos([-1, 0, 1]);
+filterNeg([-1, 0, 1]);
+</code></pre>
+
+<p>Can be written as:</p>
+
+<pre><code class="language-javascript">[-1, 0, 1].filter(item =&gt; item &gt;= 0);
+[-1, 0, 1].filter(item =&gt; item &lt; 0);
+</code></pre>
+
+<p>What is the difference between <code>forEach</code> and <code>map</code>? The latter returns a new array of the same length with the values produced by invoking the function argument on the input array. Knowing that, how could we implement <code>map</code> with <code>forEach</code>, i.e. how would you implement <code>function map(a, f)</code> such that</p>
+
+<pre><code class="language-javascript">const a = [4,6,7,9];
+map(a, item =&gt; item + 1);  // Equivalent to map(m, (item) =&gt; { return item + 1; });
+</code></pre>
+
+<p>produces <code>[5, 7, 8, 10]</code>. As a hint, check out the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array methods</a> and note that an empty array can be created with <code>[]</code>. <a href="#map-forEach" data-bs-toggle="collapse">Peek at an implementation.</a></p>
+
+<div id="map-forEach" class="collapse">
+
+  <pre><code class="language-javascript">const map = (a, f) =&gt; {
+  let result = [];
+  a.forEach((item) =&gt; {
+    result.push(f(item));
+  });
+  return result;
+}
+</code></pre>
+
+</div>
+
+<h3 id="closures">Closures</h3>
+
+<p>Consider the following <a href="http://eloquentjavascript.net/3rd_edition/03_functions.html#h_hOd+yVxaku">example</a>. What will get printed?</p>
+
+<pre><code class="language-javascript">const wrapValue = (n) =&gt; {
+  let local = n;
+  return () =&gt; local;
+}
+
+let wrap1 = wrapValue(1);
+let wrap2 = wrapValue(2);
+console.log(wrap1()); // What will print here?
+console.log(wrap2()); // What will print here?
+</code></pre>
+
+<p>In JavaScript, “inner” functions have access to variables defined in containing lexical scopes. That is the anonymous function created inside <code>wrapValue</code> can use the local <code>local</code> variable (similar to many other programming languages).</p>
+
+<p>More than just have “access” to variables in enclosing scopes, defining a function references a variable defined in an enclosing scope creates a <em>closure</em>, i.e. the combination of the function <em>and</em> the lexical environment in which that function was declared. That environment includes any local variables that were in scope when the function was defined. Thus this code will print</p>
+
+<pre><code class="language-plaintext">1
+2
+</code></pre>
+
+<p>as the <code>wrap1</code> function value is a closure over the local variable initialize to be 1, while the <code>wrap2</code> function value is a closure over the local variable initialize to be 2.</p>
+
+<p>We will use closures extensively. Much of the JavaScript code we write (both “front-end” and “back-end”) is “event-based”. That is we want to connect some particular actions to an event, such as a click, triggered by the user. We do so by attaching a “callback” to the event. That callback is typically a function that formed a closure over the necessary data for that action.</p>
+
+<p>Alternately you could think about closures as being similar to objects (in a object oriented sense) with only one method.</p>
+
+<p>What will be printed by the following loops (<a href="https://stackoverflow.com/questions/750486/javascript-closure-inside-loops-simple-practical-example">source</a>)? <a href="#var-closure" data-bs-toggle="collapse">Peek at the result.</a></p>
+
+<pre><code class="language-javascript">var funcs = [];
+for (var i = 0; i &lt; 3; i++) {      // Create 3 functions and
+  funcs[i] = () =&gt; {               // store them in the funcs array,
+    console.log("My value: " + i); // each should log its value.
+  };
+}
+for (var j = 0; j &lt; 3; j++) {
+  funcs[j]();                      // Run each function to print values
+}
+</code></pre>
+
+<div id="var-closure" class="collapse">
+
+  <p>Surprisingly:</p>
+
+  <pre><code class="language-plaintext">My value: 3
+My value: 3
+My value: 3
+</code></pre>
+
+  <p>What you are observing is the interaction between <code>var</code> scoping rules and closures. Recall that the scope of the <code>var</code> is the entire function (or in this the case global environment). Thus each function is closing over the same <code>var</code>. If we replace <code>for (var i = 0; i &lt; 3; i++)</code> with <code>for (let i = 0; i &lt; 3; i++)</code> the loop will work as intended, because each <code>let</code> variable is scoped to the loop body and there are thus three different “i” variables (slightly different than C/C++).</p>
+
+  <p>Earlier we said not to use <code>var</code>, why then are we learning more about it here (especially since <code>let</code> would “do the right thing” here)? Recall that part of this course is learning about working with legacy code and <code>var</code> is used in a lot of JS legacy code.</p>
+
+</div>
+
+<h3 id="objects">Objects</h3>
+
+<p>Like Java and Python, JavaScript is object oriented. Everything is an object.</p>
+
+<p>Objects have properties and methods, which we can access with dot notation or via the indexing operation, i.e., <code>obj.name</code> and <code>obj['name']</code> are equivalent.</p>
+
+<p>We can create object literals just like they were Python dictionaries, and work with them in similar ways:</p>
+
+<pre><code class="language-javascript">let square = {
+  x: 20,
+  y: 20,
+  width: 10,
+  height: 25,
+  aspectRatio: () =&gt; { this.width / this.height},
+};
+</code></pre>
+
+<pre><code class="language-javascript">&gt; square.x
+20
+&gt; square['y']
+20
+&gt; square.color = 'red';
+'red'
+&gt; square
+{ x: 20,
+  y: 20,
+  width: 10,
+  height: 25,
+  aspectRatio: [Function: aspectRatio],
+  color: 'red' }
+</code></pre>
+
+<p>In our above example, <code>aspectRatio</code> is a method (a property that is a function), but it is only available on the <code>square</code> object. To share properties between objects that are instances of a class we can use prototypes.</p>
+
+<p>JavaScript is a “prototype-based language”, that is each object has a prototype. You can think of the prototype as a “fallback”. From <a href="http://eloquentjavascript.net/3rd_edition/06_object.html">Eloquent Javascript</a>, a helpful introduction to this topic and the source for the following quote and description:</p>
+
+<blockquote>
+  <p>When an object gets a request for a property that it does not have, its prototype will be searched for the property, then the prototype’s prototype, and so on.</p>
+</blockquote>
+
+<p>These prototypes (accessible via <code>Object.getPrototypeOf(obj)</code>) form a tree with <code>Object.prototype</code> at the root.</p>
+
+<p>To create a new instance of a class we need to create an object with the appropriate prototype <em>and</em> all the properties that instance must have. Doing so is the constructors job. An example JavaScript constructor:</p>
+
+<pre><code class="language-javascript">function Hello(name) {
+  this.name = name;
+}
+</code></pre>
+
+<p>If you invoke the <code>new</code> operator on a function, that function is treated as a constructor. When you invoke <code>new Hello</code>, an object with the correct prototype is created (the <code>Hello.prototype</code> property), that object is bound to <code>this</code> in the constructor function, and ultimately returned by <code>new</code>.</p>
+
+<p>All constructors (all functions) have a <code>prototype</code> property. There is an important distinction between the constructor’s prototype and its <code>prototype</code> property. The former is <code>Function.prototype</code>, since the constructor is a function, and the latter holds the prototype for objects created via that constructor. Properties that should be shared by all instances of a class are added to the constructor’s prototype property, e.g. <code>Hello.prototype</code>.</p>
+
+<p>This may seem foreign to you (it does to your instructors too, and many other people). ES6 introduced class declarations (using the <code>class</code> keyword) implemented on top of JavaScript’s much more flexible prototypal inheritance features. These classes will likely seem more familiar to you and that is the interface we will generally use.</p>
+
+<p>Consider the following example (<a href="https://github.com/addyosmani/es6-equivalents-in-es5#classes">source</a>):</p>
+
+<pre><code class="language-javascript">class Hello {
+  constructor(name) {
+    this.name = name;
+  }
+
+  hello() {
+    return 'Hello ' + this.name + '!';
+  }
+
+  static sayHelloAll() {
+    return 'Hello everyone!';
+  }
+}
+
+class HelloWorld extends Hello {
+  constructor() {
+    super('World');
+  }
+
+  echo() {
+    console.log(super.hello());
+  }
+}
+
+var hw = new HelloWorld();
+hw.echo();
+hw.hello();
+
+console.log(Hello.sayHelloAll());
+</code></pre>
+
+<p>The equivalent ES5 code would approximately be (alternatively a more faithful <a href="https://goo.gl/ZvEQDq">translation</a> generated by the Babel transpiler):</p>
+
+<pre><code class="language-javascript">function Hello(name) {
+  this.name = name;
+}
+
+Hello.prototype.hello = function hello() {
+  return 'Hello ' + this.name + '!';
+};
+
+Hello.sayHelloAll = function () {
+  return 'Hello everyone!';
+};
+
+function HelloWorld() {
+  Hello.call(this, 'World');
+}
+
+HelloWorld.prototype = Object.create(Hello.prototype);
+HelloWorld.prototype.constructor = HelloWorld;
+HelloWorld.sayHelloAll = Hello.sayHelloAll;
+
+HelloWorld.prototype.echo = function echo() {
+  console.log(Hello.prototype.hello.call(this));
+};
+
+var hw = new HelloWorld();
+hw.echo();
+hw.hello();
+
+console.log(Hello.sayHelloAll());
+</code></pre>
+
+<p>I don’t want to downplay the flexibility and power of JavaScript’s prototypal model. For example, it enables “concatenative inheritance” (often termed mixins). See this <a href="https://medium.com/javascript-scene/master-the-javascript-interview-what-s-the-difference-between-class-prototypal-inheritance-e4cd0a7562e9">post</a> for more examples. And I do want to note that many people are not a fan of the <code>class</code> keyword. If you are interested I encourage you to learn more. But I also don’t want us to get hung up on the way to our higher-level goals in the course. Thus the extensive use of the <code>class</code> keyword and its more familiar structure.</p>
+
+<h3 id="closures-as-classes">Closures as “Classes”</h3>
+
+<p>The combination of closures and “everything as an object”, allows us to use closures in ways we might use classes in other languages. Consider the following implementation of a counter.</p>
+
+<pre><code class="language-javascript">const counter = function CounterClosure() {
+  let count = 0;
+  return () =&gt; count++;
+}
+</code></pre>
+
+<p>In action:</p>
+
+<pre><code class="language-javascript">&gt; let cn = counter();
+undefined
+&gt; cn();
+0
+&gt; cn();
+1
+</code></pre>
+
+<p>Why does the first <code>cn()</code> call return 0 (when it should be incrementing)? Postfix <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Arithmetic_Operators#Increment_()">increment</a>, i.e. <code>++</code> after the variable, returns the value of the variable before the increment operation, where as prefix increment returns the value after the increment, e.g.</p>
+
+<pre><code class="language-javascript">// Postfix 
+let x = 3;
+y = x++; // y = 3, x = 4
+
+// Prefix
+let a = 2;
+b = ++a; // a = 3, b = 3
+</code></pre>
+
+<p>Here, <code>count</code> is effectively a private member that can be manipulated by the returned closure but not accessed outside it. How could we use “everything as an object” to obtain access to the <code>count</code> field without incrementing? That is how could you implement a <code>value</code> method that would return the private <code>count</code>? As a hint, because they are objects functions have properties... <a href="#closure-as-class" data-bs-toggle="collapse">Peek at a implementation.</a></p>
+
+<div id="closure-as-class" class="collapse">
+  <pre><code class="language-javascript">const richCounter = () =&gt; {
+  let count = 0;  // "Private" count variable
+  let increment = () =&gt; count++;
+  increment.value = () =&gt; count;
+  return increment;
+}
+</code></pre>
+
+  <p>In action:</p>
+
+  <pre><code class="language-javascript">&gt; let rc = richCounter();
+undefined
+&gt; rc.value()
+0
+&gt; rc()
+0
+&gt; rc.value()
+1
+</code></pre>
+
+</div>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-02-16 07:52:48 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

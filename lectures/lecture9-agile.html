@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/lecture9-agile.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="development-methodologies-agile-scrum-and-more">Development Methodologies: Agile, Scrum and more</h1>
+
+<h2 id="revisiting-waterfall">Revisiting Waterfall</h2>
+
+<p>Recall that Waterfall is an implementation of a larger set of “Plan and Document” development methodologies. In Waterfall, development follows a sequence of 5 (cascading) steps:</p>
+
+<ol>
+  <li>Requirements</li>
+  <li>Design</li>
+  <li>Development</li>
+  <li>Testing</li>
+  <li>Operations</li>
+</ol>
+
+<p>Some of the goals are to: 1) catch errors early (and more cheaply) before they manifest in subsequent phase, and 2) provide extensive documentation as a deliverable (to facilitate maintenance and on-boarding new team members).</p>
+
+<p>The problem is reacting to change (e.g. new requirements or new technologies) after that phase is completed.</p>
+
+<h2 id="agile">Agile</h2>
+
+<p>The Agile philosophy, as described in <a href="http://agilemanifesto.org">The Manifesto of the Agile Alliance (2001)</a>, was a response to those “heavy-weight” processes. The goal is was to define principles that enable development teams to work (more) quickly and be responsive to change.</p>
+
+<p>The Manifesto:</p>
+
+<blockquote class="blockquote">
+  <p>We are uncovering better ways of developing software by doing it and helping
+others do it.  Through this work we have come to value:</p>
+
+  <ul>
+    <li><strong>Individuals and interactions</strong> over processes and tools</li>
+    <li><strong>Working software</strong> over comprehensive documentation</li>
+    <li><strong>Customer collaboration</strong> over contract negotiation</li>
+    <li><strong>Responding to change</strong> over following a plan</li>
+  </ul>
+
+  <p>That is, while there is value in the items on the right, we value the items on
+the left more.</p>
+</blockquote>
+
+<p>Note that Agile is a set of principles, not a process. Scrum, Extreme Programming, etc. are “implementations” of the Agile philosophy. A common criticism is that the principles and values have been lost in capital “A” Agile, e.g. the consulting business that has emerged around agile approaches. A definition of lowercase “a” agility I found relevant (from <a href="https://www.youtube.com/watch?v=a-BOSpxYJ9M">Dave Thomas</a>):</p>
+
+<ul>
+  <li>Find out where you are,</li>
+  <li>Take a small step towards your goal,</li>
+  <li>Adjust your understanding based on what you learned, and</li>
+  <li>Repeat</li>
+</ul>
+
+<p>and, when faced with two or more alternatives that deliver roughly the same value, choose the path that makes future change easier.</p>
+
+<h2 id="scrum">Scrum</h2>
+
+<p>The <a href="http://www.scrumguides.org/scrum-guide.html">Scrum Guide</a> provides a comprehensive overview of Scrum and will be our reference. Although we will implement Scrum in class, it is just one implementation of Agile (XP or eXtreme Programming is another). And despite what the competing certificate programs would argue, there is no one way to do Scrum. Everyone adapts the processes to best fit their team and project.</p>
+
+<h2 id="evaluating-agility">Evaluating Agility</h2>
+
+<p>Your project is also about process (not just product). That is we are practicing the formal development processes that we have been learning about all semester. Thus we will be evaluating you and your team on how well you are implementing Agile practices. That evaluation is based on metrics derived from the SW development literature.</p>
+
+<p>In <a href="https://link.springer.com/chapter/10.1007%2F3-540-45672-4_7">“Turning the Knobs: A Coaching Pattern for XP through Agile Metrics”</a> the authors provides a measure of XP practices (also relevant to our processes). Each question is answered on a scale of 1-10. If you are implementing agile processes, your self-assessment should have average scores on the order of 7-8.</p>
+
+<ol>
+  <li>Two people work together at one computer. They trade turns typing or reviewing and thinking about the big picture.</li>
+  <li>We deliver more frequent, smaller iterations to customers.</li>
+  <li>When working on a big set of code I sync up or checkin as follows [...]</li>
+  <li>Do we have test cases and automated drivers for each product class?</li>
+  <li>We move items in and out of the plan based on updated customer needs while keeping the dates steady.</li>
+  <li>We have access to our customer and get feedback from her.</li>
+  <li>We rewrite or redesign code that smells bad or will help position us for new requirements.</li>
+  <li>We keep the design simple now so we can change it as needed in the future.</li>
+  <li>Do you have and follow enough standards so you can read and change each other’s code? Have ’em? Detail? not too much, not too little, [...]</li>
+  <li>People can change each other’s code. We don’t have to wait for the specialist.</li>
+  <li>So you have naming conventions for your objects?</li>
+  <li>Do people work at a rate that’s effective for them over the long run?</li>
+</ol>
+
+<p>The author of <a href="https://dl.acm.org/citation.cfm?id=2889182">“How surveys, tutors, and software help to assess Scrum adoption in a classroom software engineering project”</a> identify several metrics that they use to evaluate “agility” in student projects. Hopefully these metrics provide some examples of behaviors to avoid, such as many commits in the last day/hour of the sprint.</p>
+
+<ol>
+  <li>
+    <p>Amount of user story a developer is assigned on average per day.</p>
+
+    <p>The average amount of user stories that were assigned to a developer in a sprint (i.e. #sprintUS / #devs). This is without regard to the complexity of each story. A good visualization for this is the amount of user stories a developer has to accomplish on a full work day on average (i.e. (#sprintUS / #devs) / #workDays). If this is significantly lower than average / previously, the stories possibly are too large and should be split, to allow easier parallel work and future estimation. If this number is high (especially higher than a critical threshold [10?]), it is possible that nonfunctional requirements (e.g. tests, design requirements, deployment, “definition of done”) and communication and context  switching overhead were underrated and there are too many stories in the sprint.’</p>
+  </li>
+  <li>
+    <p>Commits within 30 minutes sprint deadline.</p>
+
+    <p>Amount of commits during the last day / last week of the sprint. If everything was last minute, the Scrum meetings were ineffective, due to lack of content. Furthermore, blockers for / from other teams could not be communicated.’</p>
+  </li>
+  <li>
+    <p>User stories that are still open in previous sprints.</p>
+
+    <p>Amount of user stories in previous sprints that are not closed. It is likely that these user stories were worked on, but were simply not closed due to negligence or were “backup” stories that  weren’t of high priority. These stories should be closed (or moved) to promote better overview or need special attention if they really were forgotten.</p>
+  </li>
+  <li>
+    <p>User stories that were in the backlog of 3 or more sprints.</p>
+
+    <p>A user story that is assigned to the sprint backlog of more than 3 sprints, with or without commits referencing it. The more never-ending stories there are in a project, the more likely it is that blockers and dependencies will become an issue.</p>
+  </li>
+  <li>
+    <p>Amount of commits per Developer.</p>
+
+    <p>Commit early, commit often” is a helpful slogan when developing in large teams. In the words of Jeff Atwood (of StackOverflow fame) “if the code isn’t checked into source control, it doesn’t exist” [<a href="http://blog.codinghorror.com/check-in-early-check-in-often/">Atwood, 2008</a>].  It allows coworkers to build on functionality, makes version control easier and can help prevent “Integration Hell” [<a href="http://c2.com/cgi/wiki?IntegrationHell">Jeffries</a>] further down the line.</p>
+  </li>
+  <li>
+    <p>Pull requests that were closed within 30 minutes without comments</p>
+
+    <p>Pull requests can be a tool to help inform team members what functionality is added in a collection of commits. It allows team members and stakeholders to comment and perform code review. Furthermore, continuous integration services can run the proposed changes, making sure all tests pass. If pull requests are closed in a short timespan, many of these possibilities remain unused.</p>
+  </li>
+  <li>
+    <p>Code is edited heavily by few developers</p>
+
+    <p>Collective Code Ownership, the convention, that every team member is not only allowed, but in fact has a positive duty, to make changes to any code file as necessary, is part of agile development (especially XP). It can help reduce the risk that the absence of a few developer will stall work on a certain area of code. Furthermore it can help prevent “Conway’s Law”, helps share technical knowledge between developers and encourages each developer to feel responsible for the quality of the whole.</p>
+  </li>
+  <li>
+    <p>User stories that are too large.</p>
+
+    <p>User stories should be small enough to get a quick overview of the work to be done, but should contain enough information to be estimatable by the developers. It is sometimes stated that user stories should fit on an index card. The issues below have double the average length of issues in the selected sprint or have double the amount of checkboxes of other stories. Both of these can be an indicator that a user story is too large and could be split. Smaller user stories can improve the ability to plan as they are less likely to deviate from the estimation and sprint backlogs can be filled on a more granular basis.</p>
+  </li>
+  <li>
+    <p>Commits that increased code complexity without increasing code coverage.</p>
+
+    <p>Having a high percentage of code covered by tests is essential for ensuring the system is thoroughly tested. When committing changes that significantly increase the complexity of the code base (&gt;0.5), tests should be committed as well, increasing the code coverage. If this is not the case for a high percentage of commits, this might be a sign that writing tests and code coverage metrics should be paid more attention to.</p>
+  </li>
+  <li>
+    <p>Issues which are suspected duplicates.</p>
+
+    <p>Issues with comments that point to them being duplicates. User stories that duplicate features of previous user stories can lead to features being implemented multiple times by different teams.</p>
+  </li>
+</ol>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-15 09:44:27 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

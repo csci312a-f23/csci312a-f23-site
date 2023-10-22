@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/resources/links.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h2 id="useful-links">Useful Links</h2>
+
+<p>This is a collection of external resources that you may find useful over the course of the semester.</p>
+
+<dl>
+  <dt><a href="http://eloquentjavascript.net/3rd_edition/">Eloquent JavaScript</a></dt>
+  <dd>An e-book introduction to JavaScript</dd>
+  <dt><a href="http://www.w3schools.com">W3 Schools</a></dt>
+  <dd>A basic introduction to HTML and CSS (especially helpful if those are new technologies for you)</dd>
+  <dt><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">JavaScript MDN Reference</a></dt>
+  <dd>Extensive JavaScript documentation. If you search for particular aspects of the language, you will likely find yourself here</dd>
+  <dt><a href="https://github.com/AlexZeitler/gitcheatsheet/blob/master/gitcheatsheet.pdf">Git Refcard</a></dt>
+  <dd>A single page cheat sheets with many of the important Git commands</dd>
+  <dt><a href="https://git-scm.com/doc">Git Documentation</a></dt>
+  <dd>Git documentation, including detailed command reference, e-book and other resources</dd>
+  <dt><a href="https://reactjs.org/docs/hello-world.html">React.js</a></dt>
+  <dd>React documentation (starting with Hello World tutorial).</dd>
+  <dt><a href="https://nextjs.org/">Next.js</a></dt>
+  <dd>Next.js documentation</dd>
+  <dt><a href="https://nodejs.org/en/&quot;&gt;Node.js">Node.js</a></dt>
+  <dd>Node.js home (with links to documentation).</dd>
+  <dt><a href="https://www.npmjs.com">npm.js</a></dt>
+  <dd>npm home with links to documentation and package search tool.</dd>
+</dl>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-01-10 11:20:34 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

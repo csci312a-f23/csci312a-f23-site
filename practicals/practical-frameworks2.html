@@ -1,0 +1,381 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 Practical: CSS Frameworks</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-frameworks2.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="using-csscomponent-frameworks-and-other-css-features">Using CSS/Component Frameworks (and Other CSS Features)</h1>
+
+<p>
+<strong>Initial Due Date: 2023-04-18 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-05-05 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+<ul>
+  <li>Gain familiarity with Material UI and component frameworks more generally</li>
+  <li>Utilize CSS-in-JS tools</li>
+  <li>Practice refactoring an application</li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>In this practical you will adapt your assignment 3 solution to use the Material UI component framework. Instead of starting with a skeleton repository, you are going to clone your assignment solution (thereby creating a copy) and refactor it. <strong>Be careful as you are copying and pasting the code snippets below! These are derived from the solution which may not match you approach exactly. Often you will need to add, modify or otherwise incorporate code from your implementation.</strong></p>
+
+<ol>
+  <li>Clone the repository of your assignment 3 solution. You can do so locally on your computer by executing  <code>💻 git clone &lt;assignment 3 directory&gt; &lt;practical directory&gt;</code> replacing <code>&lt;assignment 3 directory&gt;</code> with the path to your assignment 3 and providing a meaningful name for the copy. For example for me it would be <code>💻 git clone assignment-03-mlinderm practical09-frameworks-mlinderm</code> (where <code>mlinderm</code> is my GitHub username). Alternately you can clone your assignment 3 solution from GitHub. If you do so, append the desired practical directory to the clone command to create a new copy locally, e.g., <code>💻 git clone git... practical09-frameworks-mlinderm</code>.</li>
+  <li>Open up the <code>package.json</code> file in your newly created copy and change your package name to be “practical-frameworks”</li>
+  <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
+</ol>
+
+<h2 id="background">Background</h2>
+
+<p>In this practical you will adapt your assignment 3 solution to use the <a href="https://mui.com">Material UI</a> component framework. I think of Material UI as having three major features: consistent styling of different DOM elements, e.g. lists and tables; a robust responsive grid system that works across different browsers/devices; and a rich set of common UI elements like tabs, etc. as React components. I encourage you to check out the <a href="https://mui.com/material-ui/getting-started/templates/">examples</a> to get a sense of what components are available and how they might be used. MaterialUI additionally incorporates its own CSS-in-JS styling engine (and more). The grid that “just works” was one of the major initial advantages of CSS frameworks. However, new CSS features, like <a href="https://css-tricks.com/snippets/css/complete-guide-grid/">CSS grid</a>, make that possible with just built-in functionality so now the other features are the driving motivation.</p>
+
+<p>As with many choices we make in this class there is no right or wrong answer to the question “Should I use Material UI (or one of the other similar component frameworks like Chakra)?”. The advantages are the lower barrier to entry to creating a site with modern styling that “just works” across browsers and devices. The disadvantages are that you are limiting yourself to someone else’s opinionated choices and your site looks like the rest of the Web. You might find the choice of Material UI clunky (or unattractive). Again there is no right or wrong choice here, just tradeoffs and personal preferences. Our goal here is to gain experience working with this kind of tool.</p>
+
+<h2 id="getting-ready-for-refactoring">Getting Ready for Refactoring</h2>
+
+<p>We are about to undertake a substantial refactoring. Before doing so we want to make sure that we have a robust and <em>passing</em> test suite. Run the tests and make sure that all are passing.</p>
+
+<h2 id="install-and-setup-materialui">Install and setup MaterialUI</h2>
+
+<p>Following the official Material UI <a href="https://github.com/mui/material-ui/tree/master/examples/material-next">example repository</a> and the <a href="https://mui.com/material-ui/getting-started/installation/">getting started</a> instructions, install the necessary packages</p>
+
+<pre><code class="language-plaintext">💻 npm install --save @mui/material @emotion/react @emotion/styled @emotion/cache @emotion/server
+</code></pre>
+
+<p>Unfortunately there are several supporting files we need to get Material UI fully integrated into our NextJS application.</p>
+
+<p>Create a directory <tt>src/material</tt> then download the implementations for <a href="https://github.com/mui/material-ui/blob/master/examples/material-next/src/theme.js"><tt>theme.js</tt></a> and <a href="https://github.com/mui/material-ui/blob/master/examples/material-next/src/createEmotionCache.js"><tt>createEmotionCache.js</tt></a> to that directory.</p>
+
+<p>Modify <tt>src/pages/_app.js</tt> to introduce the Material UI infrastructure. Specifically add the following imports
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ --></p>
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import { CacheProvider } from "@emotion/react";
+import theme from "../material/theme";
+import createEmotionCache from "../material/createEmotionCache";
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+</code></pre>
+<p>modify the declaration (and props) for <code>MainApp</code> to be</p>
+<pre><code class="language-javascript">const clientSideEmotionCache = createEmotionCache();
+
+function MainApp({ Component, pageProps, emotionCache = clientSideEmotionCache }) {
+</code></pre>
+<p>update the returned JSX to be
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ --></p>
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">return (
+  &lt;CacheProvider value={emotionCache}&gt;
+    &lt;Head&gt;
+      &lt;title&gt;Simplepedia&lt;/title&gt;
+      &lt;link rel="icon" href="/favicon.ico" /&gt;
+      &lt;meta name="viewport" content="initial-scale=1, width=device-width" /&gt;
+    &lt;/Head&gt;
+    &lt;ThemeProvider theme={theme}&gt;
+      {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+      &lt;CssBaseline /&gt;
+      &lt;main&gt;
+        &lt;Container&gt;
+          &lt;Typography variant="h2" align="center"&gt;Simplepedia&lt;/Typography&gt;
+          &lt;Component {...props} /&gt;
+        &lt;/Container&gt;
+      &lt;/main&gt;
+
+      &lt;footer&gt;CS 312 Practical: CSS Frameworks&lt;/footer&gt;
+    &lt;/ThemeProvider&gt;
+  &lt;/CacheProvider&gt;
+);
+</code></pre>
+<p>and finally delete the import for <code>../styles/globals.css</code> and any other CSS files, as we will no longer need it.</p>
+
+<p>This JSX makes the styling engine cache and theme available in all of our component via <a href="https://react.dev/learn/passing-data-deeply-with-context">contexts</a>. Contexts are a tool for making values available throughout our component hierarchy without needing to explicitly pass that value as a prop everywhere (termed “prop drilling”). It is a useful tool for managing what are effectively “global” variables that might be used in many places. If you have a value that might be needed throughput your component hierarchy, think about creating a context. The other changes reset the CSS to consistent baseline, center the content (via the <code>Container</code> element) and align the title.</p>
+
+<p>Finally download <a href="https://github.com/mui/material-ui/blob/master/examples/material-next/pages/_document.js"><tt>_document.js</tt></a> to <tt>src/pages/_document.js</tt>, <em>Note, that you will need to fix the import paths to fit your directory structure.</em></p>
+
+<p>Start the development server (<code>💻 npm run dev</code>). You should notice that the styling has changed and in particular seems to be a little broken. That is OK. We are going to rebuild it with Material UI!</p>
+
+<p>As a starting point, lets fix the footer. We will do so with the <a href="https://mui.com/system/styled/"><code>styled</code> utility</a>, a CSS-in-JS tool. In this approach we can create styled components by starting within existing HTML or React component and adding specific styling (including styling we calculate dynamically during rendering!). The <code>styled</code> utility then packages the CSS in a “component friendly” way.</p>
+
+<p>Import <code>styled</code> in <tt>src/pages/_app.js</tt> via</p>
+<pre><code class="language-javascript">import { styled } from "@mui/material/styles";
+</code></pre>
+<p>then create a styled footer,
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ --></p>
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">// We need an alternate name for theme since it is used above
+const Footer = styled("footer")(({ theme: styledTheme }) =&gt; ({
+  borderTop: "1px solid #eaeaea",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: styledTheme.spacing(5),
+  paddingTop: styledTheme.spacing(2),
+}));
+</code></pre>
+<p>This creates a new component along with the associated CSS. Notice that we derived the various padding from the theme so the scale of padding would change if we adjusted the overall theme. We can then use this new component in place of the current footer</p>
+<pre><code class="language-jsx">&lt;Footer&gt;CS 312 Practical: CSS Frameworks&lt;/Footer&gt;
+</code></pre>
+
+<h2 id="move-titles-to-a-sidebar">Move Titles to a sidebar</h2>
+
+<p>Our current Simplepedia layout wastes the space next to the titles list in the <code>IndexBar</code> component. We want to fix that by rendering the titles as a narrower column to the left and the selected article to the right. We will use the Material UI grid elements to do so.</p>
+
+<p>In <tt>src/components/IndexBar.js</tt> import the Material UI [<code>Grid</code>] and [<code>Box</code>] components</p>
+
+<pre><code class="language-javascript">import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+</code></pre>
+
+<p>The Grid has an outer level, the “container”, and inner level, an “item”. The items will make up the rows and columns of our grid depending the relative proportions we assign to them and the size of the screen. Rewrite the <code>IndexBar</code> JSX to look like the following, where <code>&lt;SectionView ... /&gt;</code> and <code>&lt;TitlesView ... /&gt;</code>is your original code creating rendering those components (with all of their props and any conditional rendering).</p>
+
+<pre><code class="language-jsx">&lt;Grid container spacing={2}&gt;
+  &lt;Grid item&gt;
+    &lt;SectionsView ... /&gt;
+  &lt;/Grid&gt;
+  &lt;Grid item&gt;&lt;TitlesView ... /&gt;&lt;/Grid&gt;
+  &lt;Grid item&gt;TODO: Article&lt;/Grid&gt;
+&lt;/Grid&gt;
+</code></pre>
+
+<p>At first the columns probably don’t look quite right. Let’s choose relevant widths. There are 12 columns in the grid. We can specify the relative proportions for each item by specifying a subset of the columns, e.g., 6 for half the width. The widths are determined responsively, that is you can specify different widths for different <a href="https://mui.com/material-ui/customization/breakpoints/">screen sizes</a>. For example props of <code>xs={12} sm={6} md={3}</code> would specify that the column should be the full width for extra small viewports (&lt; 600px), half of the width for small viewports ([600px, 900px)) and a quarter of the width for all larger viewports. In our case we want the section labels to span the whole width regardless of size, so add <code>xs={12}</code> as a prop to its containing <code>&lt;Grid item&gt;</code>, <code>xs={12} sm={6} md={3}</code> as props to the <code>&lt;Grid item&gt;</code> for the titles and <code>xs={12} sm={6} md={9}</code> as props to the <code>&lt;Grid item&gt;</code> for the article so that the titles should appear in a “sidebar” to the left (but in the same “row”).</p>
+
+<p>To center the section labels again we will wrap <code>SectionsView</code> in a Material UI <code>Box</code> component we can use to control the alignment, e.g,,</p>
+<pre><code class="language-jsx">&lt;Box display="flex" justifyContent="center" alignItems="center"&gt;
+  &lt;SectionsView ... /&gt;
+&lt;/Box&gt;
+</code></pre>
+
+<p>You may notice that we have included a placeholder for the <code>Article</code> component. At present the article is rendered in <code>Simplepedia</code> (<tt>src/pages/[[...id]].js</tt>). We need to get it into <code>IndexBar</code> so the titles can flow past on the left. A natural way to do so is via <code>children</code>. All React components have a <code>children</code> prop with any nested components, i.e. components within its starting and ending tags (this allows us to make our own container components). Modify the signature of <code>IndexBar</code> to include the <code>children</code> prop</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">export default function IndexBar({
+  collection,
+  setCurrentArticle,
+  currentArticle,
+  children,
+})
+</code></pre>
+
+<p>and then modify the <code>IndexBar</code> component to render the <code>children</code> in the right column, e.g. <code>{children}</code>, in place of the current article “TODO”. Make sure to update the propTypes to include a specification for <code>children</code>, e.g. <code>children: PropTypes.node</code>. Now in <tt>src/pages/[[...id]].js</tt> make the <code>Article</code> and buttons a child of <code>IndexBar</code>, e.g., within <code>&lt;IndexBar&gt;</code> and <code>&lt;/IndexBar&gt;</code>.</p>
+
+<h2 id="using-components-to-style-sections-and-titles">Using components to style sections and titles</h2>
+
+<p>Let’s make the section labels look more like buttons and take advantage of the <a href="https://mui.com/material-ui/react-toggle-button/"><code>ToggleButton</code> component</a>, which can highlight the actively selected component.</p>
+
+<p>Add <code>ToggleButton</code> and <code>ToggleButtonGroup</code> to the imports in <tt>src/components/SectionsView.js</tt>. Instead of creating a <code>&lt;ul&gt;</code> for our sections, we will specify a <code>ToggleButtonGroup</code>, e.g.,</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">&lt;ToggleButtonGroup
+  color="primary"
+  exclusive
+  onChange={handleChange}
+  size="small"
+&gt;
+  {sectionItems}
+&lt;/ToggleButtonGroup&gt;
+</code></pre>
+
+<p>Notice that the interaction is now handled by the <code>onChange</code> handler on <code>ToggleButtonGroup</code>. That handler will receive two arguments, the event and the value of the <code>ToggleButton</code> that was clicked. The latter is how we will extract the relevant section to pass to the <code>selectSection</code> prop. Create a <code>handleChange</code> in your component to use here, e.g.,</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const handleChange = (event, newSection) =&gt; {
+  selectSection(newSection);
+}
+</code></pre>
+
+<p>Instead of creating <code>&lt;li&gt;</code>s for the section items, we will use <code>ToggleButton</code>, e.g.,
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ --></p>
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">&lt;ToggleButton
+  key={section}
+  data-testid="section"
+  value={section}
+&gt;
+  {section}
+&lt;/ToggleButton&gt;
+</code></pre>
+<p>Note that now we specify a <code>value</code> prop that will be passed to the handler we just created and no longer need an <code>onClick</code> function on each section element because that is handled by the parent <code>ToggleButtonGroup</code>.</p>
+
+<p>We want to highlight the active section. To do so we need to know the current section. In <code>SectionsView</code> add a <code>currentSection</code> prop and use that prop to set the <code>value</code> in <code>ToggleButtonGroup</code>, e.g., <code>value={currentSection}</code>. That will highlight the currently selected section. You will need to pass that prop into <code>SectionsView</code> from <code>IndexBar</code>. Don’t forget to update the PropTypes for <code>SectionsView</code> to include the prop you just added!</p>
+
+<p>Finally let’s remove the bullets from the list of titles to make that list “cleaner”. We will do so with the <a href="https://mui.com/system/styled/"><code>styled</code> utility</a>. In <tt>src/components/TitlesView.js</tt> add an import for <code>styled</code>, i.e., <code>import { styled } from "@mui/material/styles";</code> and create a styled list outside of your component function</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const NoBulletList = styled("ul")(() =&gt; ({
+  listStyle: "none",
+  paddingLeft: 0,
+}));
+</code></pre>
+<p>that you can now use in place of the original <code>&lt;ul&gt;</code>, e.g.,</p>
+<pre><code class="language-jsx">&lt;NoBulletList&gt;{titleItems}&lt;/NoBulletList&gt;
+</code></pre>
+
+<h2 id="creating-a-toolbar">Creating a toolbar</h2>
+
+<p>In our new layout the button positioning is awkward. Let’s create a toolbar below the Simplepedia header. In <tt>src/pages/articles/[[...id]].js</tt> let’s pull the <code>ButtonBar</code> to above <code>IndexBar</code> so it will appear above the sections. Inside <code>ButtonBar</code> replace the existing <code>&lt;div&gt;</code> with a <a href="https://mui.com/material-ui/react-button-group/"><code>ButtonGroup</code></a> and the <code>&lt;button&gt;</code> with <code>&lt;Button&gt;</code>s, i.e.,</p>
+<pre><code class="language-jsx">&lt;ButtonGroup variant="contained"&gt;
+  &lt;Button onClick={() =&gt; handleClick("add")}&gt;Add&lt;/Button&gt;
+  {/* Add in your optional edit button */}
+&lt;/ButtonGroup&gt;
+</code></pre>
+<p>The spacing is a little tight. To create some more vertical space, we will use the <a href="https://mui.com/system/getting-started/the-sx-prop/"><code>sx</code></a> prop each Material UI component exposes to customize the spacing. Add <code>sx={{ my: 2 }}</code> to the <code>ButtonGroup</code> to make the top and bottom margin (spacing outside the element) twice the theme spacing. The <code>sx</code> prop enables us to customize Material UI components in a variety of theme-aware ways without needing to create our own CSS.</p>
+
+<h2 id="creating-a-form-with-validations">Creating a form with validations</h2>
+
+<p>Our <code>Editor</code> is very plain. We can leverage the <a href="https://mui.com/material-ui/react-text-field/"><code>TextField</code> component</a> to improve the styling and feedback. Replace your existing <code>input</code> for the title with the following, copying in your <code>value</code> and <code>onChange</code> props. This includes a built-in label, and special error formatting. When the title is not defined, the <code>error</code> prop specifies the field will be outlined in red and the <code>helperText</code> is set to an informative error message. We purposely provide a single space as helper text at other times to <a href="https://mui.com/material-ui/react-text-field/#helper-text">maintain consistent spacing</a>. This feedback functionality comes “built-in” and is one of the benefits of these kind of frameworks (although your opinion may vary...).</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">&lt;TextField
+  required
+  fullWidth
+  margin="normal"
+  id="title"
+  label="Title"
+  error={!title}
+  helperText={!title ? "Title can't be blank" : " "}
+/&gt;
+</code></pre>
+<p>We similarly replace the contents field, but specify <code>multiline</code> and a size in <code>rows</code>. Again make sure to copy in your <code>value</code> and <code>onChange</code> implementation.</p>
+
+<pre><code class="language-jsx">&lt;TextField
+  fullWidth
+  multiline
+  rows={10}
+  margin="normal"
+  id="contents"
+  label="Contents"
+/&gt;
+</code></pre>
+
+<p>Finally, convert the buttons to be Material UI <code>Button</code>s. To create the horizontal layout, wrap the buttons in a <code>Stack</code>, i.e.,</p>
+
+<pre><code class="language-jsx">&lt;Stack spacing={2} direction="row"&gt;
+...
+&lt;/Stack&gt;
+</code></pre>
+
+<h2 id="finishing-up">Finishing Up</h2>
+
+<p>When you have finished, the article display should look like:</p>
+
+<p><img src="/~mlinderman/courses/cs312/s23/assets/practical_simplepedia_materialui.png" alt="Simplepedia view screenshot" class="img-fluid" /></p>
+
+<p>and the editor:</p>
+
+<p><img src="/~mlinderman/courses/cs312/s23/assets/practical_simplepedia_materialui_form.png" alt="Simplepedia editor screenshot" class="img-fluid" /></p>
+
+<p>Rerun the tests. I suspect while many still pass, there are a few errors. However, these errors are likely a result of overly prescriptive tests, e.g., assuming sections is a list, or does not contain any additional HTML.</p>
+
+<p>In all section-related tests, replace <code>screen.findAllByRole("listitem")</code> with <code>screen.getAllByTestId("section")</code>. In the test “Sections are displayed in alphabetical order”, replace the the strict equality test, with a test for the relevant text:
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ --></p>
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const items = await screen.getAllByTestId("section");
+sortedSections.forEach((section, i) =&gt; expect(items[i]).toHaveTextContent(new RegExp(`^${section}`)));
+</code></pre>
+
+<p>At this point all the tests should pass! If not, fix any bugs that you introduced. Having a robust test suite gives us confidence that our changes did not break the application!</p>
+
+<ol>
+  <li>Add and commit your changes.</li>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/AIOvNFKp">accepting the assignment from GitHub Classroom</a>. This will create an empty repository for you (unlike previous practicals that had an initial skeleton).</li>
+  <li>Replace the origin remote to point to the address of the newly created repository
+    <pre><code class="language-plaintext"> 💻 git remote set-url origin &lt;GitHub address you would use to clone&gt;
+</code></pre>
+  </li>
+  <li>Push your changes to the new GitHub repository.</li>
+  <li>Submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</li>
+</ol>
+
+<h2 id="grading">Grading</h2>
+
+<p>Required functionality:</p>
+<ul>
+  <li>Reimplement your assignment 3 solution with Material UI components</li>
+  <li>Pass all tests</li>
+  <li>Pass all ESLint checks</li>
+</ul>
+
+<p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-05-01 10:40:02 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

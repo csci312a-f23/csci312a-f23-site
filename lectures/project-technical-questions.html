@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/project-technical-questions.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="interesting-project-questions">Interesting Project Questions</h1>
+
+<p>As we get deeper into the projects, and thus deeper into our tools (e.g.
+React), multiple groups have encountered tricky technical questions. I have
+gathered some of those questions here along with general advice as we use our
+tools in more sophisticated ways.</p>
+
+<h3 id="rdbms">RDBMS</h3>
+
+<h4 id="taking-advantage-of-the-model-associations-in-objectionjs-or-making-the-tools-work-for-you">Taking advantage of the model associations in Objection,js, or making the tools work for you</h4>
+
+<p>Often we want all of the data contained in a model <em>and</em> its associated models.
+Think back to our Film Explorer example. If we are populating a User’s profile
+page we want to show them all the movies they have rated. That is we would
+ultimately want to construct an object like:</p>
+
+<pre><code class="language-javascript">{
+  id: 11,
+  username: "filmfan",
+  ...
+  ratings: [
+    { userId: 11, filmId: 12, rating: 4},
+    ...
+  ]
+}
+</code></pre>
+
+<p>We could construct that result by querying <code>/api/users/11</code> on the client,
+followed perhaps by a query to <code>/api/users/11/ratings</code> (or worse, by sending a
+request to <code>/api/ratings</code> and filtering on the client), but a better approach
+is to use Objection.js knowledge the relations to “eagerly” query for a model
+<em>and</em> all of it associated data. Check out the <a href="lecture11s20-rdbms.pdf">RDBMS
+slides</a> and the <a href="http://vincit.github.io/objection.js/guide/query-examples.html#eager-loading">Objection.js
+guide</a>.
+We should be able to fetch all of the data above with a single sequence of
+Objection.js methods, e.g.</p>
+
+<pre><code class="language-javascript">User.query().findById().withGraphFetched('Ratings')
+</code></pre>
+
+<p>The above does require that we have specified the associations in our
+Objections.js models. But once we have that in place, Objection.js can do a lot
+of the work of constructing objects for us across multiple tables (that is what
+Object Relational Mapping is about, mapping database relations to objects).
+More generally, we want the libraries do as much of the work for us as
+possible.</p>
+
+<p>Note that are not limited to just one database operation in each route or to
+directly sending the data from the query to the client. The server routes are
+just JavaScript code and so we can perform any modifications we need in the
+route to generate the desired response.</p>
+
+<h4 id="migrations-are-stateful">Migrations are stateful</h4>
+
+<p>Note that migration filenames contain a date and time:</p>
+
+<pre><code>migrations/20190424165216_users_and_articles.js
+</code></pre>
+
+<p>Knex (and other similar tools) apply migrations in date-time order and track
+the last migration applied. Thus applying the same migrations multiple times
+won’t have any effect and modifying a migration that has already been applied
+won’t have any effect.</p>
+
+<p>Why does it work this way? The intended use for migrations is evolving a
+database that is in use, i.e. has customer data that you don’t want to lose.
+Thus we don’t want to “double apply” the changes in a migration. And there
+isn’t the expectation that we would go back and modify already implied
+migrations because that would invalidate the data.</p>
+
+<p>Modifying a migration is common during development. If you do so, either delete
+the database and rebuild from scratch (easy with SQLite, less so with other
+databases) or more robustly, rollback all the migrations (invoking the “down”
+operations) then reapply.</p>
+
+<h4 id="objectionjs-model-validations-run-before-data-is-inserted-into-the-database">Objection.js model validations run before data is inserted into the database</h4>
+
+<p>Since Objection.js model validations run before data is inserted into the
+database, you don’t want to make any fields created by the database, such as an
+auto-incrementing primary key, required. Any attempt to create an object,
+such as in a “POST” request, without that id will fail validation. Note that
+the <a href="https://github.com/csci312-common/example-film-explorer">FilmExplorer</a>
+example makes the <code>id</code> required because all of the data came with <code>id</code>
+preassigned and there is no route for creating new film entries.</p>
+
+<h3 id="react">React</h3>
+
+<h4 id="useeffect-dependencies-and-infinite-loops"><code>useEffect</code> dependencies (and infinite loops)</h4>
+
+<p>We use the <code>useEffect</code> when we want to perform an operation such as setting
+state (or fetching data) in our render function. Recall that <code>useEffect</code> can
+take two arguments, the effect function and an array of dependencies. Many of
+times we have employed <code>useEffect</code> we set the dependencies to be the empty
+array; this specifies that the effect should be run only once when the
+component is first mounted on the webpage. That is appropriate for fetching the
+initial data or other similar tasks. But we can also specify dependencies that
+ensure the hook executes whenever one of its inputs change - and only when an
+input changes.</p>
+
+<p>We need to make sure that all the dependencies are specified. Doing so
+correctly and efficiently can be subtle. Some values, e.g. the setters returned
+by the <code>useState</code> <a href="https://reactjs.org/docs/hooks-reference.html#usestate">hook don’t change and so can be
+omitted</a> from the
+<code>useEffect</code> dependency list. Other values may change to much cause our hook to
+execute to frequently, or even cause an infinite loop. For example, callbacks.
+Consider the following code:</p>
+
+<pre><code>function Example(props) {
+  useEffect(() =&gt; {
+    props.callback(...);
+  }, [props.callback]);
+  return ...;
+}
+
+function Parent() {
+  const [state, setState] = useState(0);
+  return (
+    &lt;Example callback={(value) =&gt; setState(value)} /&gt;
+  );
+}
+</code></pre>
+
+<p>The hook correctly specifies the callback as dependency. However, the hook will
+end up executing more frequently than we want. That callback function is
+re-created in every render of the parent and thus appears to have changed on
+every render, trigger the effect on every render, triggering the callback on
+every render, which perhaps triggers a re-render ... We instead want to provide a
+more stable callback. We could do so by just using the setter as the callback
+(e.g. <code>callback={setState}</code>) since it is stable or use the <code>useCallback</code> hook
+to create a stable callback (check out this
+<a href="https://overreacted.io/a-complete-guide-to-useeffect/">guide</a> at the section
+that starts “The same solution works for function props passed from parents”.</p>
+
+<h3 id="git">Git</h3>
+
+<h4 id="merge-conflicts-happen">Merge conflicts happen</h4>
+
+<p>As you write more code I suspect you are running into more merge conflicts.
+The best way to minimize merge conflicts is to make branches short-lived and
+integrate frequently. But even with very frequent integrations you will still
+run into merge conflicts. Check out the <a href="lecture09s20-agile.pdf">slides</a> and
+this
+<a href="https://www.atlassian.com/git/tutorials/using-branches/merge-conflicts">guide</a>
+for an introduction for working through merge conflicts. Keep in mind that what
+you are doing is indicating to Git the correct output for integrating two sets
+of changes. So you want to review every conflict and edit the file into the
+desired output state. Sometimes that means picking one of the two versions, but
+more often it means manually combining the code from the two versions.</p>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2020-04-29 21:22:20 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

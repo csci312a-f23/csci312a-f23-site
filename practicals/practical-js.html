@@ -1,0 +1,348 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 Practical: Javascript</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-js.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="practical-javascript">Practical: Javascript</h1>
+
+<p>
+<strong>Initial Due Date: 2023-02-21 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+
+<ul>
+  <li>Get started with basic JavaScript and Node.js</li>
+  <li>Get started with Git, GitHub classroom, and Gradescope</li>
+</ul>
+
+<p>In this practical, you are going to create a simple JavaScript module to get a feel for some basic JavaScript principles and start getting familiar with our tools.</p>
+
+<h2 id="prerequisite">Prerequisite</h2>
+
+<p>Make sure you complete the steps on the <a href="/~mlinderman/courses/cs312/s23/resources/getting_started.html">getting started</a> page. If you are using <code>nvm</code> and you have installed multiple versions of node, before using <code>node</code>, <code>npm</code> and associated tools, you need to make sure the correct version is activated if you have several version installed (<code>💻 node -v</code> should return ‘’, though the minor and patch numbers after the first dot may vary slightly).</p>
+
+<h2 id="creating-the-module">Creating the module</h2>
+
+<p>Create a new package by first creating the package directory (call it <code>practical-01-username</code>, using your GitHub username) and then running <code>💻 npm init</code> <em>inside</em> the new directory, e.g.,</p>
+
+<pre><code class="language-plaintext">💻 mkdir practical-01-mlinderm
+💻 cd practical-01-mlinderm
+💻 npm init
+</code></pre>
+
+<p>The <code>npm init</code> command will create the <code>package.json</code> file by asking you a series of questions. For most of the questions, you can accept the default. When it asks for the “test command”, type <code>jest</code>. If your directory is a Git repository (not the case here) <code>npm</code> will automatically pull information from your Git repository to create the <code>package.json</code> file.</p>
+
+<p>The <code>package.json</code> a file can be edited like any other text file. You can open it directly in VSCode, but I find it more useful to open the entire directory as a project in VSCode, and then navigate to the file from there. There are two ways to do this. You can use the ‘Open’ option in the File menu and open the directory, or, if you have the command line tool installed, you can type <code>💻 code .</code> in the terminal to open the current directory (in the shell <code>.</code> is a shortcut for current directory and <code>..</code> is a shortcut for the parent directory).</p>
+
+<p>Add two properties to the <code>package.json</code> file:</p>
+
+<ul>
+  <li><code>"private": true</code> This prevents you from <a href="https://docs.npmjs.com/files/package.json#private">accidentally publishing</a> this package to npm</li>
+  <li><code>"type": "module"</code> This will make your code act as an ES module. The details of this aren’t important, but it will mean that you can use the same style of code as we will later in the course.</li>
+</ul>
+
+<p>After your manual editing your initial <code>package.json</code> file should look something like the following:</p>
+
+<p><em>Make sure to save package.json before moving on. Installing will try to update package.json for you, and if you haven’t saved, you will create edit conflicts.</em></p>
+
+<pre><code class="language-json">{
+  "name": "practical-01-mlinderm",
+  "version": "1.0.0",
+  "private": true,
+  "type":"module",
+  "description": "CS312 Javascript practical exercise",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Michael Linderman &lt;mlinderman@middlebury.edu&gt;",
+  "license": "Apache-2.0"
+}
+</code></pre>
+
+<p>We should get comfortable looking at <a href="https://www.w3resource.com/JSON/structures.php">JSON files</a>. JSON files are plain text file used for structured data (e.g., configurations, messages). It is effectively a JavaScript object written out, the name stands for “JavaScript Object Notation”. However, there are some subtle differences to be mindful of:</p>
+
+<ul>
+  <li>The only accepted <strong>values</strong> (right side of the :) are numbers, Booleans, strings, Arrays, or objects</li>
+  <li>The <strong>keys</strong> (left side of the :) in a JSON file are always quoted strings (as opposed to JavaScript where you should not use quotes)</li>
+  <li>There are no trailing commas allowed (in JavaScript we can have a trailing comma after the last element of an array or object)</li>
+</ul>
+
+<p>If you even have problems with your <code>package.json</code> file being parsed, check for the second and third of these.</p>
+
+<h2 id="installing-dependencies">Installing dependencies</h2>
+
+<p>For most JavaScript projects, you will install a collection of dependant packages. The tool we used above (<code>npm</code>) is the Node Package Manager (it isn’t the only option, but it is the one we will be using). You won’t need any packages for this assignment, but I will to evaluate it. So, I am going to have you install it so you get a feel for the process. You are going to install a tool called <code>jest</code>, which helps run automated tests (we will learn about how to use it shortly).</p>
+
+<p>On the command line, execute <code>💻 npm install -D jest</code>.</p>
+
+<p>This will take a few moments, and then you should see a message that looks like (although the details will differ and your version may be newer).</p>
+
+<pre><code class="language-plaintext">added 278 packages, and audited 279 packages in 14s
+
+30 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+</code></pre>
+
+<p>Now look inside of <code>package.json</code> again. You should see that it now has a new section:</p>
+
+<pre><code class="language-json">"devDependencies": {
+  "jest": "^29.4.3"
+}
+</code></pre>
+
+<p>You should also see a new file <code>package-lock.json</code> and a new sub directory named <code>node_modules</code> into which <code>jest</code> and all of its dependencies have been installed.</p>
+
+<p>We used the <code>-D</code> flag to install the package as a “development dependency”. These are packages that we need when we are building our modules, but should not be included in the deployment.</p>
+
+<h2 id="writing-some-functions">Writing some functions</h2>
+
+<p>Let’s write our first Javascript functions. Create a new file named <code>index.js</code> in the directory (or just open it if it was automatically created for you).</p>
+
+<h3 id="summation">Summation</h3>
+
+<p>Write a function that sums all of the values in an array (you can assume the values are numerical). For our version, let’s write the code using a conventional <code>for</code> loop. Create a new function called <code>summationFor</code>.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">export const summationFor = (list) =&gt; {
+  // ...
+};
+</code></pre>
+
+<p>For loops in JavaScript look a lot like they do in Java/C/etc... To iterate over the indices of a list, we would use:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">for (let i = 0; i &lt; list.length; i++) {
+  // ...
+}
+</code></pre>
+
+<p>Using the snippet above, complete the implementation of your function.</p>
+
+<p><em>The <code>export</code> keyword makes your function visible outside of the file, which we will need for testing.</em></p>
+
+<h4 id="testing-the-function">Testing the function</h4>
+
+<p>For our first tests we will run the Node.js interpreter (and it use it like the Python or other interpreters). Invoke <code>💻 node</code> on the command line.</p>
+
+<p><em>Tip: VSCode has an integrated command line that you can open at the bottom of the window. You will find it listed as ‘Terminal’ in the ‘View’ menu.</em></p>
+
+<p>To load your code into <code>node</code>, type <code>let p1 = await import("./index.js")</code> (we will learn more about <code>await</code> later and why we need to use this particular import style in this context).</p>
+
+<p>This creates a new object called <code>p1</code> (you can call this anything) and attaches all of your exports to it as properties. You can now run the functions by invoking them on <code>p1</code> (e.g., <code>p1.summationFor([1,2,3])</code>). Test it out with a couple of Arrays and make sure it works.</p>
+
+<p>If you make a change to <code>index.js</code>, you will need to re-import it into <code>node</code>. One simple approach is just to exit (see below) and restart node. Alternately, to re-import the file we will unfortunately need to work around some internal import caching performed by NodeJS. Since this cache is based on the filename, we can append a changing query parameter to the import file name (which is really a URL) so that it is treated as a different file (with respect the cache), but loads the same file from your computer. For example:</p>
+
+<pre><code class="language-javascript">p1 = await import(`./index.js?v=${Date.now()}`)
+</code></pre>
+
+<p>To leave <code>node</code>, you can invoke <code>.exit</code> or use the keyboard shortcut <code>^d</code> (Ctrl-d).</p>
+
+<h3 id="summation-take-2">Summation, take 2</h3>
+
+<p>As you know from class we wouldn’t really use a <code>for</code> loop for this. Write a second function called <code>summationForEach</code>. You will replace the <code>for</code> loop with the <code>forEach</code> function. The <code>forEach</code> function is a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach">method of arrays</a>. Recall that it is a <em>higher-order</em> function that takes in a function as an argument. The <code>forEach</code> function calls the function you pass in once per element of the array, passing the element in as the first argument ot the provided function.</p>
+
+<p>Test your function in <code>node</code> to make sure it works.</p>
+
+<h3 id="summation-take-3">Summation, take 3</h3>
+
+<p>Even this approach is more iterative than we really would use for a problem like this. I would like you to write this function one more time, but this time instead of <code>forEach</code>, you are going to use <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce"><code>reduce</code></a>. <code>reduce</code> is another high-order method of arrays. Its job is to run a function on every element of an array, accumulating a result – in essence, the array is <em>reduced</em> down to a single value. The function you pass into <code>reduce</code> should take two arguments: 1) the accumulated value and 2) the current element in the array.</p>
+
+<p>Write a new function called <code>summationReduce</code>, which uses the <code>reduce</code> method to sum the list. Note that <code>reduce</code> is going to do all of the work, so, <code>summationReduce</code> could actually use the implicit <code>return</code> version of the fat arrow syntax (as could the reducer function that you pass to <code>reduce</code>). Test your new function.</p>
+
+<p>When you are happy that the new function is working, try running it on an empty array. You will probably get something that looks like this:</p>
+
+<pre><code class="language-javascript">&gt; p1.summationReduce([])
+Uncaught TypeError: Reduce of empty array with no initial value
+    at Array.reduce (&lt;anonymous&gt;)
+    at p1.summationReduce (REPL1:1:40)
+</code></pre>
+
+<p>The <code>reduce</code> method works by starting with the first element in the array as its initial value. If there isn’t one... an error is thrown. We can fix this by adding a second argument to the <code>reduce</code> function. This becomes the starting value for the reduction. Add in a 0 as the initial value (add it to <code>reduce</code>, <strong>not</strong> to the reducer function, which already has two arguments).</p>
+
+<p>Try it again, verifying that your function works correctly on empty arrays.</p>
+
+<h2 id="mapping">Mapping</h2>
+
+<p>While we are thinking about higher-order functions, let’s try a <code>map</code> example.</p>
+
+<p>Write a <code>decorate</code> function that returns an array of “decorated” strings.</p>
+
+<pre><code class="language-plaintext">&gt; p1.decorate(['Sam', 'Penny', 'Jordan'])
+[ '-&lt;&lt; Sam &gt;&gt;-', '-&lt;&lt; Penny &gt;&gt;-', '-&lt;&lt; Jordan &gt;&gt;-' ]
+</code></pre>
+
+<p>Any time that you have an array of values and you need a second array of values reflecting some transformation of each value, you should think <code>map</code>.  The helper function you pass to <code>map</code> takes in one value and returns the transformed value.</p>
+
+<p>A common error is to think about the array as a whole. With <code>map</code> you only need to think about what should happen to a single value and write a function to do that. So, start by writing a function that takes in a string and returns a “decorated” string. Then, just pass this new function to <code>map</code> and it will do the rest, applying it to each value in the array and loading the results into a new array for you.</p>
+
+<p>A helpful tool here is that JavaScript <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals">template literal</a>. This allows you to insert JavaScript expressions into a string. To make a template literal, use back ticks (`) instead of single or double quotes. You can then include expressions in the string by surrounding them with <code>${}</code>.</p>
+
+<pre><code class="language-javascript">const x = 5;
+const s = `The value of x is ${x}`;
+
+console.log(s); // this will print out 'The value of x is 5`
+</code></pre>
+
+<p>Write and test the <code>decorate</code> function. Don’t change the decoration as it will break the automated tests.</p>
+
+<h2 id="getting-started-with-git">Getting Started with Git</h2>
+
+<p>Now that you have implemented your module, we want to turn the module into a Git repository.</p>
+
+<p>Git is a distributed version control system (VCS). Git, and its “killer app” GitHub, will play a key role in our workflow. At its simplest, a VCS enables us to “checkpoint” our work (a <em>commit</em> in Git terminology), creating a distinct version of our codebase that that we can return to. The opportunity to track and undo changes makes it easier to find new bugs (by reviewing differences to a prior working version), maintain a clean code base (we don’t need to keep commented out code around in case we need it again), confidently make large changes knowing we can always recover a working version, and much more. For these reasons and more solo developers will use a VCS (and so should you!), but it is even more useful in a team environment.</p>
+
+<p>How will you know if you and another developer modify the same file (in potentially incompatible ways)? How do you ensure you don’t end up with a teammate’s half-working modifications? We will use the VCS to prevent these problems.</p>
+
+<p>The “distributed” in “distributed VCS” means that no central repository is required. Each Git repository contains the entire history of the project and thus each developer can work independently, making commits (checkpoints) without interfering with anyone else. Only when you <em>push</em> or <em>pull</em> those changes to another copy of the repository do your changes become visible to anyone else. Further we will use branches to segregate our changes. A branch is just a parallel version of the codebase. This allows you to experiment, while leaving the <em>main</em> branch untouched until your new feature is ready to be <em>merged</em> back into the main.</p>
+
+<p>Git does not require a central repository. However, teams still tend to use a central repository to facilitate their work (we will use GitHub in this role). There isn’t anything technically special about the shared repository other than that the team decides to share their changes via that central repository rather than directly with each other.</p>
+
+<p>We will use Git and GitHub (in concert with Gradescope) to submit your work. Keep in mind the “distributed” in distributed VCS. Until you have pushed your changes to GitHub (and submitted your repository to Gradescope) your work is <em>not</em> turned in.</p>
+
+<p>We will create a new Git repository with the command line. Make sure that the current working directory of your shell is the project folder, and then type <code>💻 git init</code>. This will create a new Git repository in your current directory (stored in a hidden directory called <code>.git</code>.)</p>
+
+<p>Creating a commit (with new files or changes to existing files) is a two step process. First you <strong>stage</strong> the changes you want to preserve (<code>💻 git add</code>) and then you <strong>commit</strong> the changes, which saves them in the repository (<code>💻 git commit</code>).</p>
+
+<p>Before we do this with your files, however, I should note that sometimes there are files that we <strong>do not</strong> want in the repository. These tend to be files that we can recreate later, or, in our case, other people’s code that we can always download again (i.e., the contents of <code>node_modules</code>). We <strong>really</strong> don’t want <code>node_modules</code> to sneak into the repository. The directory can get quite large, and it fouls up Gradescope to no end if you include it.</p>
+
+<p>As you will see below, if we are careful, we can avoid including <code>node_modules</code>, but we want a solution that we can set once and forget. We can configure Git with a file called <code>.gitignore</code>. Git consults this file first before looking for changes in the project.</p>
+
+<p>Create a new file called <code>.gitignore</code> and add the following to it:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-plaintext"># See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# Dependencies
+/node_modules
+
+# Misc
+/.vscode
+.DS_Store
+</code></pre>
+
+<p>This will ignore <code>node_modules</code> as well as some other invisible files that VSCode and MacOS use to store data about the current directory.</p>
+
+<p>Once you’ve saved that file, we can walk through the process of adding files to the repository..</p>
+
+<ol>
+  <li>Make sure your files are all saved</li>
+  <li>Stage your files with <code>💻 git add .</code>. This adds all of the files in the current directory. Be careful of this! I usually recommend that you target the files you actually want to stage, but in this case, we already told Git what to ignore and we want everything else. <em>Your files are not yet saved into the repository, they are only staged!</em></li>
+  <li>Check that the files are staged with <code>💻 git status</code>. This isn’t a required step, but I recommend using it often to see the state of your files. It should show that all of your files are new and staged.</li>
+  <li>Commit your changes with <code>💻 git commit -m "My first commit"</code>. This loads your files into the repository. The <code>-m</code> allows you to add a message associated with your commit. This should be short but informative so you can tell what you were trying to accomplish with the commit in case you need to go back to it later.</li>
+  <li>Check the status again – there should be no changes.</li>
+</ol>
+
+<p>Let’s do that one more time</p>
+
+<ol>
+  <li>Create a comment at the top of the file and add your name. (JavaScript comments are the same as in Java and C).</li>
+  <li>Type <code>💻 git status</code> to see that there is a modified (but not staged) file.</li>
+  <li>Type <code>💻 git add index.js</code>.</li>
+  <li>Type <code>💻 git status</code> again to see how the status has changed.</li>
+  <li>Now commit the changes to the repository with <code>git commit -m "Added name to the top"</code>.</li>
+</ol>
+
+<p>We can also look at the history of the repository with <code>💻 git log</code>. You should see both of your commits in the log output.</p>
+
+<p><em>You should work on getting comfortable with the command line, but you will find that VSCode actually has a reasonable git client built in. You will find it by clicking the ‘Source Control’ icon (it looks like a graph) on the left).</em></p>
+
+<p>Multiple version of your code are now stored in your local repository. To turn your code in, you need to get a duplicate of your repository onto GitHub. The conventional way to do that would be to go to the GitHub site and create a new repository there. However, for this class we are using something called GitHub Classroom, which will automate this process of creating repositories for everyone in class</p>
+
+<p>Click through to the GitHub <a href="https://classroom.github.com/a/eagPwFlw">classroom assignment</a>. Clicking through to the assignment will create a private repository for you with the name “practical-01-&lt;Your GitHub username&gt;.git”, e.g. “mlinderm.git”. You can view your repository at https://github.com/csci312a-s23/practical-01-&lt;Your GitHub username&gt; (click the link provided by GitHub classroom).</p>
+
+<p>On the front page of your new repository, it may list some options about how to get started. If those instructions appear, follow the directions for existing repositories. If not, follow the steps below.</p>
+
+<ol>
+  <li><code>💻 git remote add origin &lt;repository URL&gt;</code>, where *<repository URL="">* is the URL for your repository at GitHub (don't be the one that actually types out "<repository URL="">"). You can find this URL by clicking on the green "Code" button and copying one of the URLs. There are two kinds of URLSs: HTTPS and SSH. If you set up SSH for your GitHub account use the second, if not use the first (HTTPS). This will enable you to push to the remote repository using "origin" as a short-hand name.</repository></repository></li>
+  <li><code>💻 git branch -M main</code>. This is is <em>not</em> actually an essential step for connecting the two repositories. This renames the primary branch of the repository from the git default of “master” to the more inclusive “main”.</li>
+  <li><code>💻 git pull --rebase origin main</code>. This retrieves starter code created by GitHub classroom that you don’t have (recall the distributed nature of Git). This should not be needed in the future when you start by cloning the repository GitHub classroom creates for you. Note that to use the HTTPS interface you will need to create a <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">GitHub access token</a> before this step that you will use instead of your password when prompted.</li>
+  <li><code>💻 git push -u origin main</code>. This tells git to copy changes from your current repository to “origin”, which is the repository on GitHub.</li>
+</ol>
+
+<p>If you reload the GitHub page, you will see it now lists your code.</p>
+
+<p>Now, you can submit the practical to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/resources/gradescope.html">here</a></p>
+
+<p><strong>Successfully submitting your assignment is a multi-step process: 1) Commit and push your changes to GitHub, 2) Submit your repository to the Gradescope assignment. Make sure you complete both steps (in order).</strong></p>
+
+<h2 id="grading">Grading</h2>
+
+<p>Required functionality:</p>
+<ul>
+  <li>Create Node.js project</li>
+  <li>Install <code>jest</code></li>
+  <li>Write three versions of summation using a loop, <code>forEach</code> and <code>reduce</code></li>
+  <li>Write <code>decorate</code> using <code>map</code></li>
+  <li>Setup git and GitHub</li>
+  <li>Submit to Gradescope</li>
+</ul>
+
+<p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:30:27 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

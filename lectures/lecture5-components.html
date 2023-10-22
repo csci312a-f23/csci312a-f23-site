@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/lecture5-components.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="film-explorer-immutability-inheritance">Film Explorer, Immutability, Inheritance</h1>
+
+<h2 id="exploring-the-film-explorer">Exploring the Film Explorer</h2>
+
+<p>Experiment with a simple <a href="https://github.com/csci312-common-v2/example-film-explorer-csv">Film Explorer</a>.</p>
+
+<p>Note the <code>key</code> property in the “list” of movies in the <code>FilmTable</code> (we saw this in our assignment as well). The <code>key</code> property uniquely identifies element in a list (to speedup rendering by identifying which specific elements have changed). From the <a href="https://reactjs.org/docs/lists-and-keys.html">React documentation</a>: “A good rule of thumb is that elements inside the map() call need keys.”</p>
+
+<h2 id="container-components">Container components</h2>
+
+<p>Exploring the demo, we observe that the movies are sorted (and filterable) and can be “clicked” to show more detail (the poster and overview). We could so as part of the FilmTable and FilmSummary, but we would like to separate the logic and UI (recall “Separation of Concerns”). We can do so by introducing a “container component” (CC). A CC is not a thing per-se, it is a <a href="https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0">design pattern</a>.</p>
+
+<p>A CC is concerned with “how the application” works and thus implements logic, is often stateful, but does not typically generate DOM (HTMl elements). Its counterpart is the “presentation component” (PC). A PC is focused on how the application looks and typically generates styled DOM but does not fetch or manipulate data. A CC will typically implement some logic, passing the result of that computation (pure or stateful) to children components (which may be PCs or more CCs) to be displayed.</p>
+
+<p>For the Film Explorer we can extract two container components:</p>
+<ul>
+  <li><code>FilmTableComponent</code>: Implements the movie sorting (and eventual filtering), passing the order movies as a prop to the <code>FilmTable</code> presentation component</li>
+  <li><code>FilmComponent</code>: Implements the switching between summary and detail views</li>
+</ul>
+
+<h2 id="immutability">Immutability</h2>
+
+<p>Since React works by re-rendering on any state change, it is important for it to be aware that state has actually changed. The first piece of that is to only use our state setters. With primitive values, this is fairly robust. Consider the FilmContainer:</p>
+
+<pre><code class="language-jsx">function FilmContainer (props) {
+  const [showDetail, setShowDetail] = useState(false);
+  const View = showDetail ? MovieDetail : FilmSummary;
+  return (
+    &lt;View {...props} onClick={()=&gt;{setShowDetail(!showDetail);}} /&gt;
+  );
+}
+</code></pre>
+
+<p>We are storing a Boolean value, and when we request our variable we make it a <code>const</code>, so we will generate an error if we try to reassign that variable. The less obvious piece is what happens when we call the setter. React tries to be intelligent and not re-render if it doesn’t have to, so it will check to see if the value has changed. With a primitive value, this is just a simple equality check.</p>
+
+<p>The situation is more complex with objects, arrays, and other data structures (which are really all objects). These can be declared constant, but that only means that the reference to the memory location stays constant (that is the variable can’t be reassigned). The data structure “pointed to” by that variable can be modified. For example, the following is legal Javascript:</p>
+
+<pre><code class="language-javascript">const obj = {a:1, b:2};
+obj.a = 5;
+</code></pre>
+
+<p>This can create a couple of problems for us. First, it is possible to accidentally change state when React isn’t looking. Second, even if we are careful and pass the modified object back to the setter, React will think nothing has changed because the reference is the same. It won’t do a “deep” equality check, and even if it did, we just changed React’s “copy” as well, because React just has a reference to the same object (it may not say “pointer” anywhere, but understanding how they work is important in all languages...). So what can we do?</p>
+
+<p>If <code>FilmExplorer</code> we have two examples. One approach is to be very cautious and copy any object when we are going to make a change. Here is an example for when we set the rating of a film:</p>
+
+<pre><code class="language-javascript">const setRating = (filmid, rating) =&gt; {
+   const alteredFilms = films.map((film) =&gt; {
+     if (film.id === filmid) {
+       return { ...film, rating };
+     }
+     return film;
+   });
+   setFilms(alteredFilms);
+};
+</code></pre>
+
+<p>This actually provides two examples because we are changing two things: we are changing the rating of a single film, but the actual state variable is the whole list of films. If we just changed the film itself, we would be modifying state (the list <code>films</code>), and that change would be invisible even if we passed films to <code>setFilms()</code> since the reference wouldn’t have changed. So, you can see that we are using <code>map()</code>, which generates a brand new array with the results of all of the individual function calls. Of course, our function merely returns the original items for all films except for the one we are changing. For the film itself, we use the spread operator to make a new object to replace the old copy. With care, this technique of making copies allows us to treat complex objects as if they were immutable.</p>
+
+<p>As an interlude, the spread pattern is a newer more concise approach to creating new objects. The previous approach, which you will still see, is the <code>Object.assign</code> pattern, which overwrites fields in its first argument with fields from its remaining arguments (in left to right order). Since the first argument is a new (empty) object, this has the effect of copying the object.</p>
+
+<pre><code class="language-javascript">Object.assign({}, oldObject, { property: newValue });
+</code></pre>
+
+<p>You can get quite far with the spread operators, e.g., making a copy of an object <code>{...oldObject, new_field: "new_value"}</code> or an array <code>[...oldArray, new_value]</code>. But if your objects get deeply nested, ensuring immutability can get tricky. In those case looks you can use <a href="https://github.com/markerikson/redux-ecosystem-links/blob/master/immutable-data.md">libraries</a> that help you enforce immutability. We won’t be using any of these libraries this semester in the interest of putting some limit on the number of new technologies we use. However, you should be aware they exist. It is more important, however, that you avoid mutating state or props in the first place.</p>
+
+<p>The key ideas:</p>
+<ul>
+  <li>Don’t mutate values you are using for state or props. As the React <a href="https://reactjs.org/docs/optimizing-performance.html#the-power-of-not-mutating-data">documentation</a> notes “The simplest way to avoid this problem is to avoid mutating values that you are using as props or state.”</li>
+  <li>Primitive data types should be favored</li>
+  <li>To make a state update <em>pure</em>, <em>replace</em> instead of <em>modify</em></li>
+  <li>If performance becomes an issue, or you have deeply nested state objects, try using immutable data structures linked above (e.g., immer)</li>
+</ul>
+
+<h2 id="composition-vs-inheritance-in-brief">Composition vs. Inheritance (in brief)</h2>
+
+<p>In checking out <code>FilmDetail</code>, we see it includes the <code>FilmSummary</code> view plus the additional image, description, etc. Thus we have an opportunity for code reuse. But how? Inheritance or Composition?</p>
+
+<p>Both will work. But the community best practices are to use <a href="https://reactjs.org/docs/composition-vs-inheritance.html">composition instead of inheritance</a>. That is <code>FilmDetail</code> uses but not does not inherit from <code>FilmSummary</code>. Why?  The former, composition, is more flexible and can satisfy every potential use case for inheritance.</p>
+
+<p>From our perspective there is value in following the community norms. Doing so improves the readability and maintainability of our code. But it also not clear that <code>FilmDetail</code> satisfies the principles of an inheritance relationship.</p>
+
+<p>More generally, how do we decide when to use inheritance? One is to ask if the relationship is described by “is a” or “has a”. The former suggests inheritance. For example a car “is a” vehicle but “has” wheels. In this context, the <code>FilmDetail</code> “has a” <code>FilmSummary</code> but it does not seem that a <code>FilmDetail</code> “is a” <code>FilmSummary</code>.</p>
+
+<p>A more formal way to think about inheritance is the <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle">Liskov Subsitution Principle (LSP)</a>:</p>
+
+<p>Subtype Requirement: Let ϕ(x) be a property provable about objects <em>x</em> of type <em>T</em>. Then ϕ(y) should be true for objects <em>y</em> of type <em>S</em> where <em>S</em> is a subtype of <em>T</em>.</p>
+
+<p>Or alternately if <em>S</em> is a subtype of <em>T</em>, I should be able to use an <em>S</em> everywhere I use a <em>T</em>.</p>
+
+<p>LSP is one of <a href="https://en.wikipedia.org/wiki/SOLID_(object-oriented_design)">five key design principles</a> for OO programming that we will discuss later in the course. LSP can help us identify some problematic OO designs.</p>
+
+<p>Consider squares and rectangles. A square “is a” rectangle. However, imagine we define a <code>setWidth</code> method for our rectangle. We should reasonably believe that setting the width of a rectangle will not change the height, but in a square we would need to override <code>setWidth</code> to also change the height. Thus having <code>Square</code> inherit from <code>Rectangle</code> would violate the LSP.</p>
+
+<p>Would having <code>FilmDetail</code> inherit from <code>FilmSummary</code> violate the LSP? Not entirely clear, but it would seem weird to think about using <code>FilmDetail</code> where a <code>FilmSummary</code> is expected.</p>
+
+<h2 id="review-controlled-vs-uncontrolled-components">Review: controlled vs. uncontrolled components</h2>
+
+<p>In creating the color picker, we described the <code>&lt;input&gt;</code> elements as “controlled”. Controlled components are form elements with state controlled by React. Uncontrolled components maintain their own state. The latter is the way <code>&lt;input&gt;</code> elements naturally work (recall our original color picker).</p>
+
+<p>The former, “controlled”, is the <a href="https://reactjs.org/docs/forms.html#controlled-components">recommended approach</a> as it ensures there is only one source of truth, the React state. We set the <code>&lt;input&gt;</code> element’s value from state, and provide an <code>onChange</code> (or other relevant) handler to update that state in response to user input. Each state change triggers a re-rendering that shows the changes the user just initiated. The React <a href="https://reactjs.org/docs/forms.html#controlled-components">forms documentation</a> has a number of examples of controlled inputs, e.g. for a text input:</p>
+
+<pre><code class="language-jsx">(&lt;input
+  type="text"
+  value={title}
+  onChange={(event) =&gt; setTitle(event.target.value)} 
+/&gt;)
+</code></pre>
+
+<p>A trade-off for controlled components is verbosity (we have to implement handlers for all the way the data can change) and difficulties integrating with non-React libraries.  There are also some input elements, like selecting a file that can’t be controlled as their value can only be set by the user.</p>
+
+<p>The implement an uncontrolled component, we add <code>ref</code> function to access the underlying DOM element. For example:</p>
+
+<pre><code class="language-jsx">(&lt;input type="text" ref={(input) =&gt; this.input = input} /&gt;)
+</code></pre>
+
+<p>We can then use <code>this.input.value</code> elsewhere in the component.</p>
+
+<p>But we should be thoughtful when using refs. From the React <a href="https://reactjs.org/docs/refs-and-the-dom.html#dont-overuse-refs">documentation</a>:</p>
+
+<blockquote class="blockquote">
+  <p>Your first inclination may be to use refs to “make things happen” in your app. If this is the case, take a moment and think more critically about where state should be owned in the component hierarchy. Often, it becomes clear that the proper place to “own” that state is at a higher level in the hierarchy.</p>
+</blockquote>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-02-27 15:19:23 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

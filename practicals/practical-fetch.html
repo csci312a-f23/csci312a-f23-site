@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 Practical: Working with an API</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-fetch.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="practical-working-with-an-api">Practical: Working with an API</h1>
+
+<p>
+<strong>Initial Due Date: 2023-03-09 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+
+<ul>
+  <li>Extend color picker to fetch additional data from an API</li>
+  <li>Practice using <code>fetch</code> and Promises</li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ol>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/MLk7KcEV">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Clone the repository to you computer with <code>💻 git clone</code> (get the name of the repository from GitHub).</li>
+  <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
+  <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
+</ol>
+
+<h2 id="background">Background</h2>
+
+<p>So far our applications have used the build tools to load their data. That is atypical. More commonly our applications fetch their data from a server. In this practical we extend the color picker to obtain additional information from <a href="https://www.thecolorapi.com">https://www.thecolorapi.com</a>, a publicly available API that provides color-related information. In particular we are interested in its “nearest named color” feature, the returns a “named” color similar to our query. We want to fetch and display that information in the color picker, including enabling the user to switch to the “named” color. To make this feature feel “reactive”, we want to obtain the additional color information automatically as we adjust the color sliders, not just in response to a specific user request.</p>
+
+<p>The color API takes a variety of inputs. Here we will use the RGB interface, specifying the color of interest via a query parameter containing the RGB values. For example, to find out more about “Middlebury Blue”, we would query <a href="https://www.thecolorapi.com/id?rgb=(55,83,140)">https://www.thecolorapi.com/id?rgb=(55,83,140)</a>. The response is JSON with a variety of data about the color ([API documentation]). We are interested in the following portion that describes the similar named color.</p>
+
+<pre><code class="language-json">{
+   ...
+   "name": {
+      "value":"Chambray",
+      "closest_named_hex":"#354E8C",
+      "exact_match_name":false,
+      "distance":51
+   }
+   ...
+}
+</code></pre>
+
+<h2 id="taking-actions-in-response-to-changes-in-a-component">Taking actions in response to changes in a component</h2>
+
+<p>To fetch additional data about any given color, we need to be able to execute a callback that has <em>side effects</em> (e.g., launching a network request) in response to changes in our component. We employ the <a href="https://reactjs.org/docs/hooks-effect.html"><code>useEffect</code></a> to do so. <code>useEffect</code> executes a callback every time the component updates. We will ultimately use that callback to fetch data from the API and change our component state. <code>useEffect</code> takes an optional second argument, an array of dependencies. React will skip the effect if none of those specific dependencies have changed since the last render. In our context, we would want to fetch new data whenever (and only when) the <code>red</code>, <code>green</code>, or <code>blue</code> state changes. Implement the following hook in your <code>ColorPicker</code> component:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">useEffect(() =&gt; {
+  console.log(`https://www.thecolorapi.com/id?rgb=(${red},${green},${blue})`);
+}, [red, green, blue]);
+</code></pre>
+
+<p>Start the development server, and your browser’s developer tools. You should see new log entries in the console when you move the sliders. I suspect you see a lot of entries. Recall that our sliders are controlled components that change the state and thus trigger an update on every change to the slider. That will generate many more requests than we want (and may degrade the API, get us throttled or even banned). While we want the name feature to feel reactive, we don’t need to be quite that reactive. Thus we are going to debounce the effect body to only execute after the input has stabilized for some amount of time, 250 ms in this example.</p>
+
+<h2 id="debouncing-the-input">Debouncing the input</h2>
+
+<p>To debounce the input we will use <code>setTimeout</code>. The general idea is delay each update by some time. If there has been additional change within that window we will cancel the previous update and restart the delay. As a starting point, update your effect hook to be:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">let queryTimeout;
+useEffect(() =&gt; {
+  clearTimeout(queryTimeout);
+  queryTimeout = setTimeout(() =&gt; {
+    console.log(`https://www.thecolorapi.com/id?rgb=(${red},${green},${blue})`);
+  }, 250)
+}, [red, green, blue]);
+</code></pre>
+
+<p>The <code>clearTimeout</code> function cancels the previous timeout call (if still active). Try this out. I suspect you will quickly notice it doesn’t work as intended. You should also get a helpful linter warning about issues with our hook. What is going on? Recall that the component function is called each time the component re-renders. Thus we get a new <code>queryTimeout</code> variable on each render. Each time we change a color parameter we are triggering a re-render, and thus losing the reference to any previously created timeout (and so we can’t cancel it). What we need is way to maintain information across renders.</p>
+
+<p>We will use the <a href="https://reactjs.org/docs/hooks-reference.html#useref"><code>useRef</code></a> hook to create a object that persists for the lifetime of the component. Add</p>
+
+<pre><code class="language-jsx">const queryTimeout = useRef(null);
+</code></pre>
+
+<p>to your component. We modify the “ref” object’s <code>current</code> property to persist information across renders. Update your effect hook to be:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">useEffect(() =&gt; {
+  clearTimeout(queryTimeout.current);
+  queryTimeout.current = setTimeout(() =&gt; {
+    console.log(`https://www.thecolorapi.com/id?rgb=(${red},${green},${blue})`);
+  }, 250)
+}, [red, green, blue]);
+</code></pre>
+
+<p>Now you should only see the logging statements when you have stopped moving the sliders (or otherwise updating the colors) for 250ms.</p>
+
+<h2 id="rendering-the-nearest-color">Rendering the nearest color</h2>
+
+<p>We want to display the name of the nearest color and either a 🎯 when our color components exactly match the named color, or if not, a button, labeled “Switch”, to update our color components to the named color. Add the following to your <code>ColorPicker</code> after the sliders. Note the two different forms of conditional rendering (using short-circuit evaluation and the ternary operator).</p>
+
+<pre><code class="language-jsx">{name &amp;&amp; (
+   &lt;div&gt;
+     &lt;p&gt;Most similar named color: {name.value} {name.exact_match_name ? "🎯" : &lt;button onClick={updateNearest}&gt;Switch&lt;/button&gt;}&lt;/p&gt;
+  &lt;/div&gt;
+)}
+</code></pre>
+
+<p>This snippet implies a piece of state <code>name</code> and a helper function <code>updateNearest</code> that is invoked when you click on the button. The state will be set with the name object returned by the API (shown above) and <code>updateNearest</code> will parse the RGB hex representation to update the color components. Implement both in your ColorPicker component. For the latter, teh <code>parseInt</code> function can be used to translate a string into a number for any base. For example, <code>parseInt("F",16)</code> will translate the hex digit <code>F</code> to the number 15.</p>
+
+<p>Test your newly created UI by “hard coding” an initial value for <code>name</code> using the example data above. You should see Chambray display and be able to switch the color components to that color.</p>
+
+<h2 id="actually-fetching-the-data">Actually fetching the data</h2>
+
+<p>Modern browsers (and now Node) provide a <a href="https://developer.mozilla.org/en-US/docs/Web/API/fetch"><code>fetch</code></a> function for performing network requests. <code>fetch</code> returns a Promise that is fulfilled once the response is available. Replace the <code>console.log</code> in your effect hook with the following:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">fetch(`https://www.thecolorapi.com/id?rgb=(${red},${green},${blue})`)
+.then((response) =&gt; {
+  if (!response.ok) {
+   throw new Error(response.statusText);
+  }
+  return response.json();
+})
+.then((response) =&gt; {
+   setName(response.name);
+}).catch(err =&gt; console.log(err)); // eslint-disable-line no-console
+</code></pre>
+
+<p>This requests the data from the color API for current color components. When the <code>fetch</code> promise resolves, we check for a valid response, before parsing the returned JSON. The <code>response.json()</code> method also returns a Promise, which subsumes the Promise originally returned by <code>then</code> and is eventually fulfilled with the parsed objects. The final <code>then</code> updates the component state when that parsed object is available.</p>
+
+<p>Try out your application. After your finish dragging the sliders, the “Most similar named color” should update!</p>
+
+<h2 id="switching-to-async-and-await">Switching to <code>async</code> and <code>await</code></h2>
+
+<p>As we discussed in class, we can interact with Promises in a more imperative style by using the []<code>async</code> and <code>await</code> keywords](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). The former declares a function to be asynchronous, thus enabling the use of the <code>await</code> keyword. The latter suspends execution until the Promise returned by the following expression is fulfilled or rejected. The use of <code>async</code> and <code>await</code> doesn’t change the behavior of Promises, instead they are intended to simplify the syntax for consuming Promise-based APIs.</p>
+
+<p>Update your effect hook to use <code>async</code> and <code>await</code>, of the <code>then</code>, etc. Make the callback provided to <code>setTimeout</code> be <code>aysnc</code>, then replace the callback body with the following. Note the two <code>await</code>s, one for each expression returning a Promise.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-jsx">const response = await fetch(`https://www.thecolorapi.com/id?rgb=(${red},${green},${blue})`);
+if (response.ok) {
+  const color_info = await response.json();
+  setName(color_info.name);
+}
+</code></pre>
+
+<h3 id="finishing-up">Finishing up</h3>
+
+<p>Commit any changes you may have made and then push your changes to GitHub. You should then submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</p>
+
+<h2 id="grading">Grading</h2>
+
+<p>Required functionality:</p>
+<ul>
+  <li>Fetch and display most similar named color data</li>
+  <li>Debounce requests to only fetch data after inputs is stabilized for 250 ms</li>
+  <li>Update the color components to named color when “Switch” button clicked</li>
+  <li>Pass all tests</li>
+  <li>Pass all ESLint checks</li>
+</ul>
+
+<p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:31:16 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

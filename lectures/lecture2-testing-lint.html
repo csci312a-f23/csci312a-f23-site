@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/lecture2-testing-lint.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="top-down-packaging-testing-linting">Top down: Packaging, testing, linting</h1>
+
+<p>So far we have worked very “bottom up”, that is created a single HTML file, or JavaScript file that utilizes the built-in APIs. Today we are going to work “top-down”, that is start with the skeleton of a distributable Node.js package. We then flesh out that skeleton with dependencies, our code, tests, deployment scripts, and more. Increasingly we will start all of our projects by creating a package skeleton.</p>
+
+<h2 id="npm">npm</h2>
+
+<p>Node.js has a very developed packaging infrastructure built around <a href="https://www.npmjs.com">npm</a>. npm is a command line tool (<code>npm</code>) and online registry for creating, distributing, and using Node.js modules. The functionality is built around the <code>package.json</code> file in the root directory of the project. Note that you will encounter an alternate package tool <code>yarn</code>, that is also widely used. These are largely interchangeable; we will standardize on <code>npm</code> (but that is one of those somewhat arbitrary choices).</p>
+
+<p>A quick set of <a href="https://docs.npmjs.com/getting-started/packages#quick-summary">definitions</a>:</p>
+
+<ul>
+  <li>A package is a file or directory that is described by a <code>package.json</code> file.</li>
+  <li>A module is any file or directory that can be loaded via <code>import</code>.</li>
+</ul>
+
+<p>A package need not be a module (although many are). Modules are JavaScript code designed to be incorporated into other JavaScript code (like Python’s <code>import</code>), while packages may just contain command-line tools or a web application.</p>
+
+<p>The <code>package.json</code> contains a variety of information about the package, including:</p>
+<ul>
+  <li>Metadata, e.g. name, version, author, etc.</li>
+  <li>Dependencies (in both production and development)</li>
+  <li>Scripts for common tasks like running tests and much more...</li>
+</ul>
+
+<h3 id="package-lifecycle">Package lifecycle</h3>
+
+<p>Where do <code>package.json</code> files come from? Either they are already exist as part of a package you clone, e.g. your assignment, or you are creating a new package from scratch with <code>npm init</code> (or the Next skeleton <a href="https://nextjs.org/docs/api-reference/create-next-app">tool</a> we will learn about later).</p>
+
+<p>Our first step when working on a package we cloned or just initialized is to install the package dependencies via <code>npm install</code>. That is you will start all subsequent assignments with <code>npm install</code>.</p>
+
+<p>Those dependencies are specified within the <code>package.json</code> file. There you can very precisely specify the package dependencies with <a href="https://docs.npmjs.com/files/package.json#dependencies">semantic versioning</a> rules. A precise specification of the dependencies makes your package builds reproducible (even as dependencies release new versions, etc.) and thus much easier to share with others.</p>
+
+<p>You can specify two kinds of dependencies, those packages needed to “run” your package (“dependencies”), and those packages needed to develop your package but not run it (“devDependencies”). Examples of the latter include:</p>
+<ul>
+  <li>Transpilers for translating ES6 to ES5 (and other tasks)</li>
+  <li>Test frameworks</li>
+  <li>Linters</li>
+</ul>
+
+<h3 id="an-example-packagejson">An example <code>package.json</code></h3>
+
+<p>Here is an example <code>package.json</code> <a href="https://github.com/expressjs/express/blob/master/package.json">file</a> from the popular Express web framework, in which we see metadata, like “authors”, numerous “dependencies” and “devDependencies” (for the Mocha test framework and ESLint linter among other tools).</p>
+
+<p>We also see two scripts for running these tools (the value for the “script” property is what will be executed). Any of the entries in “scripts” can be run with <code>npm run</code>, e.g. <code>npm run test</code> and <code>npm run lint</code>.</p>
+
+<p>Many of these scripts have standard roles, e.g. “test” for running tests, and shortcuts, e.g. <code>npm test</code>.</p>
+
+<p>By defining these script entry points we can make it easy anyone else using (or developing) our package to know how to test, start, etc. the package (without needing to research a potentially complicated command or sequence of commands).</p>
+
+<h2 id="testing">Testing</h2>
+
+<p>It is not an accident that “test” is one of established <code>package.json</code> scripts, testing is key to developing a high-quality package.</p>
+
+<blockquote class="blockquote">
+  <p>“Everyone knows that debugging is twice as hard as writing a program in the first place. So if you’re as clever as you can be when you write it, how will you ever debug it?”</p>
+  <footer class="blockquote-footer">Brian Kernighan</footer>
+</blockquote>
+
+<blockquote class="blockquote">
+  <p>“Testing shows the presence, not the absence of bugs”</p>
+  <footer class="blockquote-footer">Edsger Dijkstra</footer>
+</blockquote>
+
+<p>Testing does not supplant debugging (although it hopefully reduces the amount and difficulty of debugging), instead its role to help us build confidence that our code performs the specified task, <em>and</em> continues to do so even as further develop/refactor our code. A key role for testing, and particularly automated testing, is to identify <em>regressions</em> in which previously working code breaks.</p>
+
+<p>There many levels/kinds of testing:</p>
+
+<ul>
+  <li>Unit testing: Tests for isolated “units”, e.g. a single function or object</li>
+  <li>Integration testing: Tests of combinations of units (i.e. integration of multiple units)</li>
+  <li>System (or end-to-end) testing: Testing the entire application (typically to ensure compliance with the specifications, i.e. “acceptance” testing)</li>
+</ul>
+
+<p>As you might imagine these definitions are quite fuzzy with many synonyms...</p>
+
+<p>Our focus today is automated unit testing. We will revisit other aspects of testing throughout the semester.</p>
+
+<h3 id="test-driven-development-tdd">Test-driven development (TDD)</h3>
+
+<p>Recall our focus is on agile development methods, which are all about short development cycles that improve working (but not yet complete) code. To that end we will practice test-driven development in which we write the tests first, then implement the code that passes those tests (I suspect this is very different from the way you typically work...). This process will encourage us to think through our design, and particularly any interfaces, before we start coding (a key reason why TDD can be effective), and implement in short “cycles”.</p>
+
+<p>The TDD process:</p>
+<ol>
+  <li>Determine one thing the code <em>should</em> do (i.e. the specification)</li>
+  <li>Implement that specification in a test, which should fail as you haven’t yet implemented that functionality</li>
+  <li>Write the simplest code that satisfies the test</li>
+  <li>Refactor code and tests to DRY it up, etc.</li>
+  <li>Repeat with the next <em>one thing</em> the code should do</li>
+</ol>
+
+<p>That is we should be executing an iterative cycle of “fail-success-refactor” (or “red-green-refactor”) in which we aim to always have working code. Rerunning the test suite during the refactoring process gives us confidence that the refactoring has not inadvertently broken our implementation.</p>
+
+<p>What do we test? Both correct behavior (“positive” tests), and error conditions (“negative” tests) with an emphasis on corner cases.</p>
+
+<p>We might refer to this as “grey” box testing in which we are testing our units as both “black boxes” (i.e. just test the functionality without regard to the implementation), and “white boxes”, in which we take the implementation into account (i.e. aim to test specific execution paths). This middle ground is hopefully more complete, with fewer tests, than “black box”, but less biased by the implementation than “white box”.</p>
+
+<h3 id="anatomy-of-an-automated-unit-test">Anatomy of an automated unit test</h3>
+
+<p>We will use the <a href="https://facebook.github.io/jest/">Jest</a> unit testing package. Jest is one of many possible unit testing libraries; it is not necessarily the best (a matter of opinion) or the most frequently used, but it is our choice for this semester because it is integrated into other tools we will use this semester.</p>
+
+<p>A test will have a description, the code under test and one or more assertions about the results of executing that code (<a href="https://facebook.github.io/jest/docs/en/using-matchers.html">“matchers”</a> in Jest terminology).</p>
+
+<p>Consider testing a Fibonacci function (that starts counting at the “zero-th” Fibonacci number). Here we define a test suite (using <code>describe</code>) and a set of tests for different inputs. In each test we see the <code>expect(expression).matcher(result)</code> pattern. The sequence of tests would result from the following TDD progression:</p>
+
+<ol>
+  <li>The “base case”: <code>fib(0) === 0</code> and <code>fib(1) === 1</code></li>
+  <li>The “core” Fibonacci computation</li>
+  <li>Two possible corner cases, negative inputs and fractional inputs. By writing the tests first we forced to think through how we would want to handle these inputs before implementing the code.</li>
+</ol>
+
+<pre><code class="language-javascript">import { fib } from "./index"; // Import fib function from module
+
+describe('Computes Fibonacci numbers', () =&gt; {
+  test('Computes first two numbers correctly', () =&gt; {
+    expect(fib(0)).toBe(0);
+    expect(fib(1)).toBe(1);
+  });
+
+  test('Computes arbitrary Fibonacci numbers', () =&gt; {
+    expect(fib(2)).toBe(1);
+    expect(fib(3)).toBe(2);
+    expect(fib(6)).toBe(8);
+  });
+
+  test('Returns zero for negative inputs', () =&gt; {
+    expect(fib(-1)).toBe(0);
+  });
+
+  test('Rounds up for non-integer argument', () =&gt; {
+    expect(fib(5.8)).toBe(8);
+  });
+});
+</code></pre>
+
+<p>Check out this <a href="https://codesandbox.io/s/fibonacci-example-bptw7k?file=/package.json">example</a> in more detail.</p>
+
+<h3 id="unit-test-should-be-first">Unit test should be F.I.R.S.T.</h3>
+
+<ul>
+  <li><strong>F</strong>ast: Tests need to be fast since you will run them frequently</li>
+  <li><strong>I</strong>ndependent: No test should depend on another so any subset can run in any
+order</li>
+  <li><strong>R</strong>epeatable: Test should produce the same results every time, i.e. be
+deterministic</li>
+  <li><strong>S</strong>elf-checking: Test can automatically detect if passed, i.e. no manual
+inspection</li>
+  <li><strong>T</strong>imely: Test and code developed currently (or in TDD, test developed first)</li>
+</ul>
+
+<p>Consider the following function to check if today is a user’s birthday. As an aside, working with dates/time is one those surprisingly complex tasks that we are often better off using an established library for to avoid/mitigate subtle bugs.</p>
+
+<pre><code class="language-javascript">export function isBirthday(birthday){
+    const today = new Date();
+    return today.getDate() === birthday.getDate() 
+        &amp;&amp; today.getMonth() === birthday.getMonth();
+}
+</code></pre>
+
+<p>How would you test this function? It will be hard to achieve deterministic results since we depend on the current day. We need to isolate this function from the environment to implement tests. We can do so with a “mock” function that allows us to control the return value.</p>
+
+<pre><code class="language-javascript">import { isBirthday } from "./index";
+
+describe('Checks if today is birthdate', () =&gt; {
+  test("Test if this works on the birthday",()=&gt;{
+    const birthday = new Date('August 15 1999');
+    const today =  new Date("2022-08-15T12:00:00");
+    jest.spyOn(global, 'Date').mockImplementation(()=&gt; today);
+    expect(isBirthday(birthday)).toBeTruthy();
+    jest.restoreAllMocks();
+  });
+});
+</code></pre>
+
+<p><code>jest.spyOn</code> is a helper for creating mock functions. We can specify function that we want to replace with our mock function that returns a known date. This ensures a consistent results, but also allows to make assertions about how the mock function was called (i.e., we can make assertions about its arguments, number of times it was called, etc.). Check out the full example for <a href="https://github.com/csci312-common-v2/mock-test-example">above</a>.</p>
+
+<h3 id="seams">Seams</h3>
+
+<p><em>Seams</em> are places where you can change an application’s behavior without changing the source code. Above we exploited a seam at the <code>Date</code> constructor to isolate our function from the environment. Depending on the language/framework there will be different ways of creating or exploiting seams (some languages will be tricker than others, e.g., C++). Without any seams you will have a difficult time creating FIRST tests. Thus writing testable code means creating seams.</p>
+
+<h3 id="how-do-i-know-if-my-test-suite-is-sufficient">How do I know if my test suite is sufficient?</h3>
+
+<p>At some level that is an unanswerable question. One metric is code coverage, i.e., the percent of the code that is exercised by your tests. Hopefully a large fractions of your functions are “covered” by unit tests. However coverage alone is a limited measure of test quality. A high quality test suite will likely have high coverage but a high coverage test suite does not guarantee high quality.</p>
+
+<p>Perhaps a better way to answer this questions from <a href="https://martinfowler.com/bliki/TestCoverage.html">Martin Fowler</a>.</p>
+
+<blockquote class="blockquote">
+  <p>You are doing enough testing if the following is true:</p>
+  <ul>
+    <li>You rarely get bugs that escape into production, and</li>
+    <li>You are rarely hesitant to change some code for fear it will cause production bugs.</li>
+  </ul>
+  <footer class="blockquote-footer">Martin Fowler</footer>
+</blockquote>
+
+<p>A key use for code coverage can be to help you find the portions of the code base that are not being tested. Fowler includes the following quote from Brian Marick:</p>
+
+<blockquote class="blockquote">
+  <p>If a part of your test suite is weak in a way that coverage can detect, it’s likely also weak in a way coverage can’t detect.</p>
+  <footer class="blockquote-footer">Brian Marick</footer>
+</blockquote>
+
+<p>A related question is how do I know that my tests themselves are correct? Hopefully you can express your expectations simply enough that is clear to you (the developer) that the test is defined correctly. If the test itself is growing very complex that may be a sign that you need to revisit your design.</p>
+
+<h3 id="debugging-happens">Debugging happens</h3>
+
+<p>By writing small blocks of code (5-10 LOC) at one time (i.e. TDD) we will hopefully reduce the amount of debugging needed (and a function/method shouldn’t be much longer than that anyway). But debugging will happen.</p>
+
+<p>To minimize the time to solution take a “scientific” approach to debugging (<a href="http://www.saasbook.info" title="Fox and Patterson, \&quot;Engineering Software as a Service: An Agile Approach Using Cloud Computing\&quot;">source</a>):</p>
+<ol>
+  <li>What did you expect to happen (be as specific as possible)?</li>
+  <li>What actually happened (again as specific as possible)?</li>
+  <li>Develop a hypothesis that could explain the discrepancy</li>
+  <li>Test your specific hypothesis (with <code>console.log</code>, the debugger, etc.)</li>
+</ol>
+
+<p>The <a href="http://www.saasbook.info" title="Fox and Patterson, \&quot;Engineering Software as a Service: An Agile Approach Using Cloud Computing\&quot;">ESaaS</a> RASP method for steps 1-3 above:</p>
+
+<ol>
+  <li><strong>R</strong>read the error message (<em>really</em> read it).</li>
+  <li><strong>A</strong>sk a colleague an <em>informed</em> question, not just “Why doesn’t it work?”.</li>
+  <li><strong>S</strong>earch using keywords from error, specific SW versions, etc..</li>
+  <li><strong>P</strong>ost on StackOverflow, Ed, etc. Everyone is busy, you will get better answers if you provide a <a href="https://stackoverflow.com/help/mcve">Minimal, Complete and Verifiable</a> example.</li>
+</ol>
+
+<p>Learning how to effectively use existing code and Google, StackOverflow, etc. will increase your productivity. It is not unusual to spend more time searching online than actually writing code (especially when working with new technologies).</p>
+
+<p>Don’t underestimate how much time is required when starting something new without an assignment skeleton/guide. One of the skills we are developing is distinguishing between “good” time and “bad” time. Not all time invested in a coding problem is “good” time. If you find yourself trying random things without a clear hypothesis, that is likely a sign to pause, get some distance and a second set of eyes. Don’t bang your head against the wall, seek out help.</p>
+
+<p>When do you do find a bug, good practice is to turn that bug into an automated test case(s) before you fix it. Then when you fix the bug the test will now pass, giving you confidence you have been successful. And by having that test in your automated test suite you will also be more confident that the bug won’t reappear undetected in the future.</p>
+
+<h2 id="linting">Linting</h2>
+
+<p>What is good code? Correct and maintainable code. Strategic code. The “style” aspects of your programming assignments in CS150, etc. are focused on both of these aspects, i.e. encouraging highly readable code that is less likely have subtle, hard-to-detect bugs.</p>
+
+<p><a href="https://en.wikipedia.org/wiki/Lint_(software)">Linters</a> are static analysis tools help us identify “programming errors, bugs, stylistic errors, and suspicious constructs”. In this context the linter has several benefits:</p>
+<ul>
+  <li>Identify potentially problematic code that is not obvious to a language novice or “slipped through the cracks”. In a sense it is like having an expert programmer “pair” with you.</li>
+  <li>Enforce a common style across a team to increase readability.</li>
+</ul>
+
+<p>In a sense the linter automates some of the “style” checking that often occurs in code review (when another developer reviews your code) or when I grade CS150 assignments. Alongside the linter, we will often use automatic code formatting tools, e.g. <a href="https://prettier.io">Prettier</a>, to automatically reformat code to a common standard during a commit (or at other points in development).</p>
+
+<p>In class we will use <a href="https://eslint.org">ESLint</a> and, when possible, the <a href="https://github.com/airbnb/javascript">AirBnB ESLint configuration</a>. You and I may not agree with all of AirBnB’s (opinionated) settings, but they provide a good starting point. It is OK for us to deviate from their recommendations, but we should do so as a considered decision.</p>
+
+<p>We will aim for zero ESLint errors in our code (and definitely in your programming assignments). Doing so will improve the quality of our code. That doesn’t mean we can always satisfy AirBnB. We may need to disable rules for specific code sections. Again doing so is OK and in our practical exercise today we will learn how.</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-02-16 15:59:21 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

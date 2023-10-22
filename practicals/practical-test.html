@@ -1,0 +1,453 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 Practical: Testing and Linting</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-test.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="practical-testing-and-linting">Practical: Testing and Linting</h1>
+
+<p>
+<strong>Initial Due Date: 2023-02-23 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+
+<ul>
+  <li>Implement unit tests</li>
+  <li>Use a linter to write more consistent, more maintainable code</li>
+</ul>
+
+<p>In the last practical, you created your first npm package. Today, we will actually use the module we installed (<a href="https://facebook.github.io/jest/">Jest</a>) to do some unit testing and we will add a linter called <a href="https://eslint.org">ESLint</a> to perform static analysis.</p>
+
+<p><em>I encourage you to treat this (and other practical exercises) as a tutorial that you are trying to learn from, rather than an assignment you are trying to complete as quick as possible. Take your time, read the notes thoroughly and don’t hesitate to ask questions.</em></p>
+
+<h2 id="prerequisite">Prerequisite</h2>
+
+<ol>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/cqMm597w">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton npm package already set up for you.</li>
+  <li>Clone the repository to you computer with <code>💻 git clone</code> (get the name of the repository from GitHub).</li>
+  <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
+  <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
+</ol>
+
+<h2 id="setting-up-unit-testing">Setting up unit testing</h2>
+
+<p>We want to add automated unit tests for our functions. Unit testing typically requires 1) a <em>test runner</em> to automatically run all the tests and report the results, and 2) an <em>assertion library</em> for implementing expectations about the behavior of the code under test. We will use the <a href="https://facebook.github.io/jest/">Jest</a> unit testing package, which provides both. Jest is one of many possible unit testing libraries; it is not necessarily the best (a matter of opinion) but is widely used and integrated into a number of tools we use throughout the semester.</p>
+
+<p>Install Jest by running <code>💻 npm install -D jest @swc/jest</code> in the shell.</p>
+
+<p>As a reminder, the <code>-D</code> option specifies that you want to update <code>package.json</code> with this dependency, and that it is a “development” dependency. You only need Jest when developing this module (when you would run the tests) and not in production. The second package is a tool for transpiling JavaScript so that we can use a consistent, modern, feature set across our projects regardless of the target. In this case, we want to use ES modules with are only partially supported Jest. The latter tool helps us work around that limitation. It is inserted into the workflow by the configuration in the <code>jest.config.ts</code> file in the skeleton.</p>
+
+<p>Notice that the <code>package.json</code> file now specifies this new dependency (your version for this package and others may be slightly different):</p>
+
+<pre><code class="language-json">"devDependencies": {
+  "@swc/jest": "^0.2.24",
+  "jest": "^29.0.2"
+}
+</code></pre>
+
+<p>Now that you have a testing library, you want to update the “test” script specified in the <code>package.json</code> file to run Jest. To do so, edit your <code>package.json</code> file to include:</p>
+
+<pre><code class="language-json">"scripts": {
+  "test": "jest"
+},
+</code></pre>
+
+<p>You can now run Jest with <code>💻 npm test</code> or <code>💻 npm run test</code>. However, since you don’t have any tests yet, you will get an error.</p>
+
+<h2 id="example-validsong">Example: validSong()</h2>
+
+<p>We are going to write a function to check if a string contains a song (or at the very least, a valid sequence of notes). Our song will be defined as a string containing notes separated by spaces. The notes will be a single upper case letter in the set [A-G]. They can optionally be modified by a sharp (‘#’) or a flat (‘b’). For reasons we will not get into, there is no ‘B#’, ‘Cb’, ‘E#’ or ‘Fb’.</p>
+
+<pre><code class="language-plaintext">&gt; validSong("C C G G A A G")
+true
+&gt; validSong("Ab Bb C C# Db D  G")
+true
+&gt; validSong("Ab Cb")
+false
+&gt; validSong("Ab Z")
+false
+</code></pre>
+
+<h3 id="writing-tests">Writing tests</h3>
+
+<p>We are going to practice test driven development (TDD) to create this function.</p>
+
+<p>In <code>index.js</code>, put in the function declaration, with no body other than a simple return statement.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const validSong = (song) =&gt; {
+
+  return false;
+}
+
+export default validSong;
+</code></pre>
+
+<p>Now we are going to pick one feature of this function, and write a test to test it. We will start by testing that it accepts valid, unmodified notes.</p>
+
+<p>Open the file called <code>index.test.js</code> (jest will automatically run any files ending in <code>test.js</code>) and create a new test suite and a test.</p>
+
+<p>Jest provides the <code>test(string, fn)</code> function. This is a basic test comprising a string description that will be printed when the test is run and a function that will provide the body of the test. We have wrapped that test in the <code>describe</code> function, which helps group tests that share common setup or teardown (described more below).</p>
+
+<p>The <code>test</code> function should contain one or more assertions, i.e., tests of state or values in your code. The <code>expect(value)</code> function takes as an argument a value generated by your code in some way and returns an “expectation object”. To turn this into a test, you apply a <a href="https://facebook.github.io/jest/docs/using-matchers.html">matcher</a> to test that value. There are a number of different matchers. Jest will run all of your tests for you and keep track of how many tests pass and how many fail.</p>
+
+<p>You can have multiple assertions within a single test function. All of the assertions should contribute in some way to the test.</p>
+
+<p>Jest provides another function named <code>describe</code>, which allows us to wrap multiple tests together into a “suite”. These tests can be loosely coupled. Perhaps they all test the same component or approach testing a function from different directions. Often the tests in a single <code>describe</code> all share common <a href="https://facebook.github.io/jest/docs/en/setup-teardown.html">setup and tear down functionality</a>, that is they all need the same work to be performed before the test is run and after the test is complete (e.g., to make the tests repeatable and independent).</p>
+
+<p>Paste the following into <code>index.test.js</code> to get started.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">import validSong from "./index";
+
+describe("Testing validSong()", ()=&gt;{
+  test("validSong: accepts valid notes", ()=&gt;{
+
+  });
+});
+</code></pre>
+
+<p>Now we need an assertion, which has <code>expect</code> and a matcher. Jest has a lot of <a href="https://jestjs.io/docs/en/expect">matchers</a>, but we can stick with <code>toBeTruthy</code> and <code>toBeFalsy</code> since our function returns a Boolean value.</p>
+
+<p>Since we have a fixed number of valid notes, we can check them all. Add this to the body of your test:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const validNotes = ["A","B","C","D","E","F","G"];
+
+validNotes.forEach((note)=&gt;{
+  expect(validSong(note)).toBeTruthy();
+});
+</code></pre>
+
+<p><em>Note: Using a <code>forEach</code> to iterate over test cases should not be your first solution. It is appropriate here because we have a collection of identical tests to run.</em></p>
+
+<p>These assertions only test if the function accepts single notes, we also need to make sure that it can handle strings with multiple notes.</p>
+
+<p>Add a second test and name it “validSong: accepts compound strings”. Test the function on the string “A B C D E F G”.</p>
+
+<p>Run the tests with <code>npm test</code>. They should fail since we have not yet implemented the function.</p>
+
+<h3 id="satisfying-tests">Satisfying tests</h3>
+
+<p>Now, we need to write the minimal amount of code to make sure that our tests pass. In this case, we can do that by changing the return value of the function to <code>true</code>.</p>
+
+<p>Run the tests again. They should now pass.</p>
+
+<h3 id="iterate">Iterate</h3>
+
+<p>Clearly these were insufficient tests of the behavior we were targeting. When we specified that the function accepted a certain set of letters as valid notes, we really mean “uniquely”. So, we need to test the “sad path” as well, what happens when we give the function invalid input.</p>
+
+<p>We could test all other letters (or symbols!), but that is on the verge of overkill. At a certain point, we need to acknowledge that we are probably not learning more and we are just wasting time (remember that tests should be <strong>Fast</strong>). So, we want to focus on boundary cases, places <em>near</em> the valid cases. In this case, we can think of a couple of candidates:</p>
+
+<ul>
+  <li>‘H’: The letter immediately after the last valid note is a good candidate</li>
+  <li>‘Z’: This is a “belt and suspenders” test. It probably isn’t necessary, but it is a boundary on the alphabet AND a random additional letter</li>
+  <li>‘0’: This is a representative number, and also a boundary</li>
+  <li>‘a’: This would be a valid note if it was uppercase, by testing this, we would be adding a firm requirement that only uppercase letters are accepted (test as specification)</li>
+</ul>
+
+<p>Write a test called “validSong: rejects invalid characters”. Note that each one of those cases needs to be in a separate assertion, otherwise the first bad character would mask all of the others.</p>
+
+<p>In addition to these, we should test ‘AB’, which would codify the requirement that notes are separated by spaces. Write a fourth test called “validSong: notes must be separated by spaces”. Note that this time we must use two valid notes so we are only testing the spacing.</p>
+
+<p>Run the tests with <code>npm test</code>. They should fail again, which means that we need to work a little harder.</p>
+
+<p>Here is a basic implementation that checks if each note in the song is valid. Note that we are using another higher-order function in there (<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every">every</a>).</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const validSong = (song) =&gt; {
+  const validNotes = ["A", "B", "C", "D", "E", "F", "G"];
+  // helper to test individual notes
+  const validNote = (note)=&gt;{
+    return validNotes.includes(note);
+  }
+
+  // convert the string to an array of notes  
+  const songList = song.split(" "); 
+
+  // every returns true if the passed in function returns true for every value
+  const valid = songList.every(validNote);
+
+  return valid;
+}
+</code></pre>
+
+<h3 id="iterate-again">Iterate again</h3>
+
+<p>Now we need to add in the sharps and flats. Because of the earlier tests, we only need to test if sharps and flats work with valid notes. We also don’t need to test all possible combinations.</p>
+
+<p>Tests we <em>should</em> perform:</p>
+
+<ul>
+  <li>Are “A#” and “Ab” valid (we will assume that if it works for A, it will work for the others)</li>
+  <li>Are the special cases invalid (“B#”, “Cb”, “E#”, and “Fb”)</li>
+</ul>
+
+<p>Write two more tests: “validSong: sharps and flats are accepted” and “validSong: special cases are rejected”. Remember that we can group multiple inputs that we expect to pass together as any single failure will cause the assertion to fail (though we lose some feedback back where the error might have happened), but we can’t group inputs we expect to return <code>false</code> as they will mask each other (i.e., the first <code>false</code> means the others are never checked).</p>
+
+<p>Run <code>npm test</code> again to make sure it fails (though the special character will not yet).</p>
+
+<p>Let’s update our function to satisfy these tests.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const validSong = (song) =&gt; {
+  const validNotes = ["A", "B", "C", "D", "E", "F", "G"];
+  const badNotes = ["B#", "Cb", "E#", "Fb"];
+  // helper to test individual notes
+  const validNote = (note)=&gt;{
+    // make sure the first character is valid
+    let valid = validNotes.includes(note[0]);
+    
+    // check the second character
+    if (note.length === 2){
+      // make sure the second character is  "#" or "b"
+      valid = valid &amp;&amp; (note[1] === "#" || note[1] === "b");
+
+      // make sure it isn't a bad note
+      valid = valid &amp;&amp; ! badNotes.includes(note);
+    }
+
+    return valid;
+  }
+
+  // convert the string to an array of notes  
+  const songList = song.split(" "); 
+
+  // every returns true if the passed in function returns true for every value
+  const valid = songList.every(validNote);
+
+  return valid;
+}
+</code></pre>
+
+<p>Run <code>npm test</code> again. Everything should pass.</p>
+
+<h3 id="fixing-bugs">Fixing bugs</h3>
+
+<p>One of our users is using the function, forgets to put spaces in, and is surprised when our function accepts it.</p>
+
+<pre><code class="language-plaintext">&gt; validSong('A#BB')
+true
+</code></pre>
+
+<p><em>You can (and should) try this too.</em></p>
+
+<p>Add a test that tests this case and demonstrate that it does fail.</p>
+
+<p>Then fix the function (you should be able to do this with a simple <code>else if</code> in the note validator).</p>
+
+<h3 id="check-the-coverage">Check the coverage</h3>
+
+<p>You can evaluate how comprehensive your test suites are with Jest’s built-in coverage reports. Run <code>npx jest --coverage</code>. Your one function should be 100% covered! But as I discussed in lecture, coverage alone is limited measure of test quality. A high quality test suite will have high coverage but a high coverage test suite does not guarantee high quality.</p>
+
+<h2 id="running-a-linter">Running a linter</h2>
+
+<p>[Linters][lint] help us identify “programming errors, bugs, stylistic errors, and suspicious constructs”. For this practical we will use <a href="https://eslint.org">ESLint</a> and the <a href="https://github.com/airbnb/javascript">AirBnB ESLint configuration</a>. You and I may not agree with all of AirBnB’s (opinionated) settings, but they provide a good starting point. It is OK for us to deviate from their recommendations, but we should do so as a considered decision.</p>
+
+<p>Install ESLint and the AirBnB configuration as a development dependency by running the following command in the root directory of your package (the directory that contains the <code>package.json</code> file):</p>
+
+<pre><code class="language-plaintext">💻 npm install -D eslint eslint-config-airbnb-base eslint-plugin-import
+</code></pre>
+
+<p>To configure ESLint you need to create a new file named <code>.eslintrc.json</code> in the root directory of your package with the following contents. Note that the file name is important as ESLint will look for a file with that exact name.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-json">{
+  "extends": "airbnb-base",
+  "env": {
+    "node": true,
+    "jest": true
+  },
+  "rules": {
+    "quotes": ["warn", "double"]
+  }
+}
+</code></pre>
+
+<p>This configuration specifies that you want to use the AirBnB base configuration and that the Node.js and Jest <a href="https://eslint.org/docs/user-guide/configuring#specifying-environments">global variables</a> should be predefined.</p>
+
+<p>I’ve also added a <code>rules</code> section to show how we can customize and build on rule sets like the AirBnB base. We are adding a rule here that says all strings should use double quotes, and the linter should issue a warning if they do not.</p>
+
+<p>To prevent ESLint from trying to analyze the files you created as part of the coverage analysis you will want to also create a file named <code>.eslintignore</code> file with the following list of directories (or files) to be ignored. As with <code>.eslintrc.json</code>, this file should be created in the root directory of your package.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-plaintext"># testing
+/coverage
+</code></pre>
+
+<p>Just as we did for testing, you want to add a script entry point to run the linter. Add</p>
+
+<pre><code class="language-json">"lint" : "eslint ."
+</code></pre>
+
+<p>to the scripts section of your <code>package.json</code> file, i.e. it should now look like:</p>
+
+<pre><code class="language-json">"scripts": {
+  "test": "jest",
+  "lint": "eslint ."
+},
+</code></pre>
+
+<h2 id="running-the-linter">Running the linter</h2>
+
+<p>Run the linter with <code>npm run lint</code> (which is equivalent to <code>npx eslint .</code>). I suspect you may have some errors! ESLint can fix many of the formatting errors automatically by running <code>npm run lint -- --fix</code>. Other errors will require you to manually refactor your code. To learn more about a particular error, Google the rule name, e.g. <code>no-console</code>. As pedantic as the formatting requirements may seem, enforcing a consistent style is very helpful in a team context. It is much easier to read your teammate’s code when everyone uses the same style.</p>
+
+<p>You will probably be able to eliminate all of the errors using <code>--fix</code>. However, sometimes there will be linting errors that we can’t eliminate. For example, most linting rule require <code>console.log()</code> calls be removed from production code, but you may be writing something that requires it. If, after <em>very</em> careful consideration you decide that you the rule shouldn’t apply, there are ways to <a href="https://eslint.org/docs/user-guide/configuring#configuring-rules">disable certain rules</a>. You can do so in a variety of ways, including globally (in <code>.eslintrc.json</code>), for an entire file (with a comment at the top) and for a single line (with an inline comment). For example to turn off the warnings about the console add the following comment to the top of your <code>index.test.js</code> file.</p>
+
+<pre><code>/* eslint-disable no-console */
+</code></pre>
+
+<p>Alternately you can add <code>// eslint-disable-line</code> to the offending line to
+disable ESLint on that line.</p>
+
+<p><strong>Use this power as little as possible and in the most targeted way possible. On most assignments a requirement is that your code passes the linter without errors or warnings. That shouldn’t be true just because you disabled the linter...</strong></p>
+
+<h2 id="install-prettier">Install Prettier</h2>
+
+<p>Individuality is great, but not always when you are working on a team. The linter goes a long way towards making sure your team is writing consist code, a formatter like <a href="https://prettier.io/">Prettier</a> can help as well. A formatter isn’t looking at the content of your code like ESlint, just the visual formatting (primarily how white spaces and line breaks are used). Under the hood it tokenizes your code and then outputs a new version with its formatting.</p>
+
+<p>Install Prettier with:</p>
+<pre><code class="language-plaintext">💻 npm install -D prettier eslint-config-prettier
+</code></pre>
+
+<p>You can run Prettier on your file with</p>
+<pre><code class="language-plaintext">💻 npx prettier index.js
+</code></pre>
+
+<p>Note that this doesn’t actually update your file, it just dumps a formatted version to the terminal. Try it out. Add some extra new lines, change the spacing of your expression. Just make your code ugly (without changing any of the content). Then run Prettier again. You should still see a nicely formatted output.</p>
+
+<h2 id="automate-linting-and-formatting">Automate linting and formatting</h2>
+
+<p>The linter and the formatter are great tools, but they only work if you use them. VSCode can be configured to run both in real time and give you feedback as you work. It probably is already showing you the lint errors live. I don’t recommend turning on its support for Prettier however, I found it interrupted my workflow too much (I like using white space to separate piece of code while I’m working, and Prettier wants to collapse them).</p>
+
+<p>Instead, we are going to set them up so that they are run when you commit your code to git (that way every commit is always nicely formatted).</p>
+
+<p>We will install a new tool called <a href="https://typicode.github.io/husky/#/">husky</a>.</p>
+
+<pre><code>💻 npm install -D husky lint-staged
+</code></pre>
+
+<p>Husky will add “hooks” to the git process, and then it will call the other package you installed (lint-staged) when the time comes.</p>
+
+<p>We are going to add two more things to your <code>package.json</code> file. In the scripts section, add <code>"prepare": "husky install"</code>. The <code>prepare</code> script is a special one that will be run when you do <code>npm install</code>. This allows husky to set itself up in a new deployment. Run the script now with <code>💻 npm run prepare</code>. You should see something like:</p>
+
+<pre><code class="language-plaintext">practical02-test&gt; npm run prepare
+
+&gt; practical02@1.0.0 prepare
+&gt; husky install
+
+husky - Git hooks installed
+</code></pre>
+
+<p>Then add the following to <code>package.json</code></p>
+
+<pre><code class="language-json">"lint-staged": {
+  "*.js": "eslint --cache --fix",
+  "*": "prettier --ignore-unknown --write"
+}
+</code></pre>
+
+<p>It should go at the top level of the object. This says that we would like to run every JavaScript file through the linter, and every file through Prettier.</p>
+
+<p>The last piece here is to actually add the hook to husky. Run the following:</p>
+
+<pre><code class="language-plaintext">💻 npx husky add .husky/pre-commit "npx lint-staged"
+</code></pre>
+
+<p>That tells husky that we would like the <code>lint-staged</code> command that we just configured to be run before anything is committed to git. Note that if the linter finds an error and fails, the commit will fail and you will have to fix it before you can proceed.</p>
+
+<p>Go ahead and commit your work to git now (recall from last time it is a two step process, you have to stage your changes them commit them). You should see the <code>lint-staged</code> tasks run at the start of the commit.</p>
+
+<h2 id="finishing-up">Finishing up</h2>
+
+<p>Commit any changes you may have made since the commit at the end of the last section and then push your changes to GitHub.</p>
+
+<p>You should then submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</p>
+
+<h2 id="grading">Grading</h2>
+
+<ul>
+  <li>Create a npm package</li>
+  <li>Implement <code>validSong</code></li>
+  <li>Implement tests with 100% coverage</li>
+  <li>Pass all tests</li>
+  <li>Pass all ESLint checks</li>
+</ul>
+
+<p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:30:43 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

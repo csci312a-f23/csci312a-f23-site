@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312: Programming Assignment 1</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/assign/assignment01.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="cs312---programming-assignment-1">CS312 - Programming Assignment 1</h1>
+
+<p>
+<strong>Initial Due Date: 2023-02-23 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-03-31 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+
+<ul>
+  <li>Develop a basic familiarity with <code>git</code> and GitHub classroom</li>
+  <li>Get started with basic JavaScript and Node.js</li>
+  <li>Practice some of the functional aspects of JavaScript (higher-order functions and closures)</li>
+  <li>Practice test-driven development (TDD)</li>
+  <li>Use a linter to write more consistent, more maintainable, higher quality, code</li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ol>
+  <li>Install <code>git</code> and Node.js as described on the <a href="/~mlinderman/courses/cs312/s23/resources/getting_started.html">Getting Started</a> page</li>
+  <li>Click the GitHub classroom <a href="https://classroom.github.com/a/51lp8zK6">link</a> and then clone the repository GitHub classroom creates to your local computer (in your shell, execute <code>💻 git clone</code> followed by the address of the repository).</li>
+  <li>Update the <code>package.json</code> file with your name and e-mail</li>
+  <li>Install the package dependencies with <code>💻 npm install</code></li>
+</ol>
+
+<h2 id="background">Background</h2>
+
+<h3 id="running-and-testing-your-program">Running and Testing Your Program</h3>
+
+<p>As with the practical, all of the function definitions in the starter code are being exported from the module.</p>
+
+<p>Start the Node.js REPL by executing <code>💻 node</code> in your shell. You can then load the contents of the module with:</p>
+
+<pre><code class="language-javascript">let pa1 = await import("./index.js");
+</code></pre>
+
+<p>Your functions will now be properties of the <code>pa1</code> object. For example, to run the <code>myMax</code> function, you can type <code>pa1.myMax([4,2,6])</code>.</p>
+
+<p>You can and are encouraged to practice test-driven development, TDD, (as seen in class). The assignment skeleton is set up for unit testing with <a href="https://jestjs.io/en/">Jest</a>. You will find a variety of tests, including the assignment examples in <code>index.test.js</code>.</p>
+
+<p>To run the tests, run <code>💻 npm test</code>.</p>
+
+<p>Note that these tests are currently failing because you haven’t written any code yet. I suggest that you go through <code>index.text.js</code> and change all of the <code>describe()</code> calls to <code>describe.skip()</code>. This tells jest to <a href="https://jestjs.io/docs/en/api#describeskipname-fn">skip</a> the tests in that test suite (you can also use the same technique to skip individual tests). As you work on each section, remove the <code>skip</code> to get feedback on the function as you go. You are welcome to add more tests to help you debug particular behaviors.</p>
+
+<p>Code that fails any test does not yet meet the specifications and is incomplete.</p>
+
+<h3 id="motivating-git">Motivating Git</h3>
+
+<p>Git is a distributed version control system (VCS). Git, and its “killer app” GitHub, will play a key role in our workflow. At its simplest, a VCS enables us to “checkpoint” our work (a <em>commit</em> in Git terminology), creating a distinct version of our codebase that that we can return to. The opportunity to track and undo changes makes it easier to find new bugs (by reviewing differences to a prior working version), maintain a clean code base (we don’t need to keep commented out code around in case we need it again), confidently make large changes knowing we can always recover a working version, and much more. For these reasons and more solo developers will use a VCS (and so should you!), but it is even more useful in a team environment.</p>
+
+<p>How will you know if you and another developer modify the same file (in potentially incompatible ways)? How do you ensure you don’t end up with a teammate’s half-working modifications? We will use the VCS to prevent these problems.</p>
+
+<p>The “distributed” in “distributed VCS” means that no central repository is required. Each Git repository contains the entire history of the project and thus each developer can work independently, making commits (checkpoints) without interfering with anyone else. Only when you <em>push</em> or <em>pull</em> those changes to another copy of the repository do your changes become visible to anyone else. Further we will use branches to segregate our changes. A branch is just a parallel version of the codebase. This allows you to experiment, while leaving the <em>master</em> branch untouched until your new feature is ready to be <em>merged</em> back into the master.</p>
+
+<p>Git does not require a central repository. However, teams still tend to use a central repository to facilitate their work (we will use GitHub in this role). There isn’t anything technically special about the shared repository other than that the team decides to share their changes via that central repository rather than directly with each other.</p>
+
+<p>Hopefully this short (and incomplete) description provides some context on why we use VCS. Please refer to various online resources for more details on how to use Git (and GitHub) most effectively.</p>
+
+<h2 id="assignment">Assignment</h2>
+
+<h3 id="part-1-reduce">Part 1: Reduce</h3>
+
+<p>Write a function <code>myMax(arr)</code> to find the largest value in an array using <code>reduce</code>. It should accept an array as an argument and return the largest value in the array (you can assume that the array is non-empty and that the values in the array are comparable). For example, <code>myMax([1, 2, 3])</code> should return <code>3</code>.  Your code should be of the form <code>const myMax = arr =&gt; arr.reduce(TODO);</code>, where <code>TODO</code> should be replaced with the actual functionality. Your solution should <em>not</em> make use of <code>Math.max</code>.</p>
+
+<h3 id="part-2-filtering">Part 2: Filtering</h3>
+
+<p>Write a function <code>threshold(objs, field, cutoff)</code>. This function takes in an array of objects (<code>objs</code>), the name of a property found in the objects (<code>field</code>), and a cutoff value (<code>cutoff</code>). The function should return an array of those objects in <code>objs</code> whose values for <code>field</code> are less than or equal to <code>cutoff</code>.  For example, <code>threshold([{x: 4, y: 5}, {x: 2, y: 9}, {x: 1, y: 1}], 'y', 5)</code> should return <code>[{x: 4, y: 5}, {x: 1, y: 1}]</code>. Your solution must use the array’s filter method.</p>
+
+<h3 id="part-3-mapping">Part 3: Mapping</h3>
+
+<p>Write a function <code>parseEmails(strings)</code>. This function takes in an Array of strings (<code>strings</code>), where each string is expected to be in the format <code>'First Last &lt;Email&gt;'</code> (to keep this simple, we will assume names with a single given name followed by a family name). So, for example, my name and address would look like <code>'Michael Linderman &lt;mlinderman@middlebury.edu&gt;'</code>. For each such string, the function should return a JavaScript object with fields for <code>first</code>, <code>last</code>, and <code>email</code>. My string should be transformed to the object <code>{first:'Michael', last: 'Linderman', email:'mlinderman@middlebury.edu'}</code> (note that the ‘&lt;’ and ‘&gt;’ have been stripped from the email address).</p>
+
+<p>Some additional requirements:</p>
+<ol>
+  <li>Your solution must use the <code>map</code> function.</li>
+  <li>While the function is designed to accept an array of strings, it should <em>also</em> accept a single string. Your function will need to detect this and do the right thing (the output will always be an Array, however). <em>I suggest thinking about how to handle the single string case, and then applying that solution to the array case when it occurs...</em></li>
+  <li>If a string is malformed, instead of returning an object, the function should return <code>null</code> (we are only worried about the structure, you don’t need to validate the email address in any way). So, for example, <code>parseEmails(["Jodi Whittaker &lt;jwhittaker@prydon.edu&gt;", "Peter Capaldi pcapaldi@prydon.edu"])</code> should return <code>[{first:'Jodi', last:'Whittaker', email:'jwhittaker@prydon.edu'}, null]</code>.</li>
+</ol>
+
+<h3 id="part-4-interval-alarm-with-closures">Part 4: Interval alarm with closures</h3>
+
+<p>You are building an application to facilitate interval workouts. Write a function <code>intervalAlarm</code> that takes an array of integers specifying interval times in seconds and returns a function that you can invoke to start the timer. The returned function should not take any arguments. When you invoke this function it should print a message when each interval expires, like shown below (including the length of the specified interval and the total time elapsed). Invoking <code>intervalAlarm</code> should not start the timer. You will need to use a closure.</p>
+
+<pre><code class="language-plaintext">&gt; const alarm = intervalAlarm([1, 0.5, .8])
+undefined
+&gt; alarm()
+undefined
+&gt; Interval of 1s completed (1.006s elapsed)!
+Interval of 0.5s completed (1.502s elapsed)!
+Interval of 0.8s completed (2.304s elapsed)!
+
+&gt; alarm()
+undefined
+&gt; Interval of 1s completed (1s elapsed)!
+Interval of 0.5s completed (1.501s elapsed)!
+Interval of 0.8s completed (2.302s elapsed)!
+</code></pre>
+
+<p><img src="/~mlinderman/courses/cs312/s23/assets/assignment01-intervals.png" class="img-fluid" style="max-width: 500px" /></p>
+
+<p><em>Note that when you run the function via Jest the timing will not be correct because the tests mock out the timer.</em></p>
+
+<h3 id="part-5-calendar-histogram">Part 5: Calendar histogram</h3>
+
+<p>Now that you have experience with data structures and iteration, we will combine those tools to implement a calendar “histogram”. You are trying to find the number of individuals who are available in specific windows during the week (think Doodle). A window is specified by an integer day of the week (0 is Sunday, 6 is Saturday), an inclusive start time and an exclusive end time (time is expressed in minutes since midnight). For example Tuesday 8:00AM-9:15AM would be specified as the following object:</p>
+
+<pre><code class="language-javascript">{
+  day: 2,
+  start: 480,
+  end: 555
+}
+</code></pre>
+
+<p>Write a function <code>availablityCount(windows, availabilities)</code> that has two arrays of time window objects as arguments. Your function should return a <em>deep copy</em> of the <code>windows</code> array (in any order) with each window also containing a <code>count</code> field of the number of objects in <code>availabilities</code> that overlap that window. This needs to be a <em>deep copy</em>, that creates copies of the window objects as well to avoid changing the original data. Windows in which no one was available should have a count of zero. You should only increment the count if the availability fully overlaps the time window. For example the following call</p>
+
+<pre><code class="language-javascript">availabilityCounts(
+  [{ day: 2, start: 480, end: 495 }, { day: 2, start: 840, end: 855 }],
+  [{ day: 2, start: 480, end: 555 }]
+)
+</code></pre>
+
+<p>should return</p>
+
+<pre><code class="language-javascript">[{ day: 2, start: 480, end: 495, count: 1 }, { day: 2, start: 840, end: 855, count: 0 }]
+</code></pre>
+
+<p>because the availability (Tuesday 8:00AM-9:15AM) fully overlaps the first window, but does not overlap the second (Tuesday 2:00PM - 2:45PM).</p>
+
+<p>There are many possible approaches to this problem. Any correct implementation will meet expectations (e.g. <span>\(O(n^2)\)</span>) time complexity is acceptable), but for context, the solution is less than 20 nicely formatted, heavily commented, lines (think about how you could use the functional tools you worked with above). An exemplary solution will be easily understandable and maintainable (i.e., reflect “strategic” vs. “tactical” software development).</p>
+
+<h3 id="finishing-up">Finishing Up</h3>
+
+<p>Once your program is working make sure you don’t have any style issues by running ESLint via <code>💻 npm run lint</code>. ESLint can fix many of the errors automatically by running <code>💻 npm run lint -- --fix</code> (although since ESLint can sometimes introduce errors during this process, we suggest committing your code before running “fix” so you can rollback any changes). To get full credit your code must have zero ESLint errors or warnings.</p>
+
+<p>It is OK to deactivate a rule for a specific line as long as doing so is a considered decision (not a means to hammer ESLint into submission). You will need to justify each deactivation with a comment. For example you will need to deactivate the console warning for your <code>intervalAlarm</code> function.</p>
+
+<pre><code class="language-javascript">// eslint-disable-next-line no-console
+console.log(...)
+</code></pre>
+
+<p>If you look closely at the <code>package.json</code> file, you will notice additional packages and scripts for running the Prettier code formatting tool automatically when you commit a file. We use Prettier to <a href="https://prettier.io/docs/en/why-prettier.html">ensure a consistent code formatting, automatically, without any nitpicking</a>. Prettier will run automatically, or you can run it manually with <code>npx prettier --write *.js</code>. We will use Prettier extensively throughout the semester.</p>
+
+<p>Notice that there is an additional file in your directory, <code>.gitignore</code>, which specifies files that should not be tracked by Git. It is good practice to create this file first in your repository to prevent undesired files from getting committed. Here we have provided a relevant <code>.gitignore</code> file in the skeleton. In general we want to exclude platform specific files, like the OSX .DS_Store files, any files that are automatically generated as well as files containing secrets such as API keys.</p>
+
+<p>If you haven’t done so already commit your changes to <code>index.js</code>:</p>
+
+<ol>
+  <li>Start by running <code>💻 git status</code> in the terminal in the assignment directory to see how your modified files are reported.</li>
+  <li>Then add the modified files to stage them for the commit, i.e. <code>💻 git add index.js</code>. The staging area now contains the files whose changes will be committed.</li>
+  <li>Run <code>💻 git status</code> again to see the how staged files are reported.</li>
+  <li>Commit your changes with <code>💻 git commit -m "Your pithy commit message"</code> (replace “Your pithy commit message” with a pithy but informative commit message, quotes are required). You can also skip the <code>-m</code> option. If you do so, <code>git</code> will open a text editor for you to write your commit message.</li>
+  <li>Run <code>💻 git log</code> to see your commit reported.</li>
+</ol>
+
+<p>Finally submit your assignment by pushing your changes to the GitHub classroom via <code>💻 git push --all origin</code> and then submitting your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/resources/gradescope.html">here</a>. You can submit (push to GitHub and submit to Gradescope) multiple times. The last submission before the deadline will be the one graded.</p>
+
+<h2 id="grading">Grading</h2>
+
+<table class="table table-sm table-bordered table-auto">
+  <thead>
+    <tr>
+      <th>Assessment</th>
+      <th>Requirements</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>R</strong>evision needed</td>
+      <td>Some but not all tests as passing.</td>
+    </tr>
+    <tr>
+      <td><strong>M</strong>eets Expectations</td>
+      <td>All tests pass, including linter analysis (without excessive deactivations).</td>
+    </tr>
+    <tr>
+      <td><strong>E</strong>xemplary</td>
+      <td>All requirements for <em>Meets Expectations</em> and your implementation is clear, concise, readily understood, and maintainable.</td>
+    </tr>
+  </tbody>
+</table>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-02-26 13:35:29 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

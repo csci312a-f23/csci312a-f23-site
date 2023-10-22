@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/lecture7-react-testing.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h2 id="testing-react-applications-with-enzyme">Testing React applications with Enzyme</h2>
+
+<h3 id="testing-react">Testing React</h3>
+
+<p>Testing functions like the ones you wrote for assignment 1 is conceptually straightforward. You call a function and it returns a result. The result either matches the expected result or does not. As we saw, though, implementing testing is not necessarily simple, and it takes some effort to make sure that our tests abide by our F.I.R.S.T. principles (Fast, Independent, Repeatable, Self-checking, Timely).</p>
+
+<p>When we start thinking about testing websites built with a framework like React, we have a couple of new challenges. What is the “expected result”? How do automatically test to make sure the site “looks right” and “behaves right” (i.e. the functionality that is driven by user interaction is implemented correctly)?</p>
+
+<p>The answer is that we need more tools. We will be using the <a href="https://testing-library.com/">Testing Library</a>. This the tool recommended by the React developers.</p>
+
+<h2 id="the-testing-library">The Testing Library</h2>
+
+<p>The <a href="https://testing-library.com/">Testing Library</a> provides a set of utilities specifically for testing web pages and user interaction.</p>
+
+<p>The library is <em>opinionated</em>, which is to say it was written with a particular view as to how to write tests, and it enforces that view on its users (opinionated tools are not a bad thing if you buy into the underlying philosophy, if you don’t...).</p>
+
+<blockquote class="blockquote">
+  <p>The more your tests resemble the way software is used, the more confidence they can give you.</p>
+  <footer class="blockquote-footer">Kent C. Dodds</footer>
+</blockquote>
+
+<p>The library is designed to promote testing DOM elements instead of React components. So, you render your component using the library and the there are a number of queries we can use for finding content within the rendered DOM.</p>
+
+<p>I encouraged you to check out the <a href="https://testing-library.com/docs/intro">documentation</a> for details of its use.</p>
+
+<h2 id="mocking-fetch">Mocking fetch</h2>
+
+<p>One of the issues we run into when testing is that our components may rely on getting information from the server via <code>fetch</code>. This obviously is problematic for our testing. It means that our tests are not <em>Independent</em> (other tests will alter the state on the server, and we don’t have a simple mechanism for resetting), nor are the <em>Repeatable</em> (content on the server can change, or the server can go down).</p>
+
+<p>Our solution is to mock the <code>fetch</code> call. This can be tricky because the server is providing somewhat complex behavior and normal <code>fetch</code> operations are asynchronous, so we need to mimic that. Fortunately, we have another library: <a href="http://www.wheresrhys.co.uk/fetch-mock/">fetch-mock-jest</a>.</p>
+
+<p>This provides a mock server that we can configure to react like the real one. We can easily specify the behavior for different routes, and it handles the creation of all of the Promises for us.</p>
+
+<p>Here is an example of it in action:</p>
+
+<pre><code class="language-javascript">beforeAll(() =&gt; {
+    localFilms = films.map((film) =&gt; ({ ...film }));
+
+    fetchMock.reset();
+    fetchMock.get(
+      'http://basin.cs.middlebury.edu:3042/api/films',
+      () =&gt; localFilms
+    );
+    fetchMock.put(
+      'http://basin.cs.middlebury.edu:3042/api/films/102',
+      (url, options) =&gt; {
+        const id = 102;
+
+        const modifiedFilm = JSON.parse(options.body);
+        localFilms = localFilms.map((film) =&gt; {
+          if (id === film.id) {
+            return modifiedFilm;
+          } else {
+            return film;
+          }
+        });
+        return modifiedFilm;
+      }
+    );
+</code></pre>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-02-21 12:30:05 -0500.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

@@ -1,0 +1,771 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 Practical: RDBMS</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-rdbms2.html">
+    </head>
+    <body>
+
+        <div class="container">
+            
+<h1 id="implement-an-rdbms-server-for-simplepedia">Implement an RDBMS Server for Simplepedia</h1>
+
+<p>
+<strong>Initial Due Date: 2023-04-18 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-05-05 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+<ul>
+  <li>Implement a NextJS server with a RDBMS backend</li>
+  <li>Gain familiarity with RDBMS-backed servers, Knex, SQLite, and the Objection ORM library</li>
+  <li>Implement model validations as an example of aspect-oriented programming (AOP)</li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ol>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/u4wPCWB7">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Clone the repository to you computer with <code>💻 git clone</code> (get the name of the repository from GitHub).</li>
+  <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
+  <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
+</ol>
+
+<h2 id="background">Background</h2>
+
+<p>We are going to use NextJS <a href="https://nextjs.org/docs/api-routes/introduction">API routes</a> to implement the Simplepedia API. Recall the <a href="/~mlinderman/courses/cs312/s23/assign/assignment04.html">Simplepedia API</a> is:</p>
+
+<table class="table table-sm table-bordered table-auto">
+  <thead>
+    <tr>
+      <th>Endpoint</th>
+      <th>Method</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>/api/sections</td>
+      <td>GET</td>
+      <td>Fetch a JSON array of all sections in sorted order</td>
+    </tr>
+    <tr>
+      <td>/api/articles</td>
+      <td>GET</td>
+      <td>Fetch the entire article collection as an array sorted by title</td>
+    </tr>
+    <tr>
+      <td>/api/articles?section=<em>:section</em></td>
+      <td>GET</td>
+      <td>Fetch all articles in the corresponding section sorted by title</td>
+    </tr>
+    <tr>
+      <td>/api/articles</td>
+      <td>POST</td>
+      <td>Add a new article to the collection (the new article should be provided as the JSON-encoded request body)</td>
+    </tr>
+    <tr>
+      <td>/api/articles/<em>:id</em></td>
+      <td>GET</td>
+      <td>Get article with <code>id</code> of <em>:id</em></td>
+    </tr>
+    <tr>
+      <td>/api/articles/<em>:id</em></td>
+      <td>PUT</td>
+      <td>Update the article with <code>id</code> of <em>:id</em> (entire updated article, including <code>id</code> should be provided as the JSON-encoded request body)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Unlike our previous practical, our server will use an RDBMS backend. Our unit tests will use SQLite and we will also create a “production” PostgreSQL database. By using the <a href="http://knexjs.org">Knex library</a>, the same code will (generally) work with both. <em>Note, there are some differences among database engines, and particularly between SQLite and MySQL/PostgreSQL. Ideally we would run our tests with the same systems we plan to use in production, however, in our class context it is much simpler to test and develop with SQLite. As you work on your projects I encourage you to frequently test your application against the production RDBMS to resolve any differences (not just right before the sprint ends)</em>.</p>
+
+<h2 id="setup-knex">Setup Knex</h2>
+
+<p><a href="(http://knexjs.org)">Knex</a> is both a library and a command line tool (usable via <code>npx</code>). Install Knex and the database clients (for SQLite 3 and PostgreSQL):</p>
+
+<pre><code class="language-plaintext">💻 npm install --save knex sqlite3 pg
+</code></pre>
+
+<p>Create a file in the root of your practical directory named <tt>knexfile.js</tt> and paste the following to configure Knex’s database connections. You are configuring a SQLite-based <code>test</code> environment (using a specific seed directory and database file), a SQLite-based <code>development</code> environment and a <code>production</code> configuration using PostgreSQL.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-js">const { loadEnvConfig } = require("@next/env");
+
+// Adapted from NextJS knex example
+const dev = process.env.NODE_ENV !== "production";
+const { DATABASE_URL } = loadEnvConfig("./", dev).combinedEnv;
+
+const defaultSettings = {
+  migrations: {
+    directory: "./knex/migrations",
+  },
+  seeds: {
+    directory: "./knex/seeds",
+  },
+};
+
+module.exports = {
+  test: {
+    ...defaultSettings,
+    client: "sqlite3",
+    connection: ":memory:",
+    useNullAsDefault: true,
+    seeds: {
+      directory: "./knex/seeds/test",
+    },
+  },
+
+  development: {
+    ...defaultSettings,
+    client: "sqlite3",
+    connection: {
+      filename: "./simplepedia.db",
+    },
+    useNullAsDefault: true,
+  },
+
+  production: {
+    ...defaultSettings,
+    client: "pg",
+    connection: {
+      connectionString: DATABASE_URL,
+      ssl: true,
+    },
+  },
+};
+</code></pre>
+
+<p>Recall that migration are how we automatically configure the database. Each migration has two parts, the “up” function which makes the desired changes to the database, e.g. create a table or add a column, and the “down” function which reverts those changes. For SQLite, running the migration will also create the database file if it doesn’t exist.</p>
+
+<p>Create a skeleton for a migration with <code>💻 npx knex migrate:make articles</code>. This command will create a new folder called <tt>knex/migrations</tt>, in which you will find your new migration file with <code>articles</code> in the name (note the date in the file name so the current state of the database schema can be tracked). You will need to fill in the <code>exports.up</code> (which should create your table) and <code>exports.down</code> (which should delete or “drop” the table) using the Knex <a href="https://knexjs.org/guide/schema-builder.html">schema builder API</a>.</p>
+
+<p>In the database, you want to create a table named <code>Article</code> with the four columns that correspond to the Article properties. Recall from the programming assignments that the four properties are: <code>id</code>, <code>title</code>, <code>contents</code>, and <code>edited</code>. The <code>id</code> field should be of type <code>increments</code>, an auto-incrementing integer, to ensure that each article has a unique id number (Knex automatically sets the <code>increments</code> column as the primary key, but we will be explicit here as an example). The remaining columns should be <code>string</code> or <code>text</code> as shown below. The difference between <code>string</code> and <code>text</code> is the intended size: <code>string</code> is typically of shorter, fixed, length, while <code>text</code> implies a longer, variable-length, string. The actual implementation will depend on the underlying database (e.g. SQLite has only variable length strings while PostgreSQL enforces that strings are limited to 255 characters).</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">exports.up = function (knex) {
+  return knex.schema.createTable("Article", (table) =&gt; {
+    table.increments("id").primary();
+    table.string("title");
+    table.text("contents");
+    table.string("edited");
+  });
+};
+
+exports.down = function (knex) {
+  return knex.schema.dropTableIfExists("Article");
+};
+</code></pre>
+
+<p>When defining the schema, you can specify additional constraints on the columns (as chained methods). What additional constraints should exist on the articles? Can there be articles with identical titles? Can the edited time be null? Add additional constraints to your schema. <a href="#schema-constraints" data-bs-toggle="collapse">View a more specific schema...</a></p>
+
+<div id="schema-constraints" class="collapse">
+
+  <p>Notice that in this expanded schema we are enforcing that all titles must be defined (<code>notNullable</code>) and unique (no duplicate titles) and similarly the edited time must be defined. The database is the most effective and efficient tool for enforcing these constraints. If we were to enforce uniqueness outside the database we would need to perform another query prior to any update. Instead the database can verify uniqueness as part of the insert or update operation. More generally, the more validations we can build into the schema, the greater confidence we have in the integrity of the data (since it couldn’t be saved in the database without satisfying those constraints). We don’t have worry, for instance, that we missed checking a validation in an API function somewhere...</p>
+
+  <!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+  <div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+  <pre><code class="language-javascript">table.increments("id").primary();
+table.string("title").unique().notNullable();
+table.text("contents");
+table.string("edited").notNullable();
+</code></pre>
+</div>
+
+<p>Once you have completed your migration, run any <a href="https://knexjs.org/guide/migrations.html">un-performed migrations</a> (in this case just one) with the following command. Note we are explicitly specifying the environment (and thus the database that should be modified). Recall from class that migrations are only applied once, that is if you invoke the following command multiple times, the migration will only actually be performed once. Doing so ensures we don’t corrupt our database. But that also means that if modify a migration that has already been applied and migrate again, nothing will happen. If we want to reapply a migration we first need to “rollback” with the <code>migrate:rollback</code> command (invoking the <code>down</code> function in our migration script) before re-applying the migration command below.</p>
+
+<pre><code class="language-plaintext">💻 npx knex migrate:latest --env development
+</code></pre>
+
+<p>The migration should have created a <tt>simplepedia.db</tt> file. If you have the sqlite3 client application installed (may depend on your platform) you can view the database directly. If not, skip the following command. Open the database with the SQLite client application via <code>💻 sqlite3 simplepedia.db</code> (<kbd>Ctrl+D</kbd> or the <code>.exit</code> command to exit) and execute <code>.schema</code> at the interpreter prompt to view the tables created by the migration. You should see the <code>Article</code> table you just defined along with the tables that Knex creates to track which migrations have been applied. Here is what I see:</p>
+
+<pre><code class="language-plaintext">% sqlite3 simplepedia.db 
+SQLite version 3.40.0 2022-11-16 12:10:08
+Enter ".help" for usage hints.
+sqlite&gt; .schema
+CREATE TABLE `knex_migrations` (`id` integer not null primary key autoincrement, `name` varchar(255), `batch` integer, `migration_time` datetime);
+CREATE TABLE sqlite_sequence(name,seq);
+CREATE TABLE `knex_migrations_lock` (`index` integer not null primary key autoincrement, `is_locked` integer);
+CREATE TABLE `Article` (`id` integer not null primary key autoincrement, `title` varchar(255) not null, `contents` text, `edited` varchar(255) not null);
+CREATE UNIQUE INDEX `article_title_unique` on `Article` (`title`);
+sqlite&gt; 
+</code></pre>
+
+<h1 id="seeding-the-article-data">Seeding the Article Data</h1>
+
+<h3 id="create-the-seed-file">Create the Seed File</h3>
+
+<p>Seed files are short scripts that populate the database. Create a skeleton seed file with:</p>
+
+<pre><code class="language-plaintext">💻 npx knex seed:make load-articles --env development
+</code></pre>
+
+<p>The above command should have created a <tt>knex/seeds/load-articles.js</tt> file. Modify that file to read in the article from the <tt>data/seed.json</tt> file and insert it into the database. For simplicity we will use Node’s synchronous file I/O interface. Update the code generated by Knex to the following. Note that we use a slightly different import structure because this code is running outside of our application infrastructure and so is not transpiled to the import style expected by Node.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">/* eslint-disable func-names */
+/* eslint no-unused-vars: ["error", { "args": "none" }] */
+const fs = require("fs");
+
+exports.seed = function (knex) {
+  const contents = fs.readFileSync("./data/seed.json");
+  const data = JSON.parse(contents);
+
+  // Deletes ALL existing entries
+  // Use batch insert because we have too many articles for simple insert
+  return knex("Article").del()
+    .then(() =&gt; knex.batchInsert("Article", data, 100));
+};
+</code></pre>
+
+<p>If you used schema the specified above, the column names match the property names of the objects in the <code>data</code> Array. Those objects can be passed directly to the <code>insert</code> function (recall that the database itself will generate the <code>id</code> property). However, we have too much data to just pass the array to <code>insert</code>, instead we need to use Knex’s <a href="https://knexjs.org/guide/utility.html#batchinsert"><code>batchInsert</code> utility</a> to insert the article in blocks (in this case in blocks of 100 articles).</p>
+
+<h3 id="run-the-seed">Run the Seed</h3>
+
+<p>Run the seed with <code>💻 npx knex seed:run --env development</code> to populate your database. Optionally, if you reopen your database with the SQLite3 command-line tool you can view the articles. Execute the following command in the SQLite interpreter to view 10 articles (the semi-colon is required and the keywords in SQL are not case-sensitive).</p>
+
+<pre><code class="language-sql">select * from Article limit 10;
+</code></pre>
+
+<p>Here is what I see:</p>
+
+<pre><code class="language-plaintext">% sqlite3 simplepedia.db 
+SQLite version 3.40.0 2022-11-16 12:10:08
+Enter ".help" for usage hints.
+sqlite&gt; select * from Article limit 10;
+0|Ikoga|Ikoga is a village in North-West District of Botswana. It is located close to Okavango Delta and has a primary school. The population was 699 in 2001 census.|2016-12-07T23:22:33.357Z
+1|543 Charlotte|543 Charlotte is a minor planet orbiting the Sun. It was discovered by Paul Götz on September 11, 1904 in Heidelberg.|2016-12-12T02:46:56.549Z
+2|9 (New York City Subway service)|9 was a designation given to several services of the New York City Subway.|2016-12-21T23:52:24.933Z
+3|Allercombe|Allercombe is a hamlet in east Devon, England. It lies just south of the A30 road between the villages of Whimple and Aylesbeare.|2016-11-21T04:49:57.991Z
+4|Nepenthes kongkandana|Nepenthes kongkandana is a tropical pitcher plant endemic to Songkhla Province in southern Thailand. It is closely related to N. kerrii.|2016-12-27T01:50:39.714Z
+5|Alexey Kavokin|Alexey V. Kavokin (born 7 March 1970 in Leningrad) is a Russian and French theoretical physicist and writer.|2016-11-11T02:32:05.226Z
+6|Thomas Van Lear|Thomas Van Lear (April 26, 1869 – March 4, 1931) was the Socialist Mayor of Minneapolis from January 1, 1917 to January 6, 1919.|2016-11-29T22:50:11.578Z
+7|Bulinus globosus|Bulinus globosus is a species of a tropical freshwater snail with a sinistral shell, an aquatic gastropod mollusk in the family Planorbidae, the ramshorn snails and their allies.|2016-11-02T06:40:19.196Z
+8|Love, Illinois|Love is an unincorporated community in Bureau County, Illinois, United States, located on Illinois Route 92, south of Tampico.|2016-12-28T11:11:30.718Z
+9|Jesuit High School (Sacramento)|Jesuit High School of Sacramento is a Catholic High School which enrolls about 1,000 young men from throughout greater Sacramento Valley in California.|2016-12-25T03:47:30.404Z
+</code></pre>
+
+<h2 id="implement-the-server">Implement the Server</h2>
+
+<h3 id="connect-to-the-database">Connect to the database</h3>
+
+<p>Before you can use the database in your API handlers, you need a way to initialize Knex. Create a file <code>knex/knex.js</code> (a file named <code>knex.js</code> in the <code>knex</code> directory) that we can use to create an initialized <code>knex</code> instance. Copy in the following code adapted from the NextJS Knex example to create a knex instance that persists across hot reloads. Note the common pattern in which we use <code>process.env.NODE_ENV</code> to specify the environment (e.g. <code>production</code>, <code>development</code>, etc.) or default to <code>development</code>.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">import createKnex from "knex";
+import knexConfig from "../knexfile";
+
+/**
+ * Global is used here to ensure the connection is cached across hot-reloads in development. The approach
+ * is adapted from: https://www.prisma.io/docs/guides/database/troubleshooting-orm/help-articles/nextjs-prisma-client-dev-practices
+ */
+
+const globalForKnex = global;
+
+export const knex =
+  globalForKnex.knex ||
+  createKnex(
+    knexConfig[process.env.KNEX_ENV || process.env.NODE_ENV || "development"]
+  );
+
+if (process.env.NODE_ENV !== "production") globalForKnex.knex = knex;
+</code></pre>
+
+<h3 id="serving-a-single-article">Serving a single article</h3>
+
+<p>In <tt>src/pages/api/articles/[id].js</tt> we will implement the <code>GET /api/articles/:id</code> endpoint. First, import your newly created <code>knex</code> object, i.e., import <code>{ knex }</code> from the <tt>knex.js</tt> file you just created. Where indicated by the TODO delete the existing placeholder response code (added to facilitate testing before you have implemented all the routes). As a general note, you can only respond once per handler and so leaving the second response will generate an error. Then implement code to return a single article with the corresponding id (i.e., with <code>req.query.id</code>). In order to fetch a single article you want to perform a <a href="https://knexjs.org/guide/query-builder.html#where">select query with a where clause</a>. The where clause will filter the returned articles to just those that match the id in the URL. The <code>first</code> method extracts just the single result. The Knex Query builder creates a Promise so we use an <code>async</code> function with <code>await</code>.</p>
+
+<pre><code class="language-javascript">const article = await knex("Article").where({ id: req.query.id }).first();
+if (article) {
+  res.status(200).json(article);
+} else {
+  res.status(404).end(`Article with id ${req.query.id } not found`);
+}
+</code></pre>
+
+<p>As we did before you can test your API implementation using <code>fetch</code> via the browser’s console. Start the development server with <code>💻 npm run dev</code> then open the application and the browser’s developer tools. In the console, paste and execute a test <code>fetch</code> command. Hopefully see the expected article!</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">fetch("/api/articles/4")
+   .then(resp =&gt; resp.json())
+   .then(data =&gt; { console.log(data); })
+   .catch((error) =&gt; console.log(error));
+</code></pre>
+
+<p>In the test above, we are implementing minimal error handling. We will try to parse any response as JSON, including any error responses. To get more information about any errors, click over to the Network tab in the developer tools and click on the failing request. You want to view the full Response to see the complete error message. To assist in development, the skeleton reports the raw error message in the API response. In a production setting, however, you would not want to send your internal error messages to external clients and instead would likely use some form of internal error logging.</p>
+
+<h3 id="serving-the-sections">Serving the sections</h3>
+
+<p>In <tt>src/pages/api/sections.js</tt> we will implement the <code>/api/sections</code> endpoint. As before, import the <code>knex</code> object from the <tt>knex/knex.js</tt> file. Where indicated by the TODO delete the existing placeholder response code and implement code to generate a sorted de-duplicated array of sections (i.e., first letter of the article upper-cased). Here we are going to take advantage of the capabilities of database to implement the de-duplicating and sort. You can implement this route with:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const sections = await knex("Article")
+   .select(knex.raw("UPPER(SUBSTRING(title, 1, 1)) AS section"))
+   .distinct()
+   .orderBy("section");
+res.status(200).json(sections.map(section =&gt; section.section));
+</code></pre>
+
+<p>Here we drop down to “raw” SQL to utilize string functions that are not provided by Knex. As part of the query, we extract and upper-case the first letter of the title as <code>section</code>, then de-duplicate and sort those values. The result is an array of <code>{section: "A"}</code> objects, that we flatten into a a single array. Here we take advantage of the capabilities offered by the RDBMS to simplify our application. Pushing the computation into the DB reduces communication (we are not sending the titles just to only extract the first letter ) and could utilize server-side caching to reduce queries and optimizations within the DB query engine itself to speed up the computation.</p>
+
+<h3 id="enable-testing">Enable testing</h3>
+
+<p>The skeleton contains a simple test suite from our previous practical. We need to make a few additions to use it with Knex.</p>
+<ol>
+  <li>Import the <code>knex</code> object from the <tt>knex/knex.js</tt> file as you did in your API file.</li>
+  <li>
+    <p>We want to reset the database to a known state before each test so our tests are Independent and Repeatable (recall FIRST). Add the following functions at the beginning of the <code>describe("Simplepedia API")</code> block to rebuild the database before all tests and re-seed it before every test. The Jest test runner automatically sets <code>NODE_ENV=test</code>; thus Knex will use the test database you defined in <code>knexfile.js</code> (not the development database you just seeded).</p>
+
+    <pre><code class="language-javascript"> beforeAll(() =&gt; {
+   return knex.migrate.rollback().then(() =&gt; knex.migrate.latest());
+ });
+ beforeEach(() =&gt; {
+   return knex.seed.run();
+ });
+</code></pre>
+  </li>
+  <li>
+    <p>Create <tt>knex/seeds/test/load-test-articles.js</tt> (i.e., create a new directory <code>test</code> in <code>seeds</code>) with the content below. Note that this is similar to your other seed file except that it loads a smaller set of articles and resets the article <code>id</code> (to ensure a consistent across tests).</p>
+
+    <pre><code class="language-javascript"> /* eslint-disable func-names */
+ /* eslint no-unused-vars: ["error", { "args": "none" }] */
+ const fs = require("fs");
+ exports.seed = function (knex) {
+   const contents = fs.readFileSync("./data/test-data.json");
+   const data = JSON.parse(contents);
+   // Deletes ALL existing entries and reset the id count. Then use
+   // batch insert because we have too many articles for simple insert.
+   return knex("sqlite_sequence")
+     .where("name", "=", "Article")
+     .update({ seq: 0 })
+     .then(() =&gt; knex("Article").del())
+     .then(() =&gt; knex.batchInsert("Article", data, 100));
+ };
+</code></pre>
+  </li>
+</ol>
+
+<p>Now run the tests with <code>💻 npm test</code>. The tests for GETting the sections and a single article should pass, but the others may/should fail.</p>
+
+<p>Many of the failures are related to validation. You could successfully implement the Simplepedia API just using Knex. However, you would need to duplicate any validation code and use Knex’s “low level” query interface. Instead, we will implement the server using the <a href="https://vincit.github.io/objection.js/">Objection.js</a> ORM to make our routes simpler and implement our validations in an aspect-oriented approach (AOP).</p>
+
+<h2 id="switching-to-the-objection-orm">Switching to the Objection ORM</h2>
+
+<h3 id="creating-the-model">Creating the Model</h3>
+
+<p>Install the package and associated validators <code>💻 npm install --save objection ajv-formats</code>. Create a directory <tt>models</tt> containing a file <tt>BaseModel.js</tt>. This file will provide a base class for all our other models that incorporates additional validations into our model schema and binds our Objection.js models to the <code>knex</code> database interface (Objection.js wraps around the Knex library).</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">/* eslint-disable camelcase */
+import { knex } from "../knex/knex";
+import { Model, AjvValidator } from "objection";
+import addFormats from "ajv-formats";
+
+class BaseModel extends Model {
+  static createValidator() {
+    return new AjvValidator({
+      onCreateAjv: (ajv) =&gt; {
+        // Make suse all ajv formats are available in validations
+        addFormats(ajv);
+      },
+    });
+  }
+}
+
+// Bind the Objection model to the Knex connection before use
+Model.knex(knex);
+
+export default BaseModel;
+</code></pre>
+
+<p>Now create <tt>models/Article.js</tt> file with the following:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">/* eslint-disable camelcase */
+import { Model } from "objection";
+import BaseModel from "./BaseModel";
+
+export default class Article extends BaseModel {
+  // Table name is the only required property.
+  static get tableName() {
+    return "Article";
+  }
+
+  // Objection.js assumes primary key is `id` by default
+
+  static get jsonSchema() {
+    return {
+      type: "object",
+      required: ["title"],
+
+      properties: {
+        id: { type: "integer" },
+        title: { type: "string" },
+        contents: { type: "string" },
+        edited: { type: "string" },
+      },
+    };
+  }
+}
+</code></pre>
+
+<p>The <code>jsonSchema</code> function specifies the properties of the model using the <a href="https://json-schema.org/understanding-json-schema/index.html">JSON Schema specification</a>. With just this schema you can implement additional validation, such as numerical limits, etc., beyond what is possible with just SQL. You can further customize the validation methods if needed.</p>
+
+<h3 id="using-your-newly-created-model">Using your newly created model</h3>
+
+<p>Return to <tt>api/articles/[id].js</tt> to replace the Knex implementation with an implementation using Objection.js. Start by importing your newly created <code>Article</code> model. You can now replace your previous Knex-based implementation with Objection.js:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">const article = await Article.query()
+  .findById(req.query.id)
+  .throwIfNotFound();
+res.status(200).json(article);
+</code></pre>
+
+<p>Notice that we no longer need to specifically handle an invalid id. The <code>.throwIfNotFound()</code> raises an error when no article is found, and that error can be handled by our error handling middleware.</p>
+
+<p>Many of the operations we want to perform we can do exclusively with <code>Objection.js</code>. However, as with sections, it is sometimes helpful to “drop down” to SQL. Specifically when you implement the <code>/api/articles</code> route, we can use the Objection.js query builder to optionally add a  <code>WHERE</code> clause to the query that selects articles based the the section parameter. Note the <code>whereRaw</code> below that utilizes the same SQL string handling functions as above. The <code>?</code> implements parameter insertion (the <code>?</code> is replaced with <code>req.query.section</code>) and automatic escaping that ensures the query (sent by the client) can’t inject additional SQL on our server (something we will talk about later in the semester).</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">let query = Article.query();
+if (req.query.section) {
+  query = query.whereRaw("UPPER(SUBSTRING(title, 1, 1)) = ?", [
+    req.query.section,
+  ]);
+}
+const articles = await query;
+res.status(200).json(articles);
+</code></pre>
+
+<p>Now update the rest of the handlers to work with your newly created <code>Article</code> model. The relevant <a href="https://vincit.github.io/objection.js/api/query-builder/">Objection.js query methods</a> will likely be <code>insertAndFetch</code> and <code>updateAndFetchById</code>. These will all need to be called on a query like shown above (e.g., <code>Article.query().insertAndFetch(...)</code>), not on the raw model (<code>Article</code>). All of your routes should be similar and have just a few lines of code. Those methods will require one or more arguments, e.g. the article you will be inserting into the database.</p>
+
+<p>Unfortunately we can’t just use Objection for validation. The <code>id</code> of object sent in the PUT request must match the id in the URL. We will need to check that requirement is satisfied by writing code in our route handler:</p>
+
+<pre><code class="language-javascript">const { id, ...updatedArticle } = req.body;
+// req.query.id is a string, and so needs to be converted to an integer before comparison
+if (id !== parseInt(req.query.id, 10)) {
+  // Verify id in the url, e.g, /api/articles/10, matches the id the request body
+   res.status(400).end(`URL and object does not match`);
+   return;
+}
+// Update the database ...
+</code></pre>
+
+<h3 id="refining-your-validations">Refining Your Validations</h3>
+
+<p>With all the routes in place, most, but not all, of the tests should pass. The remaining failing test should be testing what happens if an article is created without an <code>contents</code> field.</p>
+
+<p>Since the <code>id</code> mismatch validation check depended on both the route and the data, we needed to implement it in the route handler. But this test is just about data integrity, thus it is best addressed in the Model. Modify the <code>Article</code> model to include a suitable default (thus fixing that issue everywhere an <code>Article</code> instance might be created) making the test pass (i.e., add a <code>default</code> field to the <code>contents</code> property as described in the JSON Schema <a href="https://json-schema.org/understanding-json-schema/reference/generic.html">documentation</a>).</p>
+
+<p>We would like our API model to be even more robust. At present, we allow any string for the <code>edited</code> time, but we should really only allow valid dates. Practice TDD by writing a test for POSTing an article with an invalid date (in the “POST operations” test suite), and then add to the schema to introduce the necessary constraint. Check out the JSON Schema <a href="https://json-schema.org/understanding-json-schema/reference/string.html#format">documentation</a> for string formats, specifically “date-time”. <a href="#validation" data-bs-toggle="collapse">Show an approach...</a></p>
+
+<div id="validation" class="collapse">
+
+  <p>First create a possible test for an invalid <code>edited</code> time inside the existing <code>describe</code> section for POST requests:</p>
+
+  <!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+  <div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+  <pre><code class="language-javascript">test("Should reject an article with an invalid edited time", async () =&gt; {
+  await testApiHandler({
+    rejectOnHandlerError: false, // We want to assert on the error
+    handler: articles_endpoint,
+    test: async ({ fetch }) =&gt; {
+      const res = await fetch({
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ title: "A title", edited: "4" }),
+      });
+      expect(res.ok).toBe(false);
+    },
+  });
+});
+</code></pre>
+  <p>and then add the corresponding constraint in the schema to make that test pass:</p>
+
+  <pre><code class="language-javascript">edited: { type: "string", format: "date-time" },
+</code></pre>
+
+</div>
+
+<h2 id="production-deployments-and-also-managing-secrets">Production deployments (and also managing secrets)</h2>
+
+<p>While SQLite is a very effective test and development platform (with the caveats mentioned above) it is not well suited for a production environment where we want to support concurrent access, robust backup and other management features (and where we may not have fast, persistent, file storage). Instead we will use PostgreSQL, as provided by <a href="https://bit.io">https://bit.io</a>. bit.io provides a managed PostgreSQL database accessible from anywhere with a generous free-tier and no credit card required. To get started:</p>
+
+<ol>
+  <li>Sign up for a free account at <a href="https://bit.io">https://bit.io</a></li>
+  <li>Create a new private database</li>
+  <li>From the dashboard click “Connect” (towards upper right hand corner) and copy the the “Postgres Connection” string. It will be obscured, but when you hover there should be a copy button. This string contains all the information needed connect to your newly created database, including the password.</li>
+  <li>Create a a file named <tt>.env.local</tt> in the root directory of your practical with:
+    <pre><code class="language-plaintext"> DATABASE_URL=postgresql://...
+</code></pre>
+    <p>where <code>postgresql://...</code> is the full URL you just copied from bit.io</p>
+  </li>
+</ol>
+
+<p>Notice that this <a href="https://nextjs.org/docs/basic-features/environment-variables">“env file”</a> is ignored by Git. It is used to store secrets, like your database credentials, which should <strong>not</strong> be included in your code (and uploaded to sites like GitHub, etc.) Since this file is not included in version control, each developer will need their own copy (i.e., you will have to distribute this file for your projects separately from your project source code). This file is used to set environment variables that can be accessed by your applications. For example in <tt>knexfile.js</tt>, the <code>production</code> configuration the <code>connectionString</code> is set from the <code>DATABASE_URL</code> variable set in <tt>.env.local</tt>. Any secrets, e.g., API keys for third party services, should be managed this way. Application platforms typically have ways to securely set environment variables for your applications (which is how you would set the <code>DATABASE_URL</code>, etc. for your project).</p>
+
+<p>Migrate and seed your production database like you did before, but specifying the <code>production</code> environment. You should now be able to see the article data on bit.io!</p>
+
+<pre><code class="language-plaintext">💻 npx knex migrate:latest --env production
+💻 npx knex seed:run --env production
+</code></pre>
+
+<p>You can now build and run the production version of your application (which will use your newly populated database) with the commands below.</p>
+
+<pre><code class="language-plaintext">💻 npm run build
+💻 npm run start
+</code></pre>
+
+<p>Open the URL and test your API and database by creating a new article. Paste the following in the browser console.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">fetch("/api/articles", { 
+   method: "POST",
+   headers: { "content-type": "application/json" }, 
+   body: JSON.stringify({
+      title: "A new article",
+      contents: "Article body",
+      edited: "2016-11-19T22:57:32.639Z",
+   }),
+})
+  .then(resp =&gt; resp.json())
+  .then(data =&gt; console.log(data))
+  .catch((error) =&gt; console.log(error));
+</code></pre>
+
+<p>You should see a response with the newly assigned <code>id</code> and can also view your new inserted article in the bit.io “Data” view, by executing the query:</p>
+
+<pre><code class="language-sql">SELECT * FROM "Article" WHERE title='A new article';
+</code></pre>
+
+<h2 id="using-an-orm-to-facilitate-associations">Using an ORM to facilitate associations</h2>
+
+<p>So far there likely doesn’t seem to be much difference between the Objection implementation and the implementation with plain Knex. The differences start to show when we introduce <a href="https://vincit.github.io/objection.js/guide/relations.html">relations</a> (also termed associations) between the models. Let’s imagine we wanted to extend Simplepedia with a feature to explore related articles, that is define a “many to many” relation between articles. We will do so with a join table in our RDBMS that contains references to two articles.</p>
+
+<p>Start by creating another migration to add the relevant table <code>💻 npx knex migrate:make related_articles</code>. Because this migration has a later date than the migration you created above, it will be applied second. Modify the generated file to create the table. Similar to our examples in class, we want to create a new table <code>RelatedArticle</code> with two foreign key references. Since each related combination can only appear once, we will use the two columns together as a composite primary key. Once you have implemented the migration, apply it as you did before.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">exports.up = function(knex) {
+  return knex.schema.createTable("RelatedArticle", (table) =&gt; {
+    table.integer("articleId").references("id").inTable("Article").onDelete("CASCADE");
+    table.integer("relatedId").references("id").inTable("Article").onDelete("CASCADE");
+    table.primary(["articleId", "relatedID"]);
+  });
+};
+
+exports.down = function(knex) {
+    return knex.schema.dropTableIfExists("RelatedArticle");
+};
+</code></pre>
+
+<p>Next, add the relation to the <code>Article</code> model in <tt>models/Article.js</tt>. Relations are specified with a static object in the Model class named <code>relationMappings</code>. Each of the different relation types requires different information. Here we specify the name of the relation as the key (the name will be used in our queries), <code>related</code> in this case, and the type and links of the relation.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">static relationMappings = {
+   related: {
+   relation: Model.ManyToManyRelation,
+   modelClass: Article,
+   join: {
+      from: "Article.id",
+      through: {
+         // RelatedArticle is the join table. These names must match the schema
+         from: "RelatedArticle.articleId",
+         to: "RelatedArticle.relatedId",
+      },
+      to: "Article.id",
+   }
+   }
+};
+</code></pre>
+
+<p>Now that the relation is specified in the model, we can perform “graph” queries to fetch, insert, etc. related articles. In our API we now want to return related articles when we fetch a specific article, that is the fetch article object should contain an additional property <code>related</code> that is an array of article objects. In keeping with TDD, start by adding the test below (you will need to import <code>Article</code> in the test file before doing so). Here we create a test relation before the test (and clean it up afterwards). This test should be added within the existing top-level <code>describe</code> as it relies on the setup and teardown code you implemented before.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">describe("Related articles test", () =&gt; {
+    beforeEach(() =&gt; {
+      // Create test example by setting related article (by id)
+      return Article.relatedQuery("related").for(1).relate(2);
+    })
+
+    afterEach(() =&gt; {
+      // Clear relation join table
+      return knex("RelatedArticle").del();
+    })
+
+    test("GET /api/articles/[id] should return related articles", async () =&gt; {
+      await testApiHandler({
+        rejectOnHandlerError: true,
+        handler: article_endpoint,
+        paramsPatcher: (params) =&gt; (params.id = 1), // Testing dynamic routes requires patcher
+        test: async ({ fetch }) =&gt; {
+          const res = await fetch();
+          await expect(res.json()).resolves.toMatchObject({ ...data[0], related: [data[1]]});
+        },
+      });
+    });
+  });
+</code></pre>
+
+<p>Add <code>.withGraphFetched("related")</code> to the query builder in your GET <code>/api/articles/[id]</code> handler to also fetch the <code>related</code> models. Try inserting a <code>console.log</code> in your API handler to see the structure of the returned object. At this point your new test (and the rest of the tests) should pass!</p>
+
+<p>This is just the most basic usage of the Objection’s relations, but hopefully it gives you a sense of the possibilities and how to get started. Assembling complex objects from across multiple tables is now possible with just small additions to your query!</p>
+
+<h2 id="finishing-up">Finishing up</h2>
+
+<p>Commit any changes you may have made and then push your changes to GitHub. You should then submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</p>
+
+<h2 id="grading">Grading</h2>
+
+<p>Required functionality:</p>
+<ul>
+  <li>Reimplement the Simplepedia API with Knex and Objection.js</li>
+  <li>Add additional validations and associated test</li>
+  <li>Implement related article many-to-many relation</li>
+  <li>Pass all tests</li>
+  <li>Pass all ESLint checks</li>
+</ul>
+
+<p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
+
+<h2 id="rdbms-faq">RDBMS FAQ</h2>
+
+<p>Interactions with the database are a common source of questions during the project. This practical introduces many of the key ideas, but is necessarily basic usage. Some frequent questions that have arisen as when you move beyond this practical:</p>
+
+<h3 id="it-worked-with-sqlite-but-not-postgresql-why">It worked with SQLite but not PostgreSQL. Why?</h3>
+
+<p>SQLite is purposely permissive about types, i.e., if you specify an integer but provide a string, SQLite will happily store the string. This is not true for other database engines, e.g., PostgreSQL. If you get an error look for type mismatches in your schema, model, or seed data. You can test locally against the production database by building and running the production version of your application. The following will start your application in production mode (and thus use the production configuration in <code>knexfile.js</code>)</p>
+
+<pre><code class="language-plaintext">💻 npm run build
+💻 npm run start
+</code></pre>
+
+<h3 id="i-was-able-to-seed-my-database-but-later-got-uniqueness-errors-when-inserting-new-data">I was able to seed my database, but later got uniqueness errors when inserting new data...</h3>
+
+<p>Do you have the <code>id</code>, or more generally the primary key, specified in the seed for a table with an <code>increment</code> (auto-incrementing) primary key? If so, inserts with the <code>id</code> specified do not trigger the increment, thus the internal counter remains un-changed, e.g., still 0. Subsequent inserts will use that counter value and thus may then end up duplicate ids. Two possible solutions: remove the <code>id</code> from the seed so counter is incremented during seeding (the recommended approach), or to manually set the counter to the appropriate value during migration.</p>
+
+<h3 id="i-removed-the-ids-from-seed-but-now-dont-know-how-to-link-my-data-during-seeding">I removed the <code>id</code>s from seed but now don’t know how to link my data during seeding</h3>
+
+<p>Seeding data with correct associations can be tricky. For the reasons in the answer above, it can be tricky to pre-specify the ids (and thus the relations) in seeding. Instead we want to mimic the way relationships would be created during regular use. Not all seeding has to be done from JSON files (as we have done so far), sometimes it is easier and more straight forward to implement individual queries. For example, to add a “related article” relationship during seeding with <code>knex</code>, you could add this <code>then</code> to the promise “chain” in the seed function. This queries for the articles by the titles, and then uses the ids to create an entry in the join table. If you wanted to do this on a larger scale, you could create JSON file describing the relationships via queryable parameters, e.g., titles, the perform the queries and insertions specified by that data.</p>
+
+<pre><code class="language-javascript">.then(async () =&gt; {
+  const article1 = await knex("Article").where({ title: "Ohio State Route 761"}).first();
+  const article2 = await knex("Article").where({ title: "Northern Highway (Victoria)"}).first();
+  await knex("RelatedArticle").insert({ articleId: article1.id, relatedId: article2.id});
+});
+</code></pre>
+
+<p>This is a problem where the ORM can also help you. You can insert multiple related entries at once via Objection.js’ <code>insertGraph</code> or other similar insertion methods. In that approach you can simultaneously insert related model instances and the correct foreign keys will be set automatically. Alternately you could query for one side of the relation and use that value to insert or relate data via <code>$relatedQuery</code> (check out <a href="https://vincit.github.io/objection.js/guide/query-examples.html#relation-queries">relation queries</a> for more information). We could perform the same insertion as above using Objection by using the <code>$relatedQuery</code> and <code>relate</code> methods (the latter because we are relating existing data, not inserting new data). <strong>Note, to import your Objection.js modules in your <code>knex</code> seed script you need to enable ES modules imports in Node by adding the <code>--esm</code> option to your <code>knex</code> command, e.g., <code>💻 npx knex seed:run --esm</code>.</strong> You will also want to rebind the models to <code>knex</code> to ensure they are using the knex object provided as an argument to the <code>seed</code> function. Do so by importing <code>Model</code>, e.g. <code>import { Model } from "objection";</code> and setting the knex instance at the beginning of the <code>seed</code> function with <code>Model.knex(knex);</code>.</p>
+
+<pre><code class="language-javascript">const fs = require("fs");
+// To use import in knex command add the --esm option (to enable ES modules)
+import { Model } from "objection";
+import Article from "../../models/Article"
+
+exports.seed = function (knex) {
+  Model.knex(knex);
+  
+  // Original seed code ...
+  .then(async () =&gt; {
+    const article1 = await Article.query().where("title", "Ohio State Route 761").first();
+    const article2 = await Article.query().where("title", "Northern Highway (Victoria)").first();
+    await article1.$relatedQuery("related").relate(article2);
+  });
+</code></pre>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-05-11 20:37:27 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 - Deployment</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/resources/deployment.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="deployment">Deployment</h1>
+
+<p>To support deployment without requiring you to enter a credit card or running into limits on team sizes, etc. we have our own simple cloud deployment platform csci312.dev. In short, you will push your code to a deployment repository at csci312.dev, which will then build and deploy your application at <code>https://&lt;project name&gt;.csci312.dev</code>, e.g, <a href="https://simplepedia.csci312.dev">https://simplepedia.csci312.dev</a>.</p>
+
+<ol>
+  <li>As a prerequisite, you should have added an <a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account">SSH key to GitHub</a> as described in the <a href="getting_started.html">getting started</a> instructions. Doing so is necessary to obtain deploy permissions. If you attempt the below and get permission-related errors, contact the instructor to make sure your key has been added to the deployment server.</li>
+  <li>Add the deployment repository as a remote in your repository: <code>💻 git remote add deploy git@csci312.dev:&lt;project name&gt;</code>, e.g., <code>💻 git remote add deploy git@csci312.dev:simplepedia</code>. Note that <project name=""> is the name assigned to your group, e.g., "mansfield".</project></li>
+  <li>Push the <code>main</code> branch to the deploy repository:  <code>💻 git push deploy main</code>. This should automatically build and deploy your application at <code>https://&lt;project name&gt;.csci312.dev</code>. Any errors should hopefully be reported on in the terminal as the push proceeds.</li>
+  <li>To add entries to the <code>.env.local</code> file, execute <code>💻 ssh git@csci312.dev secrets &lt;project name&gt; KEY=value</code>, where again <code>&lt;project name&gt;</code> is the name assigned to your group. <code>KEY=value</code> is the value you want to add or update in the file (without any spaces). For example, <code>💻 ssh git@csci312.dev secrets simplepedia NEXTAUTH_URL=https://simplepedia.csci312.dev</code> would set the <code>NEXTAUTH_URL</code> key for the <code>simplepedia</code> project.</li>
+  <li>To view the most recent logs from your application execute <code>💻 ssh git@csci312.dev logs &lt;project name&gt;</code>. You can optionally add a <code>--lines</code> argument, e.g., <code>--line 50</code> to look at more lines.</li>
+  <li>Typically a new deployment will also involve changes to your database schema and or seeding. If you are using teh RDMBS configuration from the practical you can migrate and seed the production database from your local computer by adding the <code>--env production</code> option to your <code>knex</code> commands, e.g.,
+    <pre><code class="language-plaintext"> 💻 npx knex migrate:latest --env production
+ 💻 npx knex seed:run --env production
+</code></pre>
+  </li>
+</ol>
+
+<p>I encourage you to test the production version of your application locally before deploying to the server. You can do with:</p>
+
+<pre><code class="language-plaintext">💻 npm run build
+💻 npm run start
+</code></pre>
+
+<p>This will build the production version of your application and start if the same way as the server (e.g., setting the <code>production</code> environment so you use the production database). If this doesn’t work locally, it is unlikely to work remotely!</p>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-05-11 07:45:54 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

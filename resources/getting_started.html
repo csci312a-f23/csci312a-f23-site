@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 - Getting Started</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/resources/getting_started.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="getting-started">Getting Started</h1>
+
+<p>In CS312 you will use a variety of software tools and online services. Please get ready for the semester by making sure you have installed the following tools and created the following free accounts.</p>
+
+<p>As quick guide to reading these (and other notes in class):</p>
+<ul>
+  <li><code>Commands</code> preceded by 💻 should be executed in the terminal (i.e., the Terminal application built into OSX, Windows Powershell, etc.). Copy the rest of the line after the 💻 and paste it into the terminal. The remainder of the block shows relevant example output (not always included).</li>
+</ul>
+
+<h2 id="online-services">Online Services</h2>
+
+<h3 id="github">Github</h3>
+
+<p>We will be making extensive use of Git and GitHub this semester, including using it for distributing assignment templates and assignment submission. If you have not already, please create a free <a href="https://github.com">GitHub</a> account. Note that you can have multiple e-mail addresses associated with your account, e.g. you can add (and should) add your Middlebury e-mail address to an existing GitHub account.</p>
+
+<p>Once your account is set up, request an <a href="https://education.github.com">education discount</a> for your individual GitHub account (not as an organization). Doing so gives you free private repositories and will unlock free accounts at other services that integrate with GitHub (some of which we will use!).</p>
+
+<h2 id="installed-software">Installed software</h2>
+
+<p>Read the following instructions completely before starting, paying close attention to the version numbers when specified. You may have some of these tools already installed. Don’t just copy-and-paste, some commands require modifications (e.g. with your e-mail address). If you have trouble with installation, skip down to the next section.</p>
+
+<p><em>A note to Windows users</em>, most of the core tools we are using should be available for Windows. Some of the ancillary tools, e.g. NVM, may not (although often there are equivalent alternatives). Many of these tools can be installed via the <a href="https://chocolatey.org">Chocolatey</a> package manager. If you are a current Chocolatey user, keep an eye out for that install option. If that is not a tool you, I would encourage you to check it out. I regularly use an equivalent tool on OSX (Homebrew) and recommend that approach for managing command-line software tools.</p>
+
+<p>Our various workflows and exercises will have been developed and tested on OSX and Linux, but not on windows. If you would like to work in a more tested environment, you could make use of <a href="https://mediawiki.middlebury.edu/CSLinux_Guide">VirtualBox</a> or the <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">Windows Subsystem for Linux</a> to get a Linux distribution up and running on your machine.</p>
+
+<p><em>A note to OSX users</em>, many of these tools can be installed via <a href="https://brew.sh">Homebrew</a>. If you are a current Homebrew user, keep an eye out for that install option. If you are not yet a Homebrew user, I recommend it. Homebrew is “package manager” for OSX that makes it easy to install (and remove) software (especially open-source CLI SW).</p>
+
+<h3 id="browser">Browser</h3>
+
+<p>All of the modern browsers should work fine, however to ensure a common, multi-platform, environment we will standardize on <a href="https://www.google.com/chrome/browser/desktop/index.html">Chrome</a>. Chrome has the added advantage of the <a href="https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en">React Developer Tools</a> extension which makes it easy to inspect your React component hierarchies (including props). I suggest installing and using that extension when debugging your React applications.</p>
+
+<h3 id="editor">Editor</h3>
+
+<p>As with the web browser, there are a variety of options out there for good programmer’s editors. However, I would like you to install <a href="https://code.visualstudio.com/">VSCode</a>, which has a good combination of features, a lot of useful plugins, and runs on practically everything. There are two reasons for standardizing on VSCode. First, it is helpful for me if everyone is using the same interface (though you can certainly customize VSCode to be unrecognizable). Second, it has a Live Share plugin that will allow us to share code. This will make office hours and pair programming a lot easier.</p>
+
+<p>To <a href="https://code.visualstudio.com/docs/editor/extension-marketplace">install extensions</a> click on the blocks icon on the left and browse the available extensions. Please install the ‘Live Share Extension Pack’. That should install everything you need to do live sharing.</p>
+
+<p>Some other extensions that I use are:</p>
+<ul>
+  <li>Code Spell Checker (spell checking in your code)</li>
+  <li>ESLint (highlights linting problems as you work)</li>
+  <li>GitLens (some fancy tools for working with git)</li>
+</ul>
+
+<p>I also find it useful to be able to launch VSCode from the command line. Mac users, follow <a href="https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line">these instructions</a> to install the command line tool.</p>
+
+<p>I also encourage you to turn on the NPM scripts view in the Explorer (the left-hand pane). Click the three little dots at the top of the Pane and select “NPM scripts”. This adds a panel at the bottom of the pane which automatically detects all of the scripts in your <code>package.json</code> file. If you hover over the scripts you will see a run button that will run the script in a new terminal.</p>
+
+<h3 id="git">Git</h3>
+
+<ol>
+  <li>
+    <p>Make sure you have <a href="https://git-scm.com/downloads">git</a> installed. You likely already have Git installed (e.g. as part of OSX developer tools).</p>
+
+    <p><em>As an aside, OSX users should install XCode Command Line tools (which includes compilers and other relevant tools like Git) if you don’t already have XCode installed. You will likely need those tools in another class. This <a href="http://railsapps.github.io/xcode-command-line-tools.html">guide</a> includes step-by-step instructions.</em></p>
+  </li>
+  <li>
+    <p>If you haven’t already, configure git with your name and e-mail</p>
+
+    <pre><code class="language-plaintext">💻 git config --global user.name "your name"
+💻 git config --global user.email "your email address"
+💻 git config --global init.defaultBranch main
+💻 git config --global color.ui auto
+</code></pre>
+
+    <p>For example:</p>
+
+    <pre><code class="language-plaintext">git config --global user.name "Michael Linderman"
+git config --global user.email "mlinderman@middlebury.edu"
+</code></pre>
+  </li>
+  <li>
+    <p>GitHub offers both SSH and HTTPS-based <a href="https://docs.github.com/en/get-started/getting-started-with-git/about-remote-repositories#choosing-a-url-for-your-remote-repository">interfaces</a> to your repository. The <a href="https://docs.github.com/en/get-started/getting-started-with-git/about-remote-repositories#cloning-with-ssh-urls">SSH interface</a> is our recommended approach in class and setting up a public key with GitHub will be required for other class tools. Follow GitHub’s <a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account">instructions</a> for creating (if needed) and adding a public key to your GitHub account. If you already have a SSH key setup with your GitHub account, you don’t need to do anything for this step.</p>
+  </li>
+</ol>
+
+<p><em>If you used git at some point in the past, but not recently, you may have used password authentication for command line interaction, which has now been deprecated. Read through the description for <a href="https://docs.github.com/en/get-started/getting-started-with-git/about-remote-repositories#cloning-with-https-urls">Cloning with HTTPS urls</a> for more information. For that reason and many others our preferred approach is the SSH interface.</em></p>
+
+<h3 id="nodejs">Node.js</h3>
+
+<p><a href="https://nodejs.org/en/">Node.js</a> is a stand-alone JavaScript engine that can be used to execute JavaScript outside the browser, either locally on your computer or on a “backend” server (i.e. “full-stack” JavaScript). As of the writing of this guide, the current “Long Term Support” (LTS) version is v18.13 (“Hydrogen”). The minor version is likely to change, but I would like you to stick to the v18.x releases.</p>
+
+<p>There are <a href="https://nodejs.org/en/download/package-manager/">many ways</a> to install Node, but the best way is to use a tool that will allow you to easily migrate between versions. The recommended approach is to use <a href="https://github.com/nvm-sh/nvm">nvm</a> on OSX/Linux and <a href="https://chocolatey.org/">Chocolatey</a> on Windows.</p>
+
+<p>With <code>nvm</code>, you would install the specified LTS version with</p>
+<pre><code class="language-plaintext">💻 nvm install lts/hydrogen
+</code></pre>
+
+<p>With <code>nvm</code>, <em>every time</em> you start a new shell, you will use <code>nvm</code> to select a specific version of Node.js, e.g.,</p>
+<pre><code class="language-plaintext">💻 nvm use lts/hydrogen
+</code></pre>
+
+<p>to set the version once. You can create a <a href="https://github.com/nvm-sh/nvm#nvmrc"><code>.nvmrc</code> file</a> in the top-level directory where you are working on your class assignments that specifies the Node.js version. Then you only need to run <code>nvm use</code>.</p>
+
+<p>With Chocolately, you would install <a href="https://community.chocolatey.org/packages/nodejs-lts"><code>nodejs-lts</code></a>, e.g.,</p>
+<pre><code>💻 choco install nodejs-lts
+</code></pre>
+
+<p>Users on all platform should configure <code>npm</code>, the Node.js package manager, distributed as part of the Node.js installation (replacing <code>email address</code> with your e-mail address, etc.) with their information:</p>
+
+<pre><code class="language-plaintext">💻 npm set init-author-email "email address"
+💻 npm set init-author-name "name"
+💻 npm set init-license "Apache-2.0"
+</code></pre>
+
+<h3 id="sqlite">SQLite</h3>
+
+<p>We will use the <a href="https://sqlite.org/index.html">SQLite</a> database during development. SQLite is a library and command-line tool to implement a fully-featured relational database system as a self-contained file. To access your database file outside of your application (for development or debugging purposes), install the <code>sqlite3</code> client. Try executing <code>💻 sqlite3</code> as you may already have this tool installed. If not you can install it via platform-specific package managers (e.g., <a href="https://formulae.brew.sh/formula/sqlite">Homebrew</a> on OSX or <a href="https://community.chocolatey.org/packages/SQLite">Chocolatey</a> on Windows) or by downloading and installing it <a href="https://sqlite.org/download.html">directly</a>. The former is recommended as those package managers are generally useful for installing a wide variety of command line tools (your instructor makes extensive use of Homebrew on OSX). Alternately you could install a VSCode extension for viewing SQLite files in the editor.</p>
+
+<h2 id="alternative">Alternative</h2>
+
+<p>Occasionally someone will have trouble getting the tools installed. This could be because you have a Chromebook, or OS version is being fussy, or you just don’t have enough free disk space. If this applies to you, please reach out to me about a <a href="/~mlinderman/courses/cs312/s23/#software-and-computing">loaner machine</a>.</p>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-05-01 09:45:47 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CSCI312 Spring 2023</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/sample-exam.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="sample-cs312-exam-like-questions">Sample CS312 Exam-like Questions</h1>
+
+<p>The following questions are intended as representative examples of the types of
+questions you might encounter on the exam. The actual exam questions may be
+structured differently, may be easier or may be harder. If you are asked to
+write a short code snippet, you <em>are not</em> expect to write syntactically perfect
+JavaScript (we won’t try to execute your code), but you <em>are</em> expected to write
+syntactically reasonable and logically correct code.</p>
+
+<p>The exam will cover material up through databases, but with an emphasis on
+material from the first half of the course. The exam will be distributed on
+Wednesday (4/15) morning via Piazza and must be completed and submitted to
+Gradescope by Saturday (4/18) morning. The exam will be open notes, open slides
+and open course notes, but no other sources are permitted (e.g. Googling or
+actually running code snippets are not permitted). There is no time limit, you
+can spend as much time as you want during the exam window. That said, the exam
+is intended to take approximately 2 hours.</p>
+
+<p>In addition to trying these questions, we encourage you to: review the slides,
+online notes, practicals and other course materials; repeat the Socrative
+questions (in the slides); and figure out any tests that you failed in your
+programming assignments.</p>
+
+<ol>
+  <li>
+    <p>What is the return type of the <code>then</code> method of <code>Promise</code>? <a href="#problem1" data-toggle="collapse">View the answer...</a></p>
+
+    <div id="problem1" class="collapse">
+      <p>The return type of <code>Promise.then</code> is a Promise.</p>
+
+      <p>For reference, if the <code>onFulfilled</code> callback returns a value, the <code>Promise</code> returned by the <code>then</code> will resolve to that value. If <code>onFulfilled</code> returns a <code>Promise</code>, that new <code>Promise</code> will effectively replace the <code>Promise</code> originally returned by the <code>then</code> method.</p>
+    </div>
+  </li>
+  <li>
+    <p>Rewrite the following code to use Promises instead of callbacks. For context, <code>process.stdin.once('data', callback)</code> will invoke <code>callback</code> with the input provided by the user as the argument, <code>setTimeout(ms, callback)</code> will invoke <code>callback</code> after <code>ms</code> milliseconds have elapsed. To replace the functions below that currently make use of callbacks, assume that you have a function <code>getInput</code> which returns a Promise that resolves to a single line of user input and <code>waitMs(ms)</code> which returns a Promise that resolves after <code>ms</code> milliseconds have elapsed. <a href="#problem2" data-toggle="collapse">View the answer...</a></p>
+
+    <pre><code class="language-javascript"> console.log('Please enter a time to wait in ms:');
+ // Obtain a single line of input from STDIN
+ process.stdin.once('data', (data) =&gt; {
+     const wait = parseInt(data, 10);
+     setTimeout(wait, () =&gt; {
+         console.log(`Waited ${wait}ms!`);
+     });
+ };
+</code></pre>
+
+    <div id="problem2" class="collapse">
+
+      <pre><code class="language-javascript"> console.log('Please enter a time to wait in ms:');
+ getInput().then(data =&gt; {
+   const wait = parseInt(data, 10);
+   return waitMs(wait);
+ }).then(() =&gt; {
+   console.log(`Waited!`);
+ });
+</code></pre>
+
+      <p>For context, the focus of this question is how with Promises we convert nested callbacks to a linear “chain”.</p>
+
+    </div>
+  </li>
+  <li>
+    <p>Using a <code>for</code> loop, implement a replacement for <code>Array.reduce</code> that works for non-empty arrays. <a href="#problem3" data-toggle="collapse">View the answer...</a></p>
+
+    <div id="problem3" class="collapse">
+
+      <pre><code class="language-javascript"> const reduce = (array, reducer) =&gt; {
+   let result = array[0];
+   for (let i=1; i &lt; array.length; i+=1) {
+     result = reducer(result, array[i]);
+   }
+   return result;
+ }
+</code></pre>
+
+    </div>
+  </li>
+  <li>
+    <p>Describe two (2) tests cases that you would implement before starting to develop the <code>reduce</code> function above. <a href="#problem4" data-toggle="collapse">View the answer...</a></p>
+
+    <div id="problem4" class="collapse">
+      <p>We would want to test an array of length 1, and longer arrays, e.g.</p>
+      <pre><code class="language-javascript"> expect(reduce([1], (acc, val) =&gt; acc + val)).toBe(1);
+ expect(reduce([1, 2, 3], (acc, val) =&gt; acc + val)).toBe(6);
+</code></pre>
+
+      <p>For reference, the problem above only includes a subset of the <code>reduce</code> specification. If we were trying to fully match the behavior of <code>Array.reduce</code> we would want to implement additional tests, such as that an empty array (and no initial value for the accumulator) should result in an Error.</p>
+    </div>
+  </li>
+  <li>
+    <p>In class we saw two different opinions about the best mix of Unit, Integration and End-to-End Testing. Briefly summarize their arguments. <a href="#problem5" data-toggle="collapse">View the answer...</a></p>
+
+    <div id="problem5" class="collapse">
+      <p>The Google authors argue that unit tests are fast, reliable, and isolate failure (each unit test is focused on a small part of the code). The limitation is that the tests don’t simulate a “real user”. Unit testing doesn’t verify components work together. In a UI setting, for example, unit tests often verify that a framework works as documented (a click invokes the click handler) not that your application does the right thing in that handler. Dodds argues that it is more important to test how components work together. And that integration tests which are faster and easier to write than end-to-end tests are the right level to do so.</p>
+    </div>
+  </li>
+  <li>
+    <p>Briefly describe how the following code in a handler method violates the assumptions made by React? <a href="#problem6" data-toggle="collapse">View the answer...</a></p>
+
+    <pre><code class="language-javascript"> const [currentMovie, setCurrentMovie] = useState(null);
+ ...
+ handleEdit(newMovie) {
+   const editedMovie = Object.assign(this.state.currentMovie, newMovie);
+   this.props.editCallback(editedMovie);
+ }
+ ...
+</code></pre>
+
+    <div id="problem6" class="collapse">
+      <p><code>Object.assign</code> modifies its first argument. Thus this handler is modifying the component state without using <code>setState</code>. If the intent was to change the state and re-render, this code will not directly cause the component to re-render.</p>
+    </div>
+  </li>
+  <li>
+    <p>Which phases of the Waterfall development process occur during a Scrum sprint and how do those phases map to Scrum events and/or artifacts? <a href="#problem7" data-toggle="collapse">View the answer...</a></p>
+
+    <div id="problem7" class="collapse">
+      <p>All phases of the Waterfall development process: Requirements, Design, Development, Testing and Operations, occur within each Sprint. Requirements generation and Design occur throughout the sprint. The specification and other design documentation map to the user stories and associated scenarios in the product backlog. Although we focused on defining user stories in our sprint planning sessions, that is not case more generally; user stories are often generated before and/or outside the sprint planning meeting. Development and Testing are similarly occurring throughout the sprint (for each user story/feature). Operations is potentially occurring throughout the sprint (especially if the development team is practicing Continuous Delivery), but at a minimum at the end of the sprint when the team deploys the application for the sprint demo.</p>
+    </div>
+  </li>
+  <li>
+    <p>Is the following user story S.M.A.R.T.? If not, explain specifically why not and rewrite the user story to be more S.M.A.R.T.. <a href="#problem8" data-toggle="collapse">View the answer...</a></p>
+
+    <p><em>As a user, I want to quickly add a to-do to the to-do list so that the app is efficient</em></p>
+
+    <div id="problem8" class="collapse">
+      <p>This user story is not S.M.A.R.T.; it is not very Specific (what is meant by quickly add a to-do or the “app is efficient”?) nor clearly Relevant (again what does “efficient” mean and what is that value to the user?). An alternative could be:</p>
+
+      <p><em>As a user, I want to add a to-do by typing it in a single text box and hitting enter, so that I am more likely to want to create a to-do</em>.</p>
+    </div>
+  </li>
+  <li>
+    <p>Indicate the nouns and any association between them implied by the following RESTful Canvas URL: <code>https://middlebury.instructure.com/courses/4164/quizzes/6841</code>. <a href="#problem9" data-toggle="collapse">View the answer...</a></p>
+
+    <div id="problem9" class="collapse">
+      <p>The URL implies a Course noun and a Quiz noun and that a Course “has many” Quizzes and each Quiz “belongs to” a Course (i.e. a one-to-many relationship).</p>
+    </div>
+  </li>
+  <li>
+    <p>A PUT request to the above URL would be used to implement what task? <a href="#problem10" data-toggle="collapse">View the answer...</a></p>
+
+    <div id="problem10" class="collapse">
+      <p>A PUT request to the above URL would be used to create or modify the quiz with the id 6841.</p>
+    </div>
+  </li>
+</ol>
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2020-04-29 20:19:05 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>

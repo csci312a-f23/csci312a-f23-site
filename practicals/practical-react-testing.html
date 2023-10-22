@@ -1,0 +1,308 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">  
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow" />
+    
+        <title>CS312 Practical: Testing React apps</title>
+        <meta name="description" content="CSCI312 at Middlebury College
+">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-react-testing.html">
+    </head>
+    <body>
+
+        <div class="container">
+            <h1 id="practical-testing-react-apps-with-jest-and-react-testing-library">Practical: Testing React apps with Jest and React Testing Library</h1>
+
+<p>
+<strong>Initial Due Date: 2023-03-07 8:15AM</strong> <br />
+
+<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+
+</p>
+
+<h4 id="goals">Goals</h4>
+
+<ul>
+  <li>Learn some basic techniques for testing React apps</li>
+  <li>Gain experience using Jest and the React Testing Library</li>
+  <li>Gain more TDD practice</li>
+</ul>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ol>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/a6T5DQCe">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Clone the repository to you computer with <code>💻 git clone</code> (get the name of the repository from GitHub).</li>
+  <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
+  <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
+</ol>
+
+<p>You <a href="practical-test.html">previously</a> used Jest for unit testing JS code. Today we are going to use Jest in combination with the <a href="https://testing-library.com/docs/intro">Testing Library</a> library to test a React application. There are a number of items that need to be installed, but the project skeleton includes everything you need.</p>
+
+<h2 id="regression-tests">Regression Tests</h2>
+
+<h3 id="smoke-test">Smoke test</h3>
+
+<p>The easiest form of testing we can perform is called a <a href="https://en.wikipedia.org/wiki/Smoke_testing_(software)">smoke test</a>. Unlike the testing we saw earlier, we aren’t going to assert anything, nor will we test anything explicitly. All we will do is try to render a component. If the process throws any errors, the test will fail, otherwise it succeeds. This kind of test is great for quick and dirty <em>regression testing</em>, where we are trying to make sure that adding new features or fixing bugs hasn’t inadvertently added any errors in unexpected places. Note that it doesn’t actually tell you that the <em>functionality</em> hasn’t been broken, just that it didn’t catch fire as it were (the name comes from the hardware side of the world, where a smoke test means “plug it in and see if smoke comes out”).</p>
+
+<p>For our smoke test, we will test the whole render tree of the <code>FilmExplorer</code> component. You will find the file <code>FilmExplorer.test.js</code> in the <code>src</code> directory. We have already provided the imports for you. All we need to do is render the component, so add the following to create your smoke test:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">test("Smoke test",  () =&gt; {
+  render(&lt;FilmExplorer /&gt;);
+});
+</code></pre>
+
+<h3 id="snapshots">Snapshots</h3>
+
+<p>Jest provides another quick regression testing tool, <a href="https://jestjs.io/docs/en/snapshot-testing.html">snapshots</a>. You take a snapshot of the component at a time when you like the way it looks. Jest saves a representation of the component, and then every time you run the tests, Jest regenerates the component and compares it to the snapshot. If the component changes, the test will fail, which is a cue to either fix the offending code, or to take a new snapshot because the change was intentional. Note that the snapshot is not a literal picture, it is a JSON description of the component that can be quickly compared. Add the following to your <code>FilmExplorer</code> tests to create the snapshot:</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">test("Snapshot test",  () =&gt; {
+  const { container } = render(&lt;FilmExplorer /&gt;);
+  expect(container.firstChild).toMatchSnapshot();
+});
+</code></pre>
+
+<p>Here we are getting the <code>container</code> from the <code>render</code> function. The <code>container</code> is simply a <code>div</code> containing the rendered element. To get the actual root node, we ask for <code>container.firstChild</code>.</p>
+
+<p>Note that we didn’t write anything to generate the snapshot. Jest will do that automatically the first time the test is run. Go ahead and run the tests. You will find that Jest has created a new directory called <code>__snapshots__</code> in the same directory as your test file. Open this up and look at the snapshot that is stored in there. This should be committed with your code so that subsequent tests can use it.</p>
+
+<p>So that you can see how the snapshot test works, go into <code>SearchBar.js</code> and find where the place where write the name of the app (“FilmExplorer”) and change it to something else. If you run the test now, the snapshot test will fail. Notice that you are provided with a diff showing what has changed. Of course, sometimes you will be making a change and you <em>want</em> the page to be different. You can update your snapshot with <code>npm test -- -u</code> (or if you are running the test watcher, <code>npm test -- --watch</code>, you can just type <kbd>u</kbd>). Update your snapshot to acknowledge your change.</p>
+
+<p>Can you use snapshots for TDD? <a href="#TDD-snapshot" data-bs-toggle="collapse">Peek at the answer.</a></p>
+
+<div id="TDD-snapshot" class="collapse">
+  <p>No. Recall in TDD we write the tests first. But snapshots require a working implementation. Snapshots are most useful for regression testing.</p>
+</div>
+
+<h2 id="tdd-with-react">TDD with React</h2>
+
+<p>If you look carefully you will see that there is a new feature that has been added to Film Explorer. There is a small arrow next to the sort tool. If you click it, nothing happens, but we would like it to change the sort order of the films.</p>
+
+<p>If you look in the code, you will see that the <code>FilmExplorer</code> component has a new piece of state called <code>ascending</code>, which is passed down to <code>SearchBar</code> to determine the direction of the arrow, but currently the state is not updated by clicking the arrow. You will now practice some Test Driven Development (TDD) by writing tests to reflect what the <code>ascending</code> prop <em>should</em> do, and then writing the code so that it <em>does</em> do it.</p>
+
+<h3 id="testing-state-changes">Testing state changes</h3>
+
+<p>We have a general pattern that we follow when writing tests around state changes.</p>
+
+<ol>
+  <li>Test that we are in the initial state</li>
+  <li>Initiate an action that should change state</li>
+  <li>Test that we are in the new state</li>
+  <li>Initiate action to return state to original</li>
+  <li>Test that we are in original state.</li>
+</ol>
+
+<p>The first step is often overlooked, but important to establish that the state change is moving from a known baseline state. Without that, we can’t know that a state change actually occurred. The last two steps are less important, but worth doing when the state is a binary toggle like our arrow.</p>
+
+<p>Add a new test to <code>FilmExplorer.test.js</code> called <code>'Arrow changes direction'</code>. <em>Note that we are testing the <code>FilmExplorer</code> component, not the <code>SearchBar</code> component. While the indicator is in the <code>SearchBar</code>, the state is in <code>FilmExplorer</code>. We could simulate the clicks and make sure that the callback function was called with the correct value, but we are going to be satisfied with more of an integration test here.</em></p>
+
+<p>Start by copying the code from the “Rating changes” test to get the component mounted and initialized with the data.</p>
+
+<p>We need to find the arrow component in order to test that it changes its display to reflect state changes, and also to simulate clicking it to initiate that change. To find the component, we will use <code>let arrow = screen.queryByText("▲")</code>. There are other options, but since the arrow is implemented as a single character, this is a pretty unique text string to look for. We are also using <code>queryBy</code> because it will allow us to query for things <strong>not</strong> being in the DOM rather than throwing an error. We will test if the component is visible using the matcher <code>.toBeInTheDocument()</code>. With jest, we can always invert a test by adding a <code>not</code> to the matcher (e.g., <code>.not.toBeInTheDocument()</code>). If the state changes, we can detect it, because our <code>"▲"</code> will be gone and replaced with <code>"▼"</code>. To simulate the click, we will use <code>fireEvent.click(arrow)</code>.</p>
+
+<p>Put these together to write a test of this scenario:</p>
+
+<blockquote>
+  <p>Given that the page is rendered and the arrow defaults to <code>"▲"</code>, when the user clicks on the arrow it reverses direction to become <code>"▼"</code>. When the user clicks again, the <code>"▲"</code> is restored.</p>
+</blockquote>
+
+<p>Note that for each changed state of the arrow, you need to run the query again.</p>
+
+<p>The test should:</p>
+<ol>
+  <li>Render <code>FilmExplorer</code></li>
+  <li>Check that <code>"▲"</code> is in the document</li>
+  <li>Simulate a click on the up arrow</li>
+  <li>Check that <code>"▲"</code> is no longer in the document</li>
+  <li>Check that <code>"▼"</code> is in the document</li>
+  <li>Simulates a click on the down arrow</li>
+  <li>Check that <code>"▼"</code> is no longer in the document</li>
+  <li>Check that <code>"▲"</code> is in the document1.</li>
+</ol>
+
+<p>Run the test. It should fail (the arrow is currently just text).</p>
+
+<p>Let’s update <code>SearchBar</code> so that the test passes. Look through the code to find where the arrow is displayed. You will see that it is a simple <code>span</code> with a text arrow in it. The first thing to do is fix the arrow itself so the direction is determined by the <code>ascending</code> prop. Replace the arrow character with <code>{ascending ? "▲" : "▼"}</code>.</p>
+
+<p>Next, we need to add an <code>onClick</code> handler so that the user can actually interact with it. Since the value is just a Boolean, we can simply invert it whenever the user clicks: <code>onClick={() =&gt; { setDirection((currAscending) =&gt; !currAscending); }}</code>. Note we are using a slightly different form of the setter where we supply a function instead of the value. This ensures that the update is applied to the current value of the state.</p>
+
+<p>Run the test again, it should now pass!</p>
+
+<h3 id="get-sorting-working">Get sorting working</h3>
+
+<p>Clicking the arrow should now flip it back and forth, but it doesn’t change the sort order, which it seems like it should. To make this happen, we need to turn our attention to <code>FilmTableContainer</code>, the other component rendered by <code>FilmExplorer</code>.</p>
+
+<p>As its name suggests, <code>FilmTableContainer</code> is a “container component” (CC). It implements the film filtering and sorting. The actual presentation of the films is handled by the <code>FilmTable</code> (a “presentation component” or PC). <code>FilmTableContainer</code> works by transforming the Array of films its receives as a prop to create a new Array that is passed to <code>FilmTable</code> as a prop. <code>FilmExplorer</code> is also already providing the value of <code>ascending</code> to <code>FilmTableContainer</code> as a prop, so we just have to worry about what <code>FilmTableContainer</code> is doing with it.</p>
+
+<p>Inside of the <code>components</code> directory, you will find <code>FilmTableContainer.test.js</code>, which already includes a collection of tests. We will walk through some of these before adding some new ones. In the first test we are making sure that with an empty search term we see all films. Since there is no filtering, we expect all of the films to be present in the DOM. Notice that we are passing in <code>jest.fn</code>, the jest mock function, as a placeholder function for the <code>setRating</code> prop. We don’t care about the callback, but we also don’t want PropTypes to complain, so we have to pass in a valid function.</p>
+
+<pre><code class="language-jsx">test('Empty string does not filter films', () =&gt; {
+  render(
+    &lt;FilmTableContainer
+      films={films}
+      searchTerm=""
+      sortType="title"
+      setRatingFor={jest.fn}
+      ascending={true}
+    /&gt;
+  );
+
+  films.forEach((film)=&gt;{
+    expect(screen.queryByText(film.title)).toBeInTheDocument();
+  });
+});
+</code></pre>
+
+<p>In the next test, we are looking at the filtering behavior of the component. In order to do that, we need to introduce a search term (in this case <code>"sub"</code> which only appears in the description of one film).</p>
+
+<pre><code class="language-jsx">test('Any substring satisfies the filter', () =&gt; {
+  render(
+    &lt;FilmTableContainer
+      films={films}
+      searchTerm="sub"
+      sortType="title"
+      setRatingFor={jest.fn}
+      ascending={true}
+    /&gt;
+  );
+
+  expect(screen.queryByText(films[0].title)).toBeInTheDocument();
+  expect(screen.queryByText(films[1].title)).not.toBeInTheDocument();
+  expect(screen.queryByText(films[2].title)).not.toBeInTheDocument();
+});
+</code></pre>
+
+<p>Take a moment to read through the remaining tests in filtering test suite and make sure you understand what they are doing.</p>
+
+<p>For our new feature, we want to think about the sorting order. I have created another test suite to group the tests dealing with sort order. Inside you will find one test that tests that the films are sorted by <code>vote_average</code>. Let’s break down this test as well. The challenge we have is figuring out what order items are displayed on the page (or more properly, in the DOM). The approach I took was to use <code>screen.queryAllByRole("heading")</code>. The “heading” role is grabbing the <code>&lt;h2&gt;</code> tags used to display the film titles, and by using the <code>getAllBy*</code> query, we are getting an array of the DOM elements that the Testing Library finds on the page in the order they appear. I then used <code>map</code> to extract the textual contents of those elements and put them in a new array.</p>
+
+<p>The actual test part compares this new array of titles to an array of film titles assembled in the known correct order.</p>
+
+<pre><code class="language-jsx">test("Sorts by vote_average", () =&gt; {
+  render(
+    &lt;FilmTableContainer
+      films={testFilms}
+      searchTerm=""
+      sortType="vote_average"
+      setRatingFor={jest.fn}
+      ascending
+    /&gt;
+  );
+  let items = screen
+    .queryAllByRole("heading")
+    .map((item) =&gt; item.textContent);
+
+  expect(items).toEqual([films[0].title, films[1].title, films[2].title]);
+});
+</code></pre>
+
+<p>Of course, this test doesn’t really test our new prop: <code>ascending</code>. Let’s apply our “check, change, check” pattern here.</p>
+
+<p>In order to do this tests, we need to be able to re-render the component and look for changes. For this, we need to have access to the <code>rerender</code> function. The <code>rerender</code> function is actually returned in the object returned by <code>render</code>. So, change <code>render</code> to <code>const { rerender } = render</code>.</p>
+
+<p>After the assertion that checks if we have the films in the right order, call <code>rerender</code>, passing it the <code>FilmTableContainer</code> just as we did to <code>render</code>, but this time set <code>ascending</code> to <code>false</code>. Then, repeat the two steps of gathering the list of film titles and comparing it to the known good ordering (which should be the reverse of the one we used in the first assertion).</p>
+
+<p>Once you have that first sort ordering test written, repeat the process two more times to create tests <code>"Sorts by title"</code> and <code>"Sorts by release_date"</code>. Look at the sample films to figure out which order you expect them to be. This is one of the few moments when it will be okay to copy a block of code, paste it back in and change a couple of small values.</p>
+
+<h4 id="run-the-tests">Run the tests</h4>
+
+<p>Again, we are practicing TDD, so when you run the tests they should fail. However, I want to also take this moment to remind you how to target specific tests.</p>
+
+<p>By default, jest will look for tests in all files that end in <code>.test.js</code>, as well as any files in directories called <code>__tests__</code>. However, we can target a specific file by passing its name as an argument to the tool. In truth, it doesn’t even need to be the full name of the file, jest will do case insensitive pattern matching. So, to just run the tests in <code>FilmTableContainer.test.js</code>, you can type <code>npm test table</code>. That will run all test files including the word table (which is just the one in this case).</p>
+
+<p>We can get even more granular than that. For both test suites and individual tests, we can modify them with <code>only</code> or <code>skip</code> to focus in on the tests we are most interested in. So, to focus on a single test, you can write <code>test.only(name, test-func)</code> (see the <a href="https://jestjs.io/docs/api">docs</a> for more details).</p>
+
+<h4 id="fix-the-code">Fix the code</h4>
+
+<p>Okay, now that we have some failing tests, let’s get the sort working properly. The way that <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort">Array.sort</a> works is we pass it a comparator function <code>f(a,b)</code>, which is expected to return a value that is less than zero, equal to zero or greater than zero (corresponding to <code>a &lt; b</code>, <code>a == b</code>, and <code>a &gt; b</code> respectively). In <code>FilmTableContainer</code>, find the place where the films are sorted. Replace the comparator function with the following to adjust the sort ordering based on the <code>ascending</code> prop.</p>
+
+<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
+<div class="code-header">
+    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
+</div>
+<pre><code class="language-javascript">(m1, m2) =&gt; {
+  if (m1[sortType] &lt; m2[sortType]) {
+    return ascending ? -1 : 1;
+  } else if (m1[sortType] === m2[sortType]) {
+    return 0;
+  }
+  return ascending ? 1 : -1;
+}
+</code></pre>
+
+<p>Run the tests again, and they should all pass.</p>
+
+<h2 id="finishing-up">Finishing Up</h2>
+
+<ol>
+  <li>Add and commit your changes and push those commit(s) to GitHub.</li>
+  <li>Submit your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/resources/gradescope.html">here</a></li>
+</ol>
+
+<h2 id="grading">Grading</h2>
+
+<p>Required functionality:</p>
+<ul>
+  <li>Smoke test</li>
+  <li>Snapshot test</li>
+  <li>Sort arrow tests</li>
+  <li>Sort order tests</li>
+  <li>Films are sorted properly</li>
+  <li>Pass all tests</li>
+  <li>Pass all ESLint checks</li>
+</ul>
+
+<p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
+
+
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <hr/ class="divider">
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:31:06 -0400.</em>
+            </div>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js" integrity="sha512-s+tOYYcC3Jybgr9mVsdAxsRYlGNq4mlAurOrfNuGMQ/SCofNPu92tjE7YRZCsdEtWL1yGkqk15fU/ark206YTg==" crossorigin="anonymous"></script>
+        <script>
+            hljs.highlightAll();
+        
+            const codeBlocks = document.querySelectorAll('.code-header + pre');
+            const copyCodeButtons = document.querySelectorAll('.btn-clipboard');
+
+            copyCodeButtons.forEach((copyCodeButton, index) => {
+                const code = codeBlocks[index].innerText;
+
+                copyCodeButton.addEventListener('click', () => {
+                    window.navigator.clipboard.writeText(code);
+                    copyCodeButton.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyCodeButton.textContent = "Copy";
+                    }, 2000);
+                });
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    </body>
+</html>
