@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-server.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/practicals/practical-server.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="implement-an-in-memory-server-for-simplepedia">Implement an In-Memory Server for Simplepedia</h1>
 
 <p>
-<strong>Initial Due Date: 2023-04-04 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-10-25 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-04-21 4:15PM</strong>
+<strong>Final Due Date: 2023-11-10 4:15PM</strong>
 
 </p>
 
@@ -39,7 +39,7 @@
 <h2 id="prerequisites">Prerequisites</h2>
 
 <ol>
-  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/SEtOpYuj">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/1MGY_bnz">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
   <li>Clone the repository to you computer with <code>💻 git clone</code> (get the name of the repository from GitHub).</li>
   <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
   <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
@@ -47,7 +47,7 @@
 
 <h2 id="background">Background</h2>
 
-<p>We are going to use NextJS <a href="https://nextjs.org/docs/api-routes/introduction">API routes</a> to implement the Simplepedia API. Recall the <a href="/~mlinderman/courses/cs312/s23/assign/assignment04.html">Simplepedia API</a> is:</p>
+<p>We are going to use NextJS <a href="https://nextjs.org/docs/api-routes/introduction">API routes</a> to implement a simplified version of the Simplepedia API. Recall the <a href="/~mlinderman/courses/cs312/f23/assign/assignment04.html">Simplepedia API</a> is:</p>
 
 <table class="table table-sm table-bordered table-auto">
   <thead>
@@ -91,7 +91,7 @@
   </tbody>
 </table>
 
-<p>Our server will use “in memory” data storage. In other words, when the server is started, it will read in the contents of <code>seed.json</code>, and store it in a <code>Map</code> with the <code>id</code> as the key and the article object as the value. Review <code>data/articles.js</code> to see how the global object is constructed. Changes will be made to this local copy of the data providing the appearance of persistence, but if the server is restarted, the server will return to the original copy of the data.  For proper persistence, we will require some form of database, which we will discuss soon.</p>
+<p>Our server will use “in memory” data storage. In other words, when the server is started, it will read in the contents of <code>seed.json</code>, and store it in a <code>Map</code> with the <code>id</code> as the key and the article object as the value. Review <code>data/articles.js</code> to see how the global object is constructed. Changes will be made to this local copy of the data providing the appearance of persistence, but if the server is restarted, the server will return to the original copy of the data. For proper persistence, we will require some form of database, which we will discuss soon.</p>
 
 <p>We will implement these routes with <a href="https://github.com/hoangvvo/next-connect#readme">next-connect</a> so we can minimize the boilerplate needed for matching methods, etc. Recall from class that we construct the endpoint from a chain of <code>.METHOD</code> functions, e.g., <code>.get</code> for GET, that takes a function with the <code>req</code> request and <code>res</code> response objects. The first contains all the information sent in the request (and added by any middleware) and the second is used to construct the response. Note that invoking the response methods, e.g., <code>res.end(...)</code> does not end the function, you need to explicit terminate the function if you want it to end early.</p>
 
@@ -124,7 +124,7 @@
 <pre><code class="language-javascript">res.status(400).end("Invalid article");
 </code></pre>
 
-<p>Once you have implemented these endpoints, test them in the browser.</p>
+<p>Recall that the article ids, and thus the Map keys are integers while the URL parameters, e.g., <code>req.query.id</code> are strings. Once you have implemented these endpoints, test them in the browser.</p>
 
 <h2 id="review-the-other-endpoint-implementations">Review the other endpoint implementations</h2>
 
@@ -154,7 +154,7 @@
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:35:21 -0400.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-10-17 15:25:04 -0400.</em>
             </div>
         </footer>
 
@@ -177,7 +177,7 @@
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

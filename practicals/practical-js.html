@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-js.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/practicals/practical-js.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="practical-javascript">Practical: Javascript</h1>
 
 <p>
-<strong>Initial Due Date: 2023-02-21 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-09-20 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+<strong>Final Due Date: 2023-10-27 4:15PM</strong>
 
 </p>
 
@@ -41,14 +41,14 @@
 
 <h2 id="prerequisite">Prerequisite</h2>
 
-<p>Make sure you complete the steps on the <a href="/~mlinderman/courses/cs312/s23/resources/getting_started.html">getting started</a> page. If you are using <code>nvm</code> and you have installed multiple versions of node, before using <code>node</code>, <code>npm</code> and associated tools, you need to make sure the correct version is activated if you have several version installed (<code>💻 node -v</code> should return ‘’, though the minor and patch numbers after the first dot may vary slightly).</p>
+<p>Make sure you complete the steps on the <a href="/~mlinderman/courses/cs312/f23/resources/getting_started.html">getting started</a> page. If you are using <code>nvm</code> and you have installed multiple versions of node, before using <code>node</code>, <code>npm</code> and associated tools, you need to make sure the correct version is activated (<code>💻 node -v</code> should return ‘v18.17’, though the minor and patch numbers after the first dot may vary slightly).</p>
 
 <h2 id="creating-the-module">Creating the module</h2>
 
-<p>Create a new package by first creating the package directory (call it <code>practical-01-username</code>, using your GitHub username) and then running <code>💻 npm init</code> <em>inside</em> the new directory, e.g.,</p>
+<p>Create a new package by first creating the package directory (call it <code>practical01-js-username</code>, using your GitHub username) and then running <code>💻 npm init</code> <em>inside</em> the new directory, e.g.,</p>
 
-<pre><code class="language-plaintext">💻 mkdir practical-01-mlinderm
-💻 cd practical-01-mlinderm
+<pre><code class="language-plaintext">💻 mkdir practical01-js-mlinderm
+💻 cd practical01-js-mlinderm
 💻 npm init
 </code></pre>
 
@@ -68,7 +68,7 @@
 <p><em>Make sure to save package.json before moving on. Installing will try to update package.json for you, and if you haven’t saved, you will create edit conflicts.</em></p>
 
 <pre><code class="language-json">{
-  "name": "practical-01-mlinderm",
+  "name": "practical01-js-mlinderm",
   "version": "1.0.0",
   "private": true,
   "type":"module",
@@ -98,7 +98,7 @@
 
 <p>On the command line, execute <code>💻 npm install -D jest</code>.</p>
 
-<p>This will take a few moments, and then you should see a message that looks like (although the details will differ and your version may be newer).</p>
+<p>This will take a few moments, and then you should see a message that looks like (although the details will differ and the version of jest may be newer).</p>
 
 <pre><code class="language-plaintext">added 278 packages, and audited 279 packages in 14s
 
@@ -176,7 +176,7 @@ found 0 vulnerabilities
 
 <h3 id="summation-take-3">Summation, take 3</h3>
 
-<p>Even this approach is more iterative than we really would use for a problem like this. I would like you to write this function one more time, but this time instead of <code>forEach</code>, you are going to use <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce"><code>reduce</code></a>. <code>reduce</code> is another high-order method of arrays. Its job is to run a function on every element of an array, accumulating a result – in essence, the array is <em>reduced</em> down to a single value. The function you pass into <code>reduce</code> should take two arguments: 1) the accumulated value and 2) the current element in the array.</p>
+<p>Even this approach is more iterative than we really would use for a problem like this. I would like you to write this function one more time, but this time instead of <code>forEach</code>, you are going to use <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce"><code>reduce</code></a>. <code>reduce</code> is another high-order method of arrays. Its job is to run a function on every element of an array, accumulating a result, i.e., the array is <em>reduced</em> down to a single value. The function you pass into <code>reduce</code> should take two arguments: 1) the accumulated value and 2) the current element in the array.</p>
 
 <p>Write a new function called <code>summationReduce</code>, which uses the <code>reduce</code> method to sum the list. Note that <code>reduce</code> is going to do all of the work, so, <code>summationReduce</code> could actually use the implicit <code>return</code> version of the fat arrow syntax (as could the reducer function that you pass to <code>reduce</code>). Test your new function.</p>
 
@@ -278,24 +278,24 @@ console.log(s); // this will print out 'The value of x is 5`
 
 <p>We can also look at the history of the repository with <code>💻 git log</code>. You should see both of your commits in the log output.</p>
 
-<p><em>You should work on getting comfortable with the command line, but you will find that VSCode actually has a reasonable git client built in. You will find it by clicking the ‘Source Control’ icon (it looks like a graph) on the left).</em></p>
+<p><em>You should work on getting comfortable with the command line, but you will find that VSCode actually has a reasonable git client built in. You will find it by clicking the ‘Source Control’ icon (it looks like a graph) on the left.</em></p>
 
-<p>Multiple version of your code are now stored in your local repository. To turn your code in, you need to get a duplicate of your repository onto GitHub. The conventional way to do that would be to go to the GitHub site and create a new repository there. However, for this class we are using something called GitHub Classroom, which will automate this process of creating repositories for everyone in class</p>
+<p>Multiple version of your code are now stored in your local repository. To turn your code in, you need to get a duplicate of your repository onto GitHub. The conventional way to do that would be to go to the GitHub site and create a new repository there. However, for this class we are using GitHub Classroom, which will automate this process of creating repositories for everyone in class</p>
 
-<p>Click through to the GitHub <a href="https://classroom.github.com/a/eagPwFlw">classroom assignment</a>. Clicking through to the assignment will create a private repository for you with the name “practical-01-&lt;Your GitHub username&gt;.git”, e.g. “mlinderm.git”. You can view your repository at https://github.com/csci312a-s23/practical-01-&lt;Your GitHub username&gt; (click the link provided by GitHub classroom).</p>
+<p>Click through to the GitHub <a href="https://classroom.github.com/a/nqsf8rE6">classroom assignment</a>. Clicking through to the assignment will create a private repository for you with the name “practical01-js-&lt;Your GitHub username&gt;”, e.g. “practical01-js-mlinderm.git”. You can view your repository at https://github.com/csci312a-f23/practical01-js-&lt;Your GitHub username&gt; (click the link provided by GitHub classroom).</p>
 
 <p>On the front page of your new repository, it may list some options about how to get started. If those instructions appear, follow the directions for existing repositories. If not, follow the steps below.</p>
 
 <ol>
-  <li><code>💻 git remote add origin &lt;repository URL&gt;</code>, where *<repository URL="">* is the URL for your repository at GitHub (don't be the one that actually types out "<repository URL="">"). You can find this URL by clicking on the green "Code" button and copying one of the URLs. There are two kinds of URLSs: HTTPS and SSH. If you set up SSH for your GitHub account use the second, if not use the first (HTTPS). This will enable you to push to the remote repository using "origin" as a short-hand name.</repository></repository></li>
+  <li><code>💻 git remote add origin &lt;repository URL&gt;</code>, where <em>&lt;repository URL&gt;</em> is the URL for your repository at GitHub (don’t be the one that actually types out “&lt;repository URL&gt;”). You can find this URL by clicking on the green “Code” button and copying one of the URLs. There are two kinds of URLSs: HTTPS and SSH. We want to use the SSH URL. If you didn’t set up an SSH key as part of <a href="/~mlinderman/courses/cs312/f23/resources/getting_started.html">“Getting Started”</a>, do so now.</li>
   <li><code>💻 git branch -M main</code>. This is is <em>not</em> actually an essential step for connecting the two repositories. This renames the primary branch of the repository from the git default of “master” to the more inclusive “main”.</li>
-  <li><code>💻 git pull --rebase origin main</code>. This retrieves starter code created by GitHub classroom that you don’t have (recall the distributed nature of Git). This should not be needed in the future when you start by cloning the repository GitHub classroom creates for you. Note that to use the HTTPS interface you will need to create a <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">GitHub access token</a> before this step that you will use instead of your password when prompted.</li>
+  <li><code>💻 git pull --rebase origin main</code>. This retrieves starter code created by GitHub classroom that you don’t have (recall the distributed nature of Git). This should not be needed in the future when you start by cloning the repository GitHub classroom creates for you.</li>
   <li><code>💻 git push -u origin main</code>. This tells git to copy changes from your current repository to “origin”, which is the repository on GitHub.</li>
 </ol>
 
 <p>If you reload the GitHub page, you will see it now lists your code.</p>
 
-<p>Now, you can submit the practical to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/resources/gradescope.html">here</a></p>
+<p>Now, you can submit the practical to Gradescope as described <a href="/~mlinderman/courses/cs312/f23/resources/gradescope.html">here</a></p>
 
 <p><strong>Successfully submitting your assignment is a multi-step process: 1) Commit and push your changes to GitHub, 2) Submit your repository to the Gradescope assignment. Make sure you complete both steps (in order).</strong></p>
 
@@ -318,7 +318,7 @@ console.log(s); // this will print out 'The value of x is 5`
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:30:27 -0400.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-09-12 13:45:56 -0400.</em>
             </div>
         </footer>
 
@@ -341,7 +341,7 @@ console.log(s); // this will print out 'The value of x is 5`
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

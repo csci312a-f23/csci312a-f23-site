@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/assign/assignment03.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/assign/assignment03.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="cs312---assignment-three">CS312 - Assignment Three</h1>
 
 <p>
-<strong>Initial Due Date: 2023-03-09 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-10-04 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-03-31 4:15PM</strong>
+<strong>Final Due Date: 2023-11-03 4:15PM</strong>
 
 </p>
 
@@ -40,10 +40,10 @@
 
 <h2 id="prerequisites">Prerequisites</h2>
 
-<p>This assignment builds on the work of assignment 2. As such, you should not start it until you have <strong>passed all of the tests for assignment 2</strong>.</p>
+<p>This assignment builds on the work of assignment 2. As such, you should not start it until you have <strong>passed all (or at least most) of the tests for assignment 2</strong>.</p>
 
 <ol>
-  <li>Click the GitHub classroom <a href="https://classroom.github.com/a/IVEPaIIk">link</a> and then clone the repository GitHub classroom creates to your local computer (in your shell, execute <code>💻 git clone</code> followed by the address of the repository).</li>
+  <li>Click the GitHub classroom <a href="https://classroom.github.com/a/1OOsoAXW">link</a> and then clone the repository GitHub classroom creates to your local computer (in your shell, execute <code>💻 git clone</code> followed by the address of the repository).</li>
   <li>Update the <code>package.json</code> file with your name and e-mail</li>
   <li>Install the package dependencies with <code>💻 npm install</code></li>
 </ol>
@@ -60,19 +60,20 @@
 
 <h3 id="part-0-port-over-assignment-2">Part 0: Port over Assignment 2</h3>
 
-<p>Update the Assignment 3 skeleton with the code you wrote for assignment 2. Be a little cautious as you do this, there are some changes and you don’t want to just replace the files with your old ones. Specifically:</p>
+<p>Update the Assignment 3 skeleton with the code you wrote for assignment 2. Be a little cautious as you do this, there are some changes and you don’t want to just replace the files with your old ones. 
+Some specific changes to keep an eye out for:</p>
 <ol>
   <li>The article collection is now a prop of <code>Simplepedia</code> instead of being state. If you take a look in <code>_app.js</code> you will find the data’s new home.</li>
   <li>What will become common layout (e.g., title, footer) has been pulled into <code>_app.js</code> to reduce duplication in the other components.</li>
 </ol>
 
-<p>Make sure that your code has all of the functionality from assignment 2 before proceeding. <em>Note that some of the tests are the same, but many are testing for the new functionality and you many need to use skip and only to prune down to tests for the old behavior.</em></p>
+<p>Make sure that your code has all of the functionality from assignment 2 before proceeding. <em>Note that some of the tests are the same, but many are testing for the new functionality and you many need to use <code>skip</code> and <code>only</code> to prune down to tests for the old behavior.</em></p>
 
 <h3 id="part-1-add-proptypes">Part 1: Add PropTypes</h3>
 
 <p>Please add PropTypes to your existing modules. You will find that ESLint is now checking for PropTypes, so your code will no longer pass the linter without them.</p>
 
-<p>When adding PropTypes, be as specific as possible. There are <a href="https://reactjs.org/docs/typechecking-with-proptypes.html#proptypes">a lot of different validators</a>. Note that these cover specifying the contents of arrays and the structure of objects. For example, for the <code>Article</code> component, don’t just specify that it receives an object prop, specify what fields are required in that object. If you have an <code>Array</code> propr, specify what type should be in the array.</p>
+<p>When adding PropTypes, be as specific as possible. There are <a href="https://reactjs.org/docs/typechecking-with-proptypes.html#proptypes">a lot of different validators</a>. Note that these cover specifying the contents of arrays and the structure of objects. For example, for the <code>Article</code> component, don’t just specify that it receives an object prop, specify what fields are required in that object. If you have an <code>Array</code> prop, specify what type should be in the array.</p>
 
 <p>As a starting point I’ve provided <code>ArticleShape.js</code> in components (and an example of its use in <code>index.js</code> for the <code>Simplepedia</code> component). This is a full description of the article type, and you can use it in your PropType descriptors. After you implemented your PropTypes, make sure that eslint and jest agree that you have added PropTypes for everything.</p>
 
@@ -130,7 +131,7 @@
 <p>Create a new <code>currentArticle</code> variable in <code>MainApp</code>. Use the <code>id</code> you obtained from the router to look up the article in the collection. The <code>find</code> function would be a good choice. Note that:</p>
 <ul>
   <li>Sometimes <code>id</code> will be <code>undefined</code> (e.g., when there is no id), in which case just set your <code>currentArticle</code> variable to undefined.</li>
-  <li><code>id</code> will be a <strong>string</strong>, while the ids of the articles will be <strong>numbers</strong>, and they will need to be the same type if you use <code>===</code>.</li>
+  <li><code>id</code> will be a <strong>string</strong>, while the ids of the articles will be <strong>numbers</strong>, and they will need to be the same type if you use <code>===</code>. As a hint, the unary <code>+</code> operator can be used to convert strings to numbers, e.g., try <code>+"42"</code> in the node interpreter.</li>
 </ul>
 
 <p>Similar create a function <code>setCurrentArticle(article)</code> inside the <code>MainApp</code> component to use as the setter. This function will be responsible for programmatically changing the URL. To change the URL we will use the <code>router.push()</code> method with the route we wish to visit as the argument. Thus to view the article with the <code>id</code> of 42, we would invoke <code>router.push("/articles/42")</code>. If we want to clear the current article (i.e., someone calls the function with no arguments), we can call <code>router.push("/articles")</code>. <a href="#router-push" data-bs-toggle="collapse">Why push?</a></p>
@@ -172,13 +173,13 @@
 
 <p><strong>Make sure to use these names (and any others specified in the assignment) to facilitate automated testing. While there may be different, equally valid designs, you are expected to code to these specifications.</strong></p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/assignment03-editing.png" class="img-fluid" style="max-width: 960px" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/assignment03-editing.png" class="img-fluid" style="max-width: 960px" /></p>
 
-<p>Your component should use an <code>&lt;input&gt;</code> of type “text” to allow the user to enter in a new title and a <code>&lt;textarea&gt;</code> to allow the user to write the body of the article. Recall that <a href="https://reactjs.org/docs/forms.html">form elements</a> in React are implemented as controlled components. Your component should have two buttons (your editor styling does not need to match the example above). The first should be a “Save” button. When the user clicks the “Save” button, the article should be added to the collection, and you should automatically navigate ot the newly created article. The date on the article should be set to the current date and time (as an ISOString via the <code>toISOString()</code> method on <code>Date</code> objects). The second should be a “Cancel” button. When the user clicks cancel, the new article should be discarded and the primary interface should be restored. Keep in mind the newly created article might not belong to an existing section.</p>
+<p>Your component should use an <code>&lt;input&gt;</code> of type “text” to allow the user to enter in a new title and a <code>&lt;textarea&gt;</code> to allow the user to write the body of the article. Your component should have two buttons (your editor styling does not need to match the example above). The first should be a “Save” button. When the user clicks the “Save” button, the article should be added to the collection, and you should automatically navigate ot the newly created article. The date on the article should be set to the current date and time (as an ISOString via the <code>toISOString()</code> method on <code>Date</code> objects). The second should be a “Cancel” button. When the user clicks cancel, the new article should be discarded and the primary interface should be restored. Keep in mind the newly created article might not belong to an existing section.</p>
 
 <p>There is one form validation required. If the title is not set, you should not let the user save the article by disabling the “Save” button. UX best practices are to also provide a message explaining the validation error (as close in time and space to the error as possible), however for simplicity in this assignment you will just disable the “Save” button. To help the user, provide meaningful initial placeholder text in both input elements.</p>
 
-<p>Recall that we use [controlled components]. Store the state of the values you are getting from the user and use those value and <code>onChange</code> call backs to keep the input elements in sync with the state (see the ColorPicker example). You should not extract the values from the underlying DOM elements. You do not need to wrap our inputs tags in a <code>&lt;form&gt;</code> tag. Doing so can create problems for saving the data.</p>
+<p>Recall that we use <a href="https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable">controlled components</a>. Store the state of the values you are getting from the user and use those value and <code>onChange</code> call backs to keep the input elements in sync with the state (see the ColorPicker example). You should not extract the values from the underlying DOM elements. You do not need to wrap our inputs tags in a <code>&lt;form&gt;</code> tag. Doing so can create problems for saving the data.</p>
 
 <h4 id="routing-to-the-editor">Routing to the editor</h4>
 
@@ -196,11 +197,11 @@
 
 <p>In <code>Simplepedia</code> write the <code>handleClick</code> callback so that when it receives the command “add”, it uses the router to take the user to the editor.</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/assignment03-newarticle.png" class="img-fluid" style="max-width: 960px" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/assignment03-newarticle.png" class="img-fluid" style="max-width: 960px" /></p>
 
 <h3 id="part-5-updating-indexbar">Part 5: Updating IndexBar</h3>
 
-<p>We want to ensure that the <code>IndexBar</code> section is consistent with the new “current article”, i.e. it is showing all the titles in the same section as the newly created article. Pass <code>currentArticle</code> to <code>IndexBar</code> as a prop (there are other ways to accomplish this goal, but this is the approach we will use in our assignment). Unfortunately, you can’t just use the first character of the title to determine the section, because then we couldn’t switch sections.  Instead, we will use an effect hook to update the section state whenever the <code>currentArticle</code> prop changes. We will discuss <code>useEffect</code> in class shortly.</p>
+<p>We want to ensure that the <code>IndexBar</code> section is consistent with the new “current article”, i.e. it is showing all the titles in the same section as the newly created article. Pass <code>currentArticle</code> to <code>IndexBar</code> as a prop (there are other ways to accomplish this goal, but this is the approach we will use in our assignment to minimize changes from assignment 2). Unfortunately, you can’t just use the first character of the title to determine the section, because then we couldn’t switch sections.  Instead, we will use an effect hook to update the section state whenever (and only when) the <code>currentArticle</code> prop changes. We will discuss <code>useEffect</code> in class shortly.</p>
 
 <p>The basic concept is that we register a function to be called under certain circumstances (when state or prop values change). The <code>useEffect()</code> function takes two arguments, the first is the function to run and the second is the list of variables to watch for changes. You will want to watch for changes to  <code>currentArticle</code>, changing the section if appropriate. This will mean that the section will change when the article changes, but can then be also changed independently when the user selects a new section.</p>
 
@@ -208,6 +209,21 @@
   // Code to update section state appropriately
 }, [currentArticle]);
 </code></pre>
+
+<div class="alert alert-info" role="alert">
+  <h4 class="alert-heading">React Note</h4>
+
+  <p><code>useEffect</code> is not necessarily the ideal approach to implementing this interaction, but we suggest it here to minimize complexity. Either approach (the one described above, or the one described in this note) will be accepted. As <a href="https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes">described in the React documentation</a> the problem is that the component will render, then the effect will execute, then the component may re-render again. To reduce the re-renders, the recommend approach is set the state directly during rendering whenever the <code>currentArticle</code> changes. To do so, we need to figure out manually when <code>currentArticle</code> has changed. We can do by storing the <code>currentArticle</code> from previous renders, e.g.,</p>
+
+  <pre><code class="language-javascript">  const [prevCurrentArticle, setPrevCurrentArticle] = useState(currentArticle);
+  if (currentArticle !== prevCurrentArticle) {
+    setPrevCurrentArticle(currentArticle);
+    // Code to update section state appropriately
+  }
+</code></pre>
+
+  <p class="mb-0">Another subtlety is that the effect will always fire once when the component is first mounted. But that is not the case in our approach above. To ensure the section is set properly when the component is first mounted, initialize the <code>section</code> state from <code>currentArticle</code> if it defined when the component is first created (mounted). The argument to the <code>useState</code> hook is only used when the component is first created and so can be used to initialize state for the first render.</p>
+</div>
 
 <p>It is possible for the user to create a new article with the same title as a current article. We will ignore that problem in this assignment as we will fix it in the next assignment when we introduce a server (which will validate that the title is unique).</p>
 
@@ -217,12 +233,18 @@
 
 <p>Create the page in the file <code>pages/articles/[id]/edit.js</code> (i.e., a directory named <code>[id]</code> inside the <code>articles</code> directory containing a file named <code>edit.js</code>). Since this route is more specific than the catch all route we created earlier it will take precedence. This page will be similar to the <code>edit.js</code> you create previously, but the component will be named <code>SimplepediaEditor</code> and take an additional prop <code>currentArticle</code>.</p>
 
-<p>Pass <code>currentArticle</code> to <code>Editor</code> as the <code>article</code> prop. Modify <code>Editor</code> to initialize the values of the form fields with the current title and body. Similar to above we will implement a <code>useEffect</code> hook to set the state values used in <code>Editor</code> if the <code>article</code> prop changes, but not prevent subsequent editing. This is particularly needed here because Next may render the components before extracting the <code>id</code> from the URL.</p>
+<p>Pass <code>currentArticle</code> to <code>Editor</code> as the <code>currentArticle</code> prop. Modify <code>Editor</code> to initialize the values of the form fields with the current title and body. <code>currentArticle</code> is not always defined to so when we initialize the state we will need to handle the two different cases, when <code>currentArticle</code> is defined and when it is not. In the former, for example, we would want to initialize the title state with <code>currentArticle.title</code> and in the latter, we would want to initialize the title state with <code>""</code> (the empty string).</p>
 
-<pre><code class="language-javascript">useEffect(() =&gt; {
-   // Set controlled form values from article appropriately
-}, [article]);
+<p>There is an additional subtlety. Next may render <code>SimpleEditor</code> before it has extracted the <code>id</code> from the URL (and set <code>currentArticle</code>). <code>SimpleEditor</code> should effectively reset the <code>Editor</code> component whenever the current article changes (i.e., each instance of <code>Editor</code> is specific to a particular article). To do so, we specify the key prop to Editor as <code>key={currentArticle?.id}</code>. This tells React that <code>Editors</code> for two different existing articles are <a href="https://react.dev/learn/you-might-not-need-an-effect#resetting-all-state-when-a-prop-changes">distinct and should not share state</a>.</p>
+
+<div class="alert alert-info" role="alert">
+  <h4 class="alert-heading">Javascript Note</h4>
+
+  <p>The <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining">optional chaining operator</a>, <code>?.</code>, helps us concisely handle the situation where the component is rendered before <code>currentArticle</code> is available. <code>currentArticle?.id</code> is equivalent to</p>
+  <pre><code class="language-javascript">(currentArticle === null || currentArticle === undefined) ? undefined : currentArticle.id
 </code></pre>
+  <p class="mb-0">i.e., evaluates to <code>undefined</code> is <code>currentArticle</code> is <code>undefined</code> instead of generating a “Cannot read properties of undefined” error.</p>
+</div>
 
 <p>On “Save”, the date should be updated and the changes saved (and the newly edited article displayed). On “Cancel”, the changes should be discarded leaving the article unmodified and the previous article view should be restored (displaying the original, unedited, article).</p>
 
@@ -234,7 +256,7 @@
 
 <p>Your submission should not have ESLint warnings or errors when run with <code>💻 npm run lint</code>. Remember than you can fix many errors automatically with <code>💻 npm run lint -- --fix</code> (although since ESLint can sometimes introduce errors during this process, we suggest committing your code before running “fix” so you can rollback any changes). The assignment skeleton includes the Prettier package and associated hooks to automatically reformat your code to a consistent standard when you commit. Thus do not be surprised if your code looks slightly different after a commit.</p>
 
-<p>Submit your assignment by pushing all of your committed changes to the GitHub classroom via <code>💻 git push --all origin</code> and then submitting your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/assign/gradescope.html">here</a>. You can submit (push to GitHub and submit to Gradescope) multiple times.</p>
+<p>Submit your assignment by pushing all of your committed changes to the GitHub classroom via <code>💻 git push --all origin</code> and then submitting your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/f23/assign/gradescope.html">here</a>. You can submit (push to GitHub and submit to Gradescope) multiple times.</p>
 
 <p>Portions of your assignment will undergo automated grading. Make sure to follow the specifications exactly, otherwise the tests will fail (even if your code generally works as intended). Use the provided test suite (run with <code>💻 npm test</code>) to get immediate feedback on whether your code follows the specification. Because of the increased complexity of a React application, Gradescope can take minutes to run all of the tests. Thus you will be more efficient testing locally and only submitting to Gradescope when you are confident your application meets the specification.</p>
 
@@ -279,7 +301,7 @@
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-11 11:59:01 -0500.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-10-21 16:37:33 -0400.</em>
             </div>
         </footer>
 
@@ -302,7 +324,7 @@
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

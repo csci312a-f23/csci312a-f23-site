@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-fetch.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/practicals/practical-fetch.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="practical-working-with-an-api">Practical: Working with an API</h1>
 
 <p>
-<strong>Initial Due Date: 2023-03-09 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-10-09 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+<strong>Final Due Date: 2023-10-27 4:15PM</strong>
 
 </p>
 
@@ -40,7 +40,7 @@
 <h2 id="prerequisites">Prerequisites</h2>
 
 <ol>
-  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/MLk7KcEV">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/tqK_nQ0v">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
   <li>Clone the repository to you computer with <code>💻 git clone</code> (get the name of the repository from GitHub).</li>
   <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
   <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
@@ -50,7 +50,7 @@
 
 <p>So far our applications have used the build tools to load their data. That is atypical. More commonly our applications fetch their data from a server. In this practical we extend the color picker to obtain additional information from <a href="https://www.thecolorapi.com">https://www.thecolorapi.com</a>, a publicly available API that provides color-related information. In particular we are interested in its “nearest named color” feature, the returns a “named” color similar to our query. We want to fetch and display that information in the color picker, including enabling the user to switch to the “named” color. To make this feature feel “reactive”, we want to obtain the additional color information automatically as we adjust the color sliders, not just in response to a specific user request.</p>
 
-<p>The color API takes a variety of inputs. Here we will use the RGB interface, specifying the color of interest via a query parameter containing the RGB values. For example, to find out more about “Middlebury Blue”, we would query <a href="https://www.thecolorapi.com/id?rgb=(55,83,140)">https://www.thecolorapi.com/id?rgb=(55,83,140)</a>. The response is JSON with a variety of data about the color ([API documentation]). We are interested in the following portion that describes the similar named color.</p>
+<p>The color API takes a variety of inputs. Here we will use the RGB interface, specifying the color of interest via a query parameter containing the RGB values. For example, to find out more about “Middlebury Blue”, we would query <a href="https://www.thecolorapi.com/id?rgb=(55,83,140)">https://www.thecolorapi.com/id?rgb=(55,83,140)</a>. The response is JSON with a variety of data about the color (<a href="https://www.thecolorapi.com/docs">API documentation</a>). We are interested in the following portion that describes the similar named color.</p>
 
 <pre><code class="language-json">{
    ...
@@ -81,43 +81,23 @@
 
 <h2 id="debouncing-the-input">Debouncing the input</h2>
 
-<p>To debounce the input we will use <code>setTimeout</code>. The general idea is delay each update by some time. If there has been additional change within that window we will cancel the previous update and restart the delay. As a starting point, update your effect hook to be:</p>
+<p>To debounce the input we will use <code>setTimeout</code>. The general idea is delay each update by some time. If there has been additional change within that window we will cancel the previous update and restart the delay. The <code>clearTimeout</code> function cancels the previous timeout call (if still active). Every time the state changes we want to clear any pending timeouts and create a new one. We often need to do this kind of “cleanup”. If your effect callback returns a function, React will invoke the returned function each time the effect runs again and one final time when the component is unmounted (removed from the DOM). Here we return a function that calls <code>clearTimeout</code> on the <code>setTimeout</code> we just launched. If the time has already full elapsed, and the timeout callback executed, nothing happens. But if the timeout is still pending, it will be canceled (effectively debouncing the input).</p>
 
-<!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
-<div class="code-header">
-    <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
-</div>
-<pre><code class="language-jsx">let queryTimeout;
-useEffect(() =&gt; {
-  clearTimeout(queryTimeout);
-  queryTimeout = setTimeout(() =&gt; {
-    console.log(`https://www.thecolorapi.com/id?rgb=(${red},${green},${blue})`);
-  }, 250)
-}, [red, green, blue]);
-</code></pre>
-
-<p>The <code>clearTimeout</code> function cancels the previous timeout call (if still active). Try this out. I suspect you will quickly notice it doesn’t work as intended. You should also get a helpful linter warning about issues with our hook. What is going on? Recall that the component function is called each time the component re-renders. Thus we get a new <code>queryTimeout</code> variable on each render. Each time we change a color parameter we are triggering a re-render, and thus losing the reference to any previously created timeout (and so we can’t cancel it). What we need is way to maintain information across renders.</p>
-
-<p>We will use the <a href="https://reactjs.org/docs/hooks-reference.html#useref"><code>useRef</code></a> hook to create a object that persists for the lifetime of the component. Add</p>
-
-<pre><code class="language-jsx">const queryTimeout = useRef(null);
-</code></pre>
-
-<p>to your component. We modify the “ref” object’s <code>current</code> property to persist information across renders. Update your effect hook to be:</p>
+<p>Update your hook with the following. Now you should only see the logging statements when you have stopped moving the sliders (or otherwise updating the colors) for 250ms.</p>
 
 <!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
 <div class="code-header">
     <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
 </div>
 <pre><code class="language-jsx">useEffect(() =&gt; {
-  clearTimeout(queryTimeout.current);
-  queryTimeout.current = setTimeout(() =&gt; {
+  const queryTimeout = setTimeout(() =&gt; {
     console.log(`https://www.thecolorapi.com/id?rgb=(${red},${green},${blue})`);
   }, 250)
+  return () =&gt; {
+    clearTimeout(queryTimeout);
+  }
 }, [red, green, blue]);
 </code></pre>
-
-<p>Now you should only see the logging statements when you have stopped moving the sliders (or otherwise updating the colors) for 250ms.</p>
 
 <h2 id="rendering-the-nearest-color">Rendering the nearest color</h2>
 
@@ -125,7 +105,7 @@ useEffect(() =&gt; {
 
 <pre><code class="language-jsx">{name &amp;&amp; (
    &lt;div&gt;
-     &lt;p&gt;Most similar named color: {name.value} {name.exact_match_name ? "🎯" : &lt;button onClick={updateNearest}&gt;Switch&lt;/button&gt;}&lt;/p&gt;
+     &lt;p&gt;Most similar named color: {name.value} {name.exact_match_name ? "🎯" : &lt;button onClick={updateNearest} type="button"&gt;Switch&lt;/button&gt;}&lt;/p&gt;
   &lt;/div&gt;
 )}
 </code></pre>
@@ -160,9 +140,9 @@ useEffect(() =&gt; {
 
 <h2 id="switching-to-async-and-await">Switching to <code>async</code> and <code>await</code></h2>
 
-<p>As we discussed in class, we can interact with Promises in a more imperative style by using the []<code>async</code> and <code>await</code> keywords](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). The former declares a function to be asynchronous, thus enabling the use of the <code>await</code> keyword. The latter suspends execution until the Promise returned by the following expression is fulfilled or rejected. The use of <code>async</code> and <code>await</code> doesn’t change the behavior of Promises, instead they are intended to simplify the syntax for consuming Promise-based APIs.</p>
+<p>As we discussed in class, we can interact with Promises in a more imperative style by using the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"><code>async</code> and <code>await</code> keywords</a>. The former declares a function to be asynchronous, thus enabling the use of the <code>await</code> keyword. The latter suspends execution until the Promise returned by the following expression is fulfilled or rejected. The use of <code>async</code> and <code>await</code> doesn’t change the behavior of Promises, instead they are intended to simplify the syntax for consuming Promise-based APIs.</p>
 
-<p>Update your effect hook to use <code>async</code> and <code>await</code>, of the <code>then</code>, etc. Make the callback provided to <code>setTimeout</code> be <code>aysnc</code>, then replace the callback body with the following. Note the two <code>await</code>s, one for each expression returning a Promise.</p>
+<p>Update your effect hook to use <code>async</code> and <code>await</code> instead of<code>then</code>. Make the callback provided to <code>setTimeout</code> be <code>aysnc</code>, then replace the callback body with the following. Note the two <code>await</code>s, one for each expression returning a Promise.</p>
 
 <!-- https://www.aleksandrhovhannisyan.com/blog/how-to-add-a-copy-to-clipboard-button-to-your-jekyll-blog/ -->
 <div class="code-header">
@@ -170,8 +150,8 @@ useEffect(() =&gt; {
 </div>
 <pre><code class="language-jsx">const response = await fetch(`https://www.thecolorapi.com/id?rgb=(${red},${green},${blue})`);
 if (response.ok) {
-  const color_info = await response.json();
-  setName(color_info.name);
+  const colorInfo = await response.json();
+  setName(colorInfo.name);
 }
 </code></pre>
 
@@ -192,13 +172,27 @@ if (response.ok) {
 
 <p>Recall that the Practical exercises are evaluated as “Satisfactory/Not yet satisfactory”. Your submission will need to implement all of the required functionality (i.e., pass all the tests) to be Satisfactory (2 points).</p>
 
+<h2 id="read-more-about-useeffect-and-data-fetching">Read more about <code>useEffect</code> and data fetching</h2>
+
+<p><code>useEffect</code> is one of the trickier built-in hooks and is often overused. Check out the post <a href="https://react.dev/learn/you-might-not-need-an-effect">“You might not need an effect”</a> for some examples of situations where you don’t need and shouldn’t use <code>useEffect</code>. Fetching data from an external API, like we are doing here, is one of the situations where we do need <code>useEffect</code>. Why? Because we are trying to keep our component “synchronized” with an external system, e.g., the color data provided by the API. That article also writes:</p>
+
+<blockquote class="blockqoute">
+  <p>Keep in mind that modern frameworks provide more efficient built-in data fetching mechanisms than writing Effects directly in your components.</p>
+</blockquote>
+
+<p>Here we purposely chose a “low-level” approach using <code>useEffect</code> and <code>fetch</code> for pedagogical purposes. You can continue to do the same throughout the semester. But I also encourage you to check out the more sophisticated data fetching hooks available. For example <a href="https://swr.vercel.app"><code>useSWR</code></a> is provided by the same team that created Next.js. Similarly, we directly implemented the debouncing behavior. But again we could have installed an <a href="https://usehooks.com/usedebounce">existing hook</a> for that task. See below for more discussion.</p>
+
+<h2 id="reusing-hooks-with-hook-libraries">Reusing hooks with hook libraries</h2>
+
+<p>One of the motivations for hooks to encapsulate common functionality for reuse, for example debouncing. That is instead of directly incorporating debouncing into the <code>useEffect</code> (and re-implementing it everywhere we need debouncing), we can use a pre-existing hook that abstracts that functionality. For example, the <a href="https://usehooks.com">useHooks</a> library provides a <code>useDebounce</code> hook and many more. There are several such libraries (useHooks is just one, and may not be the best or most comprehensive). In our assignments and practicals we purpose implement these features ourselves so we learn about what is going on “behind the scenes”. In your projects I encourage to investigate pre-existing hooks for common tasks.</p>
+
 
         </div>
 
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:31:16 -0400.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-09-29 14:46:15 -0400.</em>
             </div>
         </footer>
 
@@ -221,7 +215,7 @@ if (response.ok) {
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

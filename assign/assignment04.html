@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/assign/assignment04.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/assign/assignment04.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="cs312---assignment-four">CS312 - Assignment Four</h1>
 
 <p>
-<strong>Initial Due Date: 2023-03-16 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-10-11 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+<strong>Final Due Date: 2023-11-03 4:15PM</strong>
 
 </p>
 
@@ -42,7 +42,7 @@
 <p>This assignment builds on the work of assignment 3. As such, you should not start it until you have <strong>passed all of the tests for assignment 3</strong>.</p>
 
 <ol>
-  <li>Click the GitHub classroom <a href="https://classroom.github.com/a/tlXEiHkk">link</a> and then clone the repository GitHub classroom creates to your local computer (in your shell, execute <code>💻 git clone</code> followed by the address of the repository).</li>
+  <li>Click the GitHub classroom <a href="https://classroom.github.com/a/QXsbeeE8">link</a> and then clone the repository GitHub classroom creates to your local computer (in your shell, execute <code>💻 git clone</code> followed by the address of the repository).</li>
   <li>Update the <code>package.json</code> file with your name and e-mail</li>
   <li>Install the package dependencies with <code>💻 npm install</code></li>
   <li>Practice good software development habits and create a new feature branch for your work</li>
@@ -52,7 +52,7 @@
 
 <h2 id="background">Background</h2>
 
-<p>This assignment builds on the <a href="/~mlinderman/courses/cs312/s23/practicals/practical-fetch.html">the REST practical</a> in which you incorporated an API into the color picker. You will be transitioning Simplepedia over to server-maintained data management.</p>
+<p>This assignment builds on the <a href="/~mlinderman/courses/cs312/f23/practicals/practical-fetch.html">the REST practical</a> in which you incorporated an API into the color picker. You will be transitioning Simplepedia over to server-maintained data management.</p>
 
 <h3 id="the-server">The server</h3>
 
@@ -72,17 +72,22 @@
     <tr>
       <td>/api/sections</td>
       <td>GET</td>
-      <td>Fetch a JSON array of all sections in sorted order</td>
+      <td>Fetch a JSON array of all sections in alphabetical order</td>
     </tr>
     <tr>
       <td>/api/articles</td>
       <td>GET</td>
-      <td>Fetch the entire article collection as an array sorted by title</td>
+      <td>Fetch the entire article collection as an array</td>
     </tr>
     <tr>
       <td>/api/articles?section=<em>:section</em></td>
       <td>GET</td>
-      <td>Fetch all articles in the corresponding section sorted by title</td>
+      <td>Fetch all articles in the corresponding section</td>
+    </tr>
+    <tr>
+      <td>/api/articles?section=<em>:section</em>&amp;titlesOnly</td>
+      <td>GET</td>
+      <td>Fetch all articles (but id and title fields only) in the corresponding section</td>
     </tr>
     <tr>
       <td>/api/articles</td>
@@ -110,32 +115,28 @@
 
 <h3 id="end-to-end-testing">End-to-end testing</h3>
 
-<p>To enable end-to-end testing, we are running the embedded API server during testing. You will notice in your <code>package.json</code> file a slightly different test command (which builds the production version of your application then starts the server and runs the tests). This testing approach may not be appropriate for other applications, but here it enables us to test our front-end application without needing to mock <code>fetch</code> (like we did in the practical) or create a fake server.</p>
+<p>To enable end-to-end testing, we are running the embedded API server during testing. You will notice your <code>package.json</code> file has a slightly different test command (which builds the production version of your application then starts the server and runs the tests). This testing approach may not be appropriate for other applications, but here it enables us to test our front-end application without needing to mock <code>fetch</code> (like we did in the practical) or create a fake server.</p>
 
 <p>This approach does introduce some limitations:</p>
 <ul>
   <li>You cannot run the development server and the tests at the same time as they use the same port</li>
-  <li>A production build is created before testing, but NextJS will stop that build if there linting errors, so you will need to be very proactive about fixing linter issues.</li>
 </ul>
 
 <h2 id="assignment">Assignment</h2>
 
 <h3 id="part-0-port-over-assignment-3-and-prepare-the-database">Part 0: Port over Assignment 3 and prepare the database</h3>
 
-<p>Update the Assignment 4 skeleton with the code you wrote for assignment 3. Be a little cautious as you do this, there are some changes and you don’t want to just replace the files with your old ones. Specifically:</p>
+<p>Update the Assignment 4 skeleton with the code you wrote for assignment 3. Be a little cautious as you do this, there are some changes and you don’t want to just replace the files with your old ones. Some specific notes:</p>
 <ol>
-  <li><code>collection</code> has been removed from the main component (<code>_app.js</code>) and its children in anticipation of fetching the data from the server.</li>
+  <li><code>collection</code> has been removed from the main component (<code>_app.js</code>) and its children in anticipation of fetching the data from the server. <em>Note that due to this changes not all of our previous code will work until more of the refactoring is complete</em></li>
+  <li>Don’t forget to copy the <code>next.config.js</code> file in your made in assignment 3 (that redirects root requests to <code>/articles</code>)</li>
 </ol>
 
-<p><em>Note that due to the changes not all of our previous code will work until more of the refactoring is complete</em></p>
-
-<p>To prepare the database for use, execute:</p>
+<p>To prepare the database for use, execute the following. You can recreate the database at any time by re-running these commands.</p>
 
 <pre><code class="language-plaintext">💻 npx knex migrate:latest
 💻 npx knex seed:run
 </code></pre>
-
-<p>If you want to view the database directly, open the <code>simplepedia.db</code> file created by the above commands with the <code>sqlite3</code> client. You can recreate the database at any time with the above commands.</p>
 
 <h3 id="part-1-refactoring-indexbar">Part 1: Refactoring <code>IndexBar</code></h3>
 
@@ -147,23 +148,33 @@
 
 <h4 id="titles">Titles</h4>
 
-<p>We similarly refactor the input to the <code>TitlesView</code> component. Instead of filtering articles from <code>collection</code>, we will obtain only those articles that belong to the relevant section from the server. As with the sections, we will need to create a new piece of state, e.g., <code>titles</code>, to store these articles. Start by creating the state, and then implementing another <code>useEffect</code> hook that will fetch the data from the server. Pay close attention to the dependencies of your hook. When will you want to perform a new fetch operation?</p>
+<p>We similarly refactor the input to the <code>TitlesView</code> component. Instead of filtering articles from <code>collection</code>, we will obtain only the ids and titles of articles that belong to the relevant section from the server. That is, for efficiency reasons we only want to fetch the information we need, the article ids and titles. Notice that the API query parameters described above enable you to efficiently fetch just the data you need. As with the sections, we will need to create a new piece of state, e.g., <code>titles</code>, to store these articles. Start by creating the state, and then implementing another <code>useEffect</code> hook that will fetch the data from the server. Pay close attention to the dependencies of your hook. When will you want to perform a new fetch operation?</p>
 
-<p>With this refactoring complete, you should be able to display sections and their corresponding titles using only data obtained from the server.</p>
+<p>With this refactoring complete, you should be able to display sections and their corresponding titles using only data obtained from the server. Note that because <code>TitlesView</code> will be receiving “incomplete” articles, you will likely need to refactor is PropTypes to allow for that. Instead of an array of full <code>ArticleShape</code>s, it will now receive an array of the following (i.e., objects with just <code>id</code><code> and </code>title`` properties).</p>
+<pre><code class="language-js">PropTypes.shape({
+   id: PropTypes.number.isRequired,
+   title: PropTypes.string.isRequired,
+})
+</code></pre>
 
 <h3 id="part-2-refactoring-mainapp">Part 2: Refactoring <code>MainApp</code></h3>
 
 <p>When we had all the data available, we could make <code>currentArticle</code> a variable, as opposed to a piece of state. Now we will need state to maintain that information over time. Replace your <code>currentArticle</code> variable with <code>currentArticle</code> state (you will likely need to rename your existing <code>setCurrentArticle</code> callback function to something else to avoid naming conflicts with the state setter). With that state in place, create a <code>useEffect</code> hook that will set the <code>currentArticle</code> state based on the current value for <code>id</code> (as extracted from the <code>query</code> object in the router). When <code>id</code> is not defined, we want to clear the current article. When <code>id</code> is defined we want to fetch the corresponding article (and that article alone) from the server.</p>
 
-<p>To try to reduce the number of article requests, we will only fetch an article when it is not already available locally. That is we want to fetch the article when <code>id</code> is defined, and either <code>currentArticle</code> is not defined or <code>id</code> from the router (from the URL) doesn’t match <code>currentArticle.id</code> (i.e., we have picked a different article). This implies that <code>currentArticle</code> will need to be dependency of your <code>useEffect</code> hook. We will also want to update what was your <code>setCurrentArticle</code> function to update the <code>currentArticle</code> state when changing to a new article (when you are changing the URL to “/articles/:id”).</p>
+<p>To try to reduce the number of article requests, we will only fetch an article when it is not already available locally. That is we want to fetch the article when <code>id</code> is defined, and either <code>currentArticle</code> is not defined or <code>id</code> from the router (from the URL) doesn’t match <code>currentArticle.id</code> (i.e., we have picked a different article). This implies that <code>currentArticle</code> will need to be dependency of your <code>useEffect</code> hook. To ensure that we always get the most up-to-date article, whenever we are switching articles we want to clear the <code>currentArticle</code> so that we fetch the latest version of the article from the server (e.g., if we just created or edited the article). <em>Note it would be even more efficient to use a complete article if available locally, but for simplicity we will not try to implement that optimization as part of this assignment (i.e., we will just re-fetch any newly created or modified articles).</em></p>
 
-<p>Recall that depending on the route <code>router.query.id</code> might be a string containing a single integer, an array of one element or undefined. To most effectively utilize <code>useEffect</code>’s dependency tracking, we want to normalize the the value of <code>id</code> so that <code>"42"</code> and <code>["42"]</code> are the same, i.e., both 42.</p>
+<p>Recall that depending on the route <code>router.query.id</code> might be a string containing a single integer, an array of one element or undefined. To most effectively utilize <code>useEffect</code>’s dependency tracking, we want to normalize the the value of <code>id</code> outside of the <code>useEffect</code> hook, i.e., in the component function body, so that when <code>id</code> switches from <code>"42"</code> to <code>["42"]</code> (or vice versa), we don’t trigger updates. That is we will use the now normalized integer as the hook dependency. Observe that the unary <code>+</code> operator will convert strings and arrays of strings to integers, e.g.,</p>
+<pre><code>&gt; +"42"
+42
+&gt; +["42"]
+42
+</code></pre>
 
 <h3 id="part-3-refactoring-simplepediacreator-and-simplepediaeditor">Part 3: Refactoring <code>SimplepediaCreator</code> and <code>SimplepediaEditor</code></h3>
 
 <p>These two components differ in their implementation of their callback methods. Update the callbacks to create or update an article by making the appropriate requests to the server (POST to “/articles” to create a new article, PUT to “/articles/:id” to update an article).</p>
 
-<p><a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API"><code>fetch</code></a> takes a second argument that specializes the behavior of <code>fetch</code>. With that argument we will want to specify the method, the body, and any headers. For example the following</p>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API"><code>fetch</code></a> takes a second argument that specializes the behavior of <code>fetch</code>. With that argument we will want to specify the method, the body, and any headers. For example the following specifies a POST request, with JSON encoded data that is expecting a JSON response. Note that we need to manually encode the JavaScript objects as JSON with <code>JSON.stringify</code>.</p>
 
 <pre><code class="language-javascript">fetch(`/url`, {
    method: "POST",
@@ -175,25 +186,25 @@
 });
 </code></pre>
 
-<p>specifies a POST request, with JSON encoded data that is expecting a JSON response. Note that we need to manually encode the JavaScript objects as JSON with <code>JSON.stringify</code>.</p>
-
 <p>The server is responsible for assigning a unique <code>id</code> to each article (that is the only way to ensure the ids are unique). The POST request will send back the newly created article with its id.</p>
 
 <p>You do not need to integrate the returned article into the titles or other state. Instead when the <code>Simplepedia</code> component and its children are remounted after editing, they will fetch updated sections, the titles in that section, etc. <em>Similar to the note above, we could imagine several possible optimizations to reduce the the amount of data fetched. For simplicity, we will not try to implement those optimizations as part of this assignment.</em></p>
 
+<p>Unlike previous assignments, the server enforces constraints on the articles, specifically, that the titles must be unique. It will rejects POST and PUT requests with a duplicate title. <em>You are not expected to handle these errors.</em> Those constraints may impact your development approach, e.g., you can’t try adding an article with the title “Test” twice.</p>
+
 <h3 id="part-4-handling-an-article-with-a-new-section">Part 4: Handling an article with a new section</h3>
 
-<p>We are not attempting to keep our view of Simplepedia up-to-date in real time, i.e., we would not automatically update our sections if another user added an article to a shared server (we would need a slightly different approach). One situation we do want to handle is when we attempt to render an article in a section we didn’t previously know about (this shouldn’t occur in our editing workflow, but could occur if someone sent you a URL to an article in a newly created section and you already had the application open).</p>
+<p>We are not attempting to keep our view of Simplepedia up-to-date in real time, i.e., we would not automatically update our sections if another user added an article to a shared server (we would need a slightly different approach). One situation we do want to handle is when we attempt to render an article in a section we didn’t previously know about.</p>
 
 <p>To handle this situation create a new boolean variable in the body of <code>IndexBar</code> function that is true when the sections should should be updated. That would occur when the current sections are empty or when then current section is defined but not present in the array of known sections. Add that new variable as a dependency to your <code>useEffect</code> hook for updating the sections to ensure you re-fetch the sections when try to view an article that is not in one of the currently known sections.</p>
 
-<p>We create the boolean variable in the function body to avoid passing an array as a <code>useEffect</code> dependency (which can be tricky and trigger undesired updates). To ensure a truthy or falsy value is converted to a boolean, you can precede it with <code>!!</code>, e.g., <code>!!section</code>. The first <code>!</code> negates the value creating a boolean and the second <code>!</code> reverses the negation.</p>
+<p>As above, we create the boolean variable in the component function body to avoid passing an array as a <code>useEffect</code> dependency (which can be tricky and trigger undesired updates). To ensure a truthy or falsy value is converted to a boolean, you can precede it with <code>!!</code>, e.g., <code>!!currentSection</code>. The first <code>!</code> negates the value creating a boolean and the second <code>!</code> reverses the negation.</p>
 
 <h3 id="finishing-up">Finishing up</h3>
 
 <p>Your submission should not have ESLint warnings or errors when run with <code>💻 npm run lint</code>. Remember than you can fix many errors automatically with <code>💻 npm run lint -- --fix</code> (although since ESLint can sometimes introduce errors during this process, we suggest committing your code before running “fix” so you can rollback any changes). The assignment skeleton includes the Prettier package and associated hooks to automatically reformat your code to a consistent standard when you commit. Thus do not be surprised if your code looks slightly different after a commit.</p>
 
-<p>Submit your assignment by pushing all of your committed changes to the GitHub classroom via ``💻 git push –all origin` and then submitting your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/assign/gradescope.html">here</a>. You can submit (push to GitHub and submit to Gradescope) multiple times.</p>
+<p>Submit your assignment by pushing all of your committed changes to the GitHub classroom via <code>💻 git push --all origin</code> and then submitting your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/f23/assign/gradescope.html">here</a>. You can submit (push to GitHub and submit to Gradescope) multiple times.</p>
 
 <p>Portions of your assignment will undergo automated grading. Make sure to follow the specifications exactly, otherwise the tests will fail (even if your code generally works as intended). Use the provided test suite (run with <code>💻 npm test</code>) to get immediate feedback on whether your code follows the specification. Because of the increased complexity of a React application, Gradescope can take minutes to run all of the tests. Thus you will be more efficient testing locally and only submitting to Gradescope when you are confident your application meets the specification.</p>
 
@@ -237,7 +248,7 @@
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-31 13:28:29 -0400.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-10-21 16:37:36 -0400.</em>
             </div>
         </footer>
 
@@ -260,7 +271,7 @@
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

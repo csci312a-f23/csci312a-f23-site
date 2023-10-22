@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/lectures/crc-cards.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/lectures/crc-cards.html">
     </head>
     <body>
 
@@ -37,25 +37,25 @@
 
 <p>The <code>Movie</code> entity is fairly simple, it just has to “know” some things. It has no real collaborators. Note that we have removed the <code>rating</code> property because it is no longer a single rating per movie.</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/crc-movie.png" alt="Movie entity" class="img-fluid" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/crc-movie.png" alt="Movie entity" class="img-fluid" /></p>
 
 <p>The <code>User</code> will represent the user of the system. This entity has a few more responsibilities. Users can log in and out of the system and rate movies. In order to support this, the <code>User</code> needs to collaborate with an entity that represents those ratings, and an entity that will actually check the user’s credentials and provide access.</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/crc-user.png" alt="User entity" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/crc-user.png" alt="User entity" /></p>
 
 <p>We will create a new <code>UserRating</code> entity to represent a single rating by a user of a single movie.</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/crc-user-rating.png" alt="UserRating entity" class="img-fluid" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/crc-user-rating.png" alt="UserRating entity" class="img-fluid" /></p>
 
 <p>Finally, we have a <code>SessionManager</code>, which handles authentication and access control.</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/crc-session.png" alt="SessionManager entity" class="img-fluid" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/crc-session.png" alt="SessionManager entity" class="img-fluid" /></p>
 
 <h2 id="crc-cards-for-views">CRC cards for views</h2>
 
 <p>In this example, we just looked at the data entities in the application. CRC cards can also be used to represent the views (React components) of your application once you are ready to start planning the implementation. This is an example of just one entity.</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/crc-movie-view.png" alt="MovieSummary entity" class="img-fluid" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/crc-movie-view.png" alt="MovieSummary entity" class="img-fluid" /></p>
 
         </div>
 
@@ -85,7 +85,7 @@
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/assign/assignment02.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/assign/assignment02.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="cs312---assignment-two">CS312 - Assignment Two</h1>
 
 <p>
-<strong>Initial Due Date: 20223-03-02 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-09-27 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-03-31 4:15PM</strong>
+<strong>Final Due Date: 2023-11-03 4:15PM</strong>
 
 </p>
 
@@ -39,25 +39,25 @@
 
 <p>The goal of this assignment is to learn the basics of creating a single page web application (SPA) with React. In this and the next few assignments, you will be developing a miniature version of Wikipedia named “Simplepedia”. Implementing Simplepedia will provide hands-on experience developing a full single page web application in preparation for completing your large project. Simplepedia was first developed with Davin Chia in Fall 2016 as an independent study.</p>
 
-<p>As with previous assignments, you will need to do additional research (online) to successfully complete the assignment.</p>
+<p>As with previous assignments, you may need to do additional research (online) to successfully complete the assignment.</p>
 
 <h2 id="prerequisites">Prerequisites</h2>
 
 <ol>
-  <li>Click the GitHub classroom <a href="https://classroom.github.com/a/DSfP1405">link</a> and then clone the repository GitHub classroom creates to your local computer (in your shell, execute <code>💻 git clone</code> followed by the address of the repository).</li>
+  <li>Click the GitHub classroom <a href="https://classroom.github.com/a/ZPu65Y1C">link</a> and then clone the repository GitHub classroom creates to your local computer (in your shell, execute <code>💻 git clone</code> followed by the address of the repository).</li>
   <li>Update the <code>package.json</code> file with your name and e-mail</li>
   <li>Install the package dependencies with <code>💻 npm install</code></li>
 </ol>
 
 <p>Once you have the dependencies installed you can start the development server with <code>💻 npm run dev</code>.</p>
 
-<p>I recommend reviewing <a href="https://facebook.github.io/react/docs/introducing-jsx.html">introduction to JSX</a> before starting your assignment.</p>
+<p>I recommend reviewing <a href="https://react.dev/learn/writing-markup-with-jsx">introduction to JSX</a> before starting your assignment.</p>
 
 <h2 id="background">Background</h2>
 
 <p>In this assignment, you will be constructing the basic interface for viewing a collection of articles. Here is the goal you are aiming for:</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/assignment02-simplepedia.png" alt="Simplepedia" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/assignment02-simplepedia.png" alt="Simplepedia" /></p>
 
 <p>Along the top of the page, there is a list of sections. Clicking on one of the sections displays the appropriate list of articles. Clicking on an article title displays the contents of the article at the bottom of the page. All of the articles have a title, some contents, and a modification date.</p>
 
@@ -71,18 +71,17 @@
 
 <p>With React, the first step is to break the interface down into components:</p>
 
-<p>!<img src="/~mlinderman/courses/cs312/s23/assets/assignment02-simplepedia-components.png" class="img-fluid" style="max-width: 960px" /></p>
+<p>!<img src="/~mlinderman/courses/cs312/f23/assets/assignment02-simplepedia-components.png" class="img-fluid" style="max-width: 960px" /></p>
 
-<p>At the top of the hierarchy, we have the <code>Simplepedia</code> component (yellow).
-We will break this top-level interface down into two main components: IndexBar (red rectangle) and Article (green rectangle). We will further break down the IndexBar into IndexSections (blue) and IndexTitles (cyan).</p>
+<p>At the top of the hierarchy, we have the <code>Simplepedia</code> component (yellow). We will break this top-level interface down into two main components: IndexBar (red rectangle) and Article (green rectangle). We will further break down the IndexBar into IndexSections (blue) and IndexTitles (cyan).</p>
 
 <p>More abstractly, we can draw the following tree:</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/assignment02-simplepedia-hierarchy.png" class="img-fluid" style="max-width: 960px" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/assignment02-simplepedia-hierarchy.png" class="img-fluid" style="max-width: 960px" /></p>
 
-<p>In this diagram, I have also included the state and the props. In the <code>Simplepedia</code> component, we will have two pieces of state: the collection of all articles (<code>collection</code>) and the article currently being displayed (<code>currentArticle</code>).</p>
+<p>In this diagram, I have also included the state and the props. Note that the props expected in a child component don’t have to match the name of the state in the parent. We chose to do that here for simplicity and clarity. What must match is the name of the prop expected by a component, and the name provided when that component is rendered (i.e., on the left-hand side of the <code>=</code> in JSX).</p>
 
-<p>If there is an article to display, the <code>Simplepedia</code> component displays an <code>Article</code> component, and passes it a prop called <code>currentArticle</code> containing the article object to display.</p>
+<p>In the <code>Simplepedia</code> component, we will have two pieces of state: the collection of all articles (<code>collection</code>) and the article currently being displayed (<code>currentArticle</code>). If there is an article to display, the <code>Simplepedia</code> component displays an <code>Article</code> component, and passes it a prop called <code>currentArticle</code> containing the article object to display.</p>
 
 <p>The main controls are provided by the <code>IndexBar</code> component at the top of the page. <code>Simplepedia</code> hands <code>IndexBar</code> two props: <code>collection</code> (the collection of all articles) and <code>setCurrentArticle</code> (a callback function that <code>IndexBar</code> can call when the user selects an article to view).</p>
 
@@ -90,10 +89,9 @@ We will break this top-level interface down into two main components: IndexBar (
 
 <h4 id="indexbar">IndexBar</h4>
 
-<p>The first component you should create is the <code>IndexBar</code>. Implement the <code>IndexBar</code> in the provided file <code>src/components/IndexBar.js</code>.
-Internally, you will have two sub-components: a list of sections (<code>SectionsView</code>), and a list of titles in the current section (<code>TitleView</code>). Create these in their own files (i.e., <code>src/components/SectionsView.js</code> and <code>src/components/TitlesView.js</code>).</p>
+<p>The first component you should create is the <code>IndexBar</code>. Implement the <code>IndexBar</code> in the provided file <code>src/components/IndexBar.js</code>. Internally, you will have two sub-components: a list of sections (<code>SectionsView</code>), and a list of titles in the current section (<code>TitleView</code>). Create these in their own files (i.e., <code>src/components/SectionsView.js</code> and <code>src/components/TitlesView.js</code>).</p>
 
-<p>The <code>SectionsView</code> component should take two props: <code>sections</code>, a list of the sections, and <code>setCurrentSection</code>, a callback for reporting when a section is selected. The list itself should be implemented as an unordered list (<code>&lt;ul&gt;</code>).Y ou should add an <code>onClick</code> callback to each <code>&lt;li&gt;</code> in the list which sets the current section as state for the <code>IndexBar</code>. You will want to make sure that the sections are sorted, but make sure that you don’t modify the props. Note that the <em>only</em> thing that the <code>SectionView</code> component should do is sort and display the sections. Let <code>IndexBar</code> do the heavy lifting of figuring out what the sections are.</p>
+<p>The <code>SectionsView</code> component should take two props: <code>sections</code>, a list of the sections, and <code>setCurrentSection</code>, a callback for reporting when a section is selected. The list itself should be implemented as an unordered list (<code>&lt;ul&gt;</code>). In this context, “unordered” just means that the list is displayed with bullets instead of numbers, it is not referring to the contents, which you should sort. You should add an <code>onClick</code> callback to each <code>&lt;li&gt;</code> in the list which sets the current section as state for the <code>IndexBar</code>. You will want to make sure that the sections are sorted, but make sure that you don’t modify the props. Note that the <em>only</em> thing that the <code>SectionView</code> component should do is sort and display the sections. Let <code>IndexBar</code> do the heavy lifting of figuring out what the sections are.</p>
 
 <p>Wrap the <code>&lt;ul&gt;</code> in a <code>&lt;div&gt;</code>. I’ve provided you with styling to turn the list into the horizontal bar. You can enable this by adding a <code>className</code> to the <code>div</code> with the value <code>{styles.sectionList}</code>. To make that style available, import the relevant CSS module in <code>SectionsView.js</code>, e.g.,</p>
 
@@ -102,7 +100,7 @@ Internally, you will have two sub-components: a list of sections (<code>Sections
 
 <p><code>TitlesView</code> will be very similar to <code>SectionsView</code>, albeit with different props. It should purely be concerned with displaying a sorted list of titles. However, to facilitate communication, <code>IndexBar</code> should provide <code>TitlesView</code> a prop <code>articles</code>, a list of full article objects (not just titles), and “pass through” the prop <code>setCurrentArticle</code>, which is the callback passed into <code>IndexBar</code> to set the current article (since the selection made from the titles will determine which article gets displayed).</p>
 
-<p><code>TitlesView</code> should also be implemented as an unordered list (“unordered” just means that the list is displayed with bullets instead of numbers, it is not referring to the contents, which you should sort). For these <code>&lt;li&gt;</code>, make sure to invoke the callback that was passed down with the props when the user clicks on a title, returning the article corresponding to the title.</p>
+<p><code>TitlesView</code> should also be implemented as an unordered list. For these <code>&lt;li&gt;</code>, make sure to invoke the callback that was passed down with the props when the user clicks on a title, returning the article corresponding to the title.</p>
 
 <p>The primary job of the <code>IndexBar</code> component will be to break up the collection for the two sub-components and to maintain state (the currently selected section). When the section list reports a new section selection, <code>IndexBar</code> should set its local state, which will cause a re-render (and thus a new selection of titles for the title list). In addition, when a new section is selected, you should invoke the <code>setCurrentArticle</code> callback with a missing (thus <code>undefined</code>) argument to indicate that the current article should be “cleared”, i.e. not shown.</p>
 
@@ -147,25 +145,29 @@ return (&lt;ul&gt;{races}&lt;/ul&gt;);
 &lt;/ul&gt;
 </code></pre>
 
-<p>Note the <code>key</code> property in the above example. As discussed in class when we make a list of React components, it is important that we add a <code>key</code> property so that React can uniquely identify each component in the collection. You can learn more in the <a href="https://reactjs.org/docs/lists-and-keys.html">React documentation on lists</a>. Regardless, you need to provide a unique string or value as the key.</p>
+<p>Note the <code>key</code> property in the above example. As discussed in class when we make a list of React components, it is important that we add a <code>key</code> property so that React can uniquely identify each component in the collection. You can learn more in the <a href="https://react.dev/learn/rendering-lists">React documentation on lists</a>. Note that all of the articles in the seed data have a unique <code>id</code> that could be used in this role (these ids will ultimately come from the database, something we will learn about later in the semester).</p>
 
 <p><strong>Important</strong> In addition to adding the <code>key</code> property to each <code>&lt;li&gt;</code>, I would like you to add a <code>data-testid</code> property. For the sections, please set this to “section” (i.e. <code>data-testid="section"</code>) and for the titles, please set this to “title” (e.g., <code>data-testid="title"</code>). The tests will only pass if these are present, so please make sure that you include them.</p>
 
 <h4 id="article">Article</h4>
 
-<p>The next component you should implement is <code>Article</code> (in the provided file <code>src/components/Article.js</code>). The <code>Article</code> component should take one prop named <code>article</code> that is an article record Object. Our articles have three fields: “title”, “contents”, and “edited” (the time the article was last edited).</p>
+<p>The next component you should implement is <code>Article</code> (in the provided file <code>src/components/Article.js</code>). The <code>Article</code> component should take one prop named <code>currentArticle</code> that is an article record Object. Our articles have three fields: “title”, “contents”, and “edited” (the time the article was last edited).</p>
 
 <p>In your <code>Article</code> component, display the title, text, and date. The entire article should be contained in a <code>&lt;div&gt;</code> with a <code>className</code> property with value <code>{styles.article}</code>. The title should use an <code>h2</code> tag, and the contents and timestamp can use simple <code>p</code> tags. The date should have the <code>className</code> <code>{styles.timestamp}</code>.  To ensure consistent date formatting, render the date in a locale-relevant format with <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleString"><code>Date.toLocaleString</code></a>. Note that this will not necessarily match the picture, it will render the date as appropriate for your computer/browser/environment.</p>
 
 <h4 id="putting-the-components-together">Putting the components together</h4>
 
-<p>In <code>src/pages/index.js</code> integrate your newly created components. You need to make sure that you pass the appropriate callbacks as props so that clicking on a section opens the title list, and clicking on a title opens the related article for viewing. If there is no article to show at the current moment, best practice is to not render the <code>Article</code> component (via <a href="https://reactjs.org/docs/conditional-rendering.html">conditional rendering</a>) as opposed to rendering <code>Article</code> but having it somehow manage an undefined <code>article</code> prop. The latter forces additional complexity into the <code>Article</code> component and in the case of more complex components can trigger unnecessary computation.</p>
+<p>In <code>src/pages/index.js</code> integrate your newly created components. You need to make sure that you pass the appropriate callbacks as props so that clicking on a section opens the title list, and clicking on a title opens the related article for viewing. If there is no article to show at the current moment, best practice is to not render the <code>Article</code> component (via <a href="https://react.dev/learn/conditional-rendering">conditional rendering</a>) as opposed to rendering <code>Article</code> but having it somehow manage an undefined <code>article</code> prop. The latter forces additional complexity into the <code>Article</code> component and in the case of more complex components can trigger unnecessary computation.</p>
 
-<h3 id="finishing-up">Finishing up</h3>
+<h3 id="linting-and-code-formatting">Linting and code formatting</h3>
 
 <p>Your submission should not have ESLint warnings or errors when run with <code>💻 npm run lint</code>. Remember than you can fix many errors automatically with <code>💻 npm run lint -- --fix</code> (although since ESLint can sometimes introduce errors during this process, we suggest committing your code before running “fix” so you can rollback any changes). The assignment skeleton includes the Prettier package and associated hooks to automatically reformat your code to a consistent standard when you commit. Thus do not be surprised if your code looks slightly different after a commit.</p>
 
-<p>Submit your assignment by pushing all of your committed changes to the GitHub classroom via ``💻 git push –all origin` and then submitting your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/assign/gradescope.html">here</a>. You can submit (push to GitHub and submit to Gradescope) multiple times.</p>
+<p>Note that we have specifically disabled the a11y rules in the ESLint configuration. The <a href="https://www.a11yproject.com">a11y</a> project has developed resources and recommendations for making web applications accessible (e.g., for use with screen readers). We chose to disable those ESLint rules here to keep the scope of this assignment manageable, but note doing so is not a best practice. We will talk more as the semester proceeds about building accessible applications and the tools available to help us do so.</p>
+
+<h3 id="finishing-up">Finishing up</h3>
+
+<p>Submit your assignment by pushing all of your committed changes to the GitHub classroom via <code>💻 git push --all origin</code> and then submitting your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/f23/assign/gradescope.html">here</a>. You can submit (push to GitHub and submit to Gradescope) multiple times.</p>
 
 <p>Portions of your assignment will undergo automated grading. Make sure to follow the specifications exactly, otherwise the tests will fail (even if your code generally works as intended). Use the provided test suite (run with <code>💻 npm test</code>) to get immediate feedback on whether your code follows the specification. Because of the increased complexity of a React application, Gradescope can take minutes to run all of the tests. Thus you will be more efficient testing locally and only submitting to Gradescope when you are confident your application meets the specification.</p>
 
@@ -204,12 +206,16 @@ return (&lt;ul&gt;{races}&lt;/ul&gt;);
 
 <p>Please post to Ed so that we can resolve any conflict or confusion ASAP.</p>
 
+<h5 id="why-do-we-sort-within-sectionsview-and-titlesview-instead-of-within-the-parent-component">Why do we sort within <code>SectionsView</code> and <code>TitlesView</code>, instead of within the parent component?</h5>
+
+<p>To the extent possible we don’t want our components to depend on the caller (the parent component) for correctness. That increases the burden at the potentially many places the component is used, instead of the one time and place it is defined.</p>
+
         </div>
 
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-02 15:23:51 -0500.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-10-21 16:37:30 -0400.</em>
             </div>
         </footer>
 
@@ -232,7 +238,7 @@ return (&lt;ul&gt;{races}&lt;/ul&gt;);
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

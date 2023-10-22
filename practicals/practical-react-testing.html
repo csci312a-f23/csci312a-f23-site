@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-react-testing.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/practicals/practical-react-testing.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="practical-testing-react-apps-with-jest-and-react-testing-library">Practical: Testing React apps with Jest and React Testing Library</h1>
 
 <p>
-<strong>Initial Due Date: 2023-03-07 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-10-04 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+<strong>Final Due Date: 2023-10-27 4:15PM</strong>
 
 </p>
 
@@ -41,7 +41,7 @@
 <h2 id="prerequisites">Prerequisites</h2>
 
 <ol>
-  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/a6T5DQCe">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/_bXgQZZz">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
   <li>Clone the repository to you computer with <code>💻 git clone</code> (get the name of the repository from GitHub).</li>
   <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
   <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
@@ -61,8 +61,8 @@
 <div class="code-header">
     <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
 </div>
-<pre><code class="language-javascript">test("Smoke test",  () =&gt; {
-  render(&lt;FilmExplorer /&gt;);
+<pre><code class="language-javascript">test("Smoke test", () =&gt; {
+  render(&lt;FilmExplorer rawData={testFilms} /&gt;);
 });
 </code></pre>
 
@@ -74,8 +74,8 @@
 <div class="code-header">
     <button type="button" class="btn btn-primary btn-sm btn-clipboard" aria-label="Copy code to clipboard" data-bs-original-title="Copy to clipboard">Copy</button>
 </div>
-<pre><code class="language-javascript">test("Snapshot test",  () =&gt; {
-  const { container } = render(&lt;FilmExplorer /&gt;);
+<pre><code class="language-javascript">test("Snapshot test", () =&gt; {
+  const { container } = render(&lt;FilmExplorer rawData={testFilms} /&gt;);
   expect(container.firstChild).toMatchSnapshot();
 });
 </code></pre>
@@ -116,7 +116,7 @@
 
 <p>Start by copying the code from the “Rating changes” test to get the component mounted and initialized with the data.</p>
 
-<p>We need to find the arrow component in order to test that it changes its display to reflect state changes, and also to simulate clicking it to initiate that change. To find the component, we will use <code>let arrow = screen.queryByText("▲")</code>. There are other options, but since the arrow is implemented as a single character, this is a pretty unique text string to look for. We are also using <code>queryBy</code> because it will allow us to query for things <strong>not</strong> being in the DOM rather than throwing an error. We will test if the component is visible using the matcher <code>.toBeInTheDocument()</code>. With jest, we can always invert a test by adding a <code>not</code> to the matcher (e.g., <code>.not.toBeInTheDocument()</code>). If the state changes, we can detect it, because our <code>"▲"</code> will be gone and replaced with <code>"▼"</code>. To simulate the click, we will use <code>fireEvent.click(arrow)</code>.</p>
+<p>We need to find the arrow component in order to test that it changes its display to reflect state changes, and also to simulate clicking it to initiate that change. To find the component, we will use <code>let arrow = screen.queryByText("▲")</code>. There are other options, but since the arrow is implemented as a single character, this is a pretty unique text string to look for. We are also using <code>queryBy</code> because it will allow us to query for things <strong>not</strong> being in the DOM rather than throwing an error. We will test if the component is visible using the matcher <code>.toBeInTheDocument()</code>. With jest, we can always invert a test by adding a <code>not</code> to the matcher (e.g., <code>.not.toBeInTheDocument()</code>). If the state changes, we can detect it, because our <code>"▲"</code> will be gone and replaced with <code>"▼"</code>. To simulate the click, we will use <code>fireEvent.click(arrow)</code>. <em>Note that after each event (i.e., after the internal components re-render), you need to run the query again. That is previous queries don’t automatically update when a component changes.</em></p>
 
 <p>Put these together to write a test of this scenario:</p>
 
@@ -124,9 +124,7 @@
   <p>Given that the page is rendered and the arrow defaults to <code>"▲"</code>, when the user clicks on the arrow it reverses direction to become <code>"▼"</code>. When the user clicks again, the <code>"▲"</code> is restored.</p>
 </blockquote>
 
-<p>Note that for each changed state of the arrow, you need to run the query again.</p>
-
-<p>The test should:</p>
+<p>The resulting test should:</p>
 <ol>
   <li>Render <code>FilmExplorer</code></li>
   <li>Check that <code>"▲"</code> is in the document</li>
@@ -138,7 +136,7 @@
   <li>Check that <code>"▲"</code> is in the document1.</li>
 </ol>
 
-<p>Run the test. It should fail (the arrow is currently just text).</p>
+<p>Run the test. It should fail (as the arrow is currently just text).</p>
 
 <p>Let’s update <code>SearchBar</code> so that the test passes. Look through the code to find where the arrow is displayed. You will see that it is a simple <code>span</code> with a text arrow in it. The first thing to do is fix the arrow itself so the direction is determined by the <code>ascending</code> prop. Replace the arrow character with <code>{ascending ? "▲" : "▼"}</code>.</p>
 
@@ -152,16 +150,16 @@
 
 <p>As its name suggests, <code>FilmTableContainer</code> is a “container component” (CC). It implements the film filtering and sorting. The actual presentation of the films is handled by the <code>FilmTable</code> (a “presentation component” or PC). <code>FilmTableContainer</code> works by transforming the Array of films its receives as a prop to create a new Array that is passed to <code>FilmTable</code> as a prop. <code>FilmExplorer</code> is also already providing the value of <code>ascending</code> to <code>FilmTableContainer</code> as a prop, so we just have to worry about what <code>FilmTableContainer</code> is doing with it.</p>
 
-<p>Inside of the <code>components</code> directory, you will find <code>FilmTableContainer.test.js</code>, which already includes a collection of tests. We will walk through some of these before adding some new ones. In the first test we are making sure that with an empty search term we see all films. Since there is no filtering, we expect all of the films to be present in the DOM. Notice that we are passing in <code>jest.fn</code>, the jest mock function, as a placeholder function for the <code>setRating</code> prop. We don’t care about the callback, but we also don’t want PropTypes to complain, so we have to pass in a valid function.</p>
+<p>Inside of the <code>components</code> directory, you will find <code>FilmTableContainer.test.js</code>, which already includes a collection of tests. We will walk through some of these before adding some new ones. In the first test we are making sure that with an empty search term we see all films. Since there is no filtering, we expect all of the films to be present in the DOM. Notice that we are passing in <code>jest.fn</code>, the jest mock function, as a placeholder function for the <code>setRating</code> prop. We don’t care about the callback, but we also don’t want PropTypes to complain, so we have to pass in a valid function. Note that the <code>ascending</code> prop with no assignment is equivalent to <code>ascending={true}</code>.</p>
 
 <pre><code class="language-jsx">test('Empty string does not filter films', () =&gt; {
   render(
     &lt;FilmTableContainer
-      films={films}
+      films={testFilms}
       searchTerm=""
       sortType="title"
       setRatingFor={jest.fn}
-      ascending={true}
+      ascending
     /&gt;
   );
 
@@ -176,11 +174,11 @@
 <pre><code class="language-jsx">test('Any substring satisfies the filter', () =&gt; {
   render(
     &lt;FilmTableContainer
-      films={films}
+      films={testFilms}
       searchTerm="sub"
       sortType="title"
       setRatingFor={jest.fn}
-      ascending={true}
+      ascending
     /&gt;
   );
 
@@ -194,7 +192,7 @@
 
 <p>For our new feature, we want to think about the sorting order. I have created another test suite to group the tests dealing with sort order. Inside you will find one test that tests that the films are sorted by <code>vote_average</code>. Let’s break down this test as well. The challenge we have is figuring out what order items are displayed on the page (or more properly, in the DOM). The approach I took was to use <code>screen.queryAllByRole("heading")</code>. The “heading” role is grabbing the <code>&lt;h2&gt;</code> tags used to display the film titles, and by using the <code>getAllBy*</code> query, we are getting an array of the DOM elements that the Testing Library finds on the page in the order they appear. I then used <code>map</code> to extract the textual contents of those elements and put them in a new array.</p>
 
-<p>The actual test part compares this new array of titles to an array of film titles assembled in the known correct order.</p>
+<p>The actual test part compares this new array of titles to an array of film titles assembled in the known correct order (i.e., we looked at the test data and determined the correct order for this <code>sort_type</code> and value of <code>ascending</code>).</p>
 
 <pre><code class="language-jsx">test("Sorts by vote_average", () =&gt; {
   render(
@@ -241,7 +239,8 @@
 <pre><code class="language-javascript">(m1, m2) =&gt; {
   if (m1[sortType] &lt; m2[sortType]) {
     return ascending ? -1 : 1;
-  } else if (m1[sortType] === m2[sortType]) {
+  }
+  if (m1[sortType] === m2[sortType]) {
     return 0;
   }
   return ascending ? 1 : -1;
@@ -254,7 +253,7 @@
 
 <ol>
   <li>Add and commit your changes and push those commit(s) to GitHub.</li>
-  <li>Submit your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/s23/resources/gradescope.html">here</a></li>
+  <li>Submit your repository to Gradescope as described <a href="/~mlinderman/courses/cs312/f23/resources/gradescope.html">here</a></li>
 </ol>
 
 <h2 id="grading">Grading</h2>
@@ -278,7 +277,7 @@
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:31:06 -0400.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-10-03 13:10:31 -0400.</em>
             </div>
         </footer>
 
@@ -301,7 +300,7 @@
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

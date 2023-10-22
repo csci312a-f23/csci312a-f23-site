@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/resources/deployment.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/resources/deployment.html">
     </head>
     <body>
 
@@ -31,9 +31,9 @@
   <li>Push the <code>main</code> branch to the deploy repository:  <code>💻 git push deploy main</code>. This should automatically build and deploy your application at <code>https://&lt;project name&gt;.csci312.dev</code>. Any errors should hopefully be reported on in the terminal as the push proceeds.</li>
   <li>To add entries to the <code>.env.local</code> file, execute <code>💻 ssh git@csci312.dev secrets &lt;project name&gt; KEY=value</code>, where again <code>&lt;project name&gt;</code> is the name assigned to your group. <code>KEY=value</code> is the value you want to add or update in the file (without any spaces). For example, <code>💻 ssh git@csci312.dev secrets simplepedia NEXTAUTH_URL=https://simplepedia.csci312.dev</code> would set the <code>NEXTAUTH_URL</code> key for the <code>simplepedia</code> project.</li>
   <li>To view the most recent logs from your application execute <code>💻 ssh git@csci312.dev logs &lt;project name&gt;</code>. You can optionally add a <code>--lines</code> argument, e.g., <code>--line 50</code> to look at more lines.</li>
-  <li>Typically a new deployment will also involve changes to your database schema and or seeding. If you are using teh RDMBS configuration from the practical you can migrate and seed the production database from your local computer by adding the <code>--env production</code> option to your <code>knex</code> commands, e.g.,
-    <pre><code class="language-plaintext"> 💻 npx knex migrate:latest --env production
- 💻 npx knex seed:run --env production
+  <li>Typically a new deployment will also involve changes to your database schema and or seeding. If you are using teh RDMBS configuration from the practical you can migrate and seed the production database from your local computer by setting the node environment to production before your <code>knex</code> commands, e.g.,
+    <pre><code class="language-plaintext"> 💻 NODE_ENV=production npx knex migrate:latest
+ 💻 NODE_ENV=production npx knex seed:run
 </code></pre>
   </li>
 </ol>
@@ -51,7 +51,7 @@
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-05-11 07:45:54 -0400.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-08-19 15:06:08 -0400.</em>
             </div>
         </footer>
 
@@ -74,7 +74,7 @@
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

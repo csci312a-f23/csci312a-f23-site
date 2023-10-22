@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-devops.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/practicals/practical-devops.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="practical-deploying-a-next-application">Practical: Deploying a Next application</h1>
 
 <p>
-<strong>Initial Due Date: 2023-03-16 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-10-16 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+<strong>Final Due Date: 2023-10-27 4:15PM</strong>
 
 </p>
 
@@ -35,7 +35,7 @@
 <ul>
   <li>Practice integration via GitHub pull request (PR)</li>
   <li>Use a CI server (Github Actions) to test a PR before integration</li>
-  <li>Deploy an application to a PaaS (fly.io)</li>
+  <li>Deploy an application to a PaaS (csci312.dev)</li>
 </ul>
 
 <p>Today you will add a feature to the color picker to enable the user to enter the color component by number. As part of that process we will practice testing, CI and automated deployment. Check out a deployed version of the final result.</p>
@@ -43,7 +43,7 @@
 <h2 id="prerequisites">Prerequisites</h2>
 
 <ol>
-  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/7fptJ19E">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/HfjaXP2h">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
   <li>Clone the repository to you computer with <code>💻 git clone</code> (get the name of the repository from GitHub).</li>
   <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
   <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
@@ -92,6 +92,7 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm test
+    - run: npm run build
 </code></pre>
 
 <p>There are two main sections here: <code>on</code> and <code>jobs</code>. The <code>on</code> section tells GitHub Actions when to execute this action (when we push to main or make a PR to main). The <code>jobs</code> section describes the steps to carry out. In this case, it</p>
@@ -100,7 +101,10 @@ jobs:
   <li>Installs node 18</li>
   <li>Runs <code>npm ci</code>, which uses the <code>package-lock.json</code> file to install all of the dependencies</li>
   <li>Runs <code>npm test</code></li>
+  <li>Runs <code>npm run build</code> to ensure a production version of your application will build</li>
 </ol>
+
+<p>If any of the commands fail, e.g., there are testing errors, GitHub actions will report the errors so we know we need to fix the pull request.</p>
 
 <h3 id="add-a-status-badge-to-your-readmemd">Add a status badge to your README.md</h3>
 
@@ -113,7 +117,7 @@ jobs:
 
 <p>We need to put this into Markdown syntax to add an image. So for example, I might use:</p>
 
-<pre><code class="language-md">![workflow status](https://github.com/csci312a-s23/practical06-devops-mlinderm/actions/workflows/node.js.yml/badge.svg)
+<pre><code class="language-md">![workflow status](https://github.com/csci312a-f23/practical06-devops-mlinderm/actions/workflows/node.js.yml/badge.svg)
 </code></pre>
 
 <h3 id="create-a-pr">Create a PR</h3>
@@ -125,39 +129,34 @@ jobs:
 💻 git push -u origin editable-number
 </code></pre>
 
-<p>The last line tells the remote repository (origin) that we would like to create a new branch called editable-number, and connects the two for us.</p>
+<p>The last line tells the remote repository (origin) that as we push editable-number branch (and the new commit we created) to origin, we would like the local and remote branches.</p>
 
 <p>Visit the repository on GitHub. There should be a yellow banner across the top notifying you of a change to a branch and asking if you would like to “Compare &amp; pull request”. Do so. <em>If you don’t see the banner, you can always create a new PR from the ‘Pull requests’ tab.</em></p>
 
 <p>On the new page that comes up you will see a form for starting the PR. Type in a message and click the button to create the PR.</p>
 
-<p>You will see a message that it is OK to merge with main. This is unsurprising since no one has done anything to main since you made a branch, so the merge just involved adding the changes in this branch on top of main. If you wait a moment, however, you will see a new message appear as GitHub Actions kicks off (there will be two: one from the classroom auto-grader and the one you just added). Give it a moment to run, and then it should come back and tell you that the checks have failed. This is also unsurprising since you haven’t changed the code yet. If you click on Details you can see the run log and the output from running the tests.</p>
+<p>You will see a message that it is OK to merge with main. This is unsurprising since no one has done anything to main since you made a branch, so the merge just involved adding the changes in this branch on top of main. If you wait a moment, however, you will see a new message appear as GitHub Actions kicks off. Give it a moment to run, and then it should come back and tell you that the checks have failed. This is also unsurprising since you haven’t changed the code yet. If you click on Details you can see the run log and the output from running the tests.</p>
 
 <h2 id="enhancing-the-color-picker-with-controllable-number">Enhancing the color picker with controllable number</h2>
 
-<p>Now let’s make our change the the ColorPicker.</p>
+<p>Now let’s make our change the the ColorPicker. Start the development server (<code>💻 npm run dev</code>) so you can see the effects of your changes. You should see the familiar ColorPicker appear in the web view. You can also run the tests with <code>💻 npm test</code>, and they should fail.</p>
 
-<p>Start the development server (<code>💻 npm run dev</code>) so you can see the effects of your changes. You should see the familiar ColorPicker appear in the web view. You can also run the tests with <code>💻 npm test</code>, and they should fail.</p>
-
-<p>You are now ready to make the changes to the <code>LabeledSlider</code>. The change is very simple, you are going to remove the current <code>span</code> which reports the value (<code>&lt;span&gt;{value}&lt;/span&gt;</code>) and replace it with a 
-<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number">number</a>
-input element. The numerical input will be very similar to its slider counterpart. Its value should be controlled by the React state (so that all the elements that depend on or modify that value remain in sync), it should update the color component as specified, and have appropriate <code>min</code> and <code>max</code> values. The difference is it will be of type “number”.</p>
-
-<p>You should see your new inputs at the end of the sliders, and the tests should all pass.</p>
+<p>You are now ready to make the changes to the <code>LabeledSlider</code> in <code>src/pages/index.js</code>. Remove the current <code>span</code> which reports the value (<code>&lt;span&gt;{value}&lt;/span&gt;</code>) and replace it with a <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number">number</a> input element. The numerical input will be very similar to its slider counterpart. Its value should be controlled by the React state (so that all the elements that depend on or modify that value remain in sync), it should update the color component as specified, and have appropriate <code>min</code> and <code>max</code> values. The differences are it will be of type “number” and it will have an appropriate <code>data-testid</code>, e.g.,</p>
+<pre><code class="language-jsx">data-testid={`${label}_number`}`
+</code></pre>
+<p>You should now see your new inputs at the end of the sliders, and the tests should all pass.</p>
 
 <h3 id="revisit-the-pr">Revisit the PR</h3>
 
-<p>Now that you have working code, add, commit and push it with git.</p>
+<p>Now that you have working code, add, commit and push it the feature branch on GitHub, e.g., <code>💻 git push origin editable-number</code></p>
 
 <p>Return to the PR page on GitHub and after a moment you should see the action kick off again. This time you should get a message that “All checks have passed”. If not, make sure that the tests were passing locally and that the new code has actually been pushed to the branch.</p>
 
-<p>Click the “Merge pull request” button. it should give you a chance to add a message to the merge and then you can click “Confirm merge”.</p>
-
-<p>After the merge is complete, it will give you a “Delete branch” button. Click it to remove the feature branch from GitHub.</p>
+<p>Click the “Merge pull request” button. it should give you a chance to add a message to the merge and then you can click “Confirm merge”. After the merge is complete, it will give you a “Delete branch” button. Click it to remove the feature branch from GitHub.</p>
 
 <h3 id="clean-up-your-local-repository-after-the-merge">Clean up your local repository after the merge</h3>
 
-<p>Return to your terminal and switch back to the “main” branch (<code>💻 git checkout main</code>). You are going to want to pull the changes from GitHub, pruning to delete remote tracking references and then delete your local branch (<code>💻 git pull --prune</code>).</p>
+<p>Return to your terminal and switch back to the “main” branch (<code>💻 git checkout main</code>). You are going to want to pull the changes from GitHub, pruning to delete remote tracking references (<code>💻 git pull --prune</code>) and then delete your local branch (<code>💻 git branch -d editable-number</code>).</p>
 
 <p><em>To avoid mistakes when deleting branches, you can add the <code>--dry-run</code> option to the <code>pull --prune</code> command , e.g. <code>💻 git pull --prune --dry-run</code> to double check before actually pruning anything (note you will still need to run the actual command when you are sure it correct).</em></p>
 
@@ -168,27 +167,37 @@ input element. The numerical input will be very similar to its slider counterpar
 💻 git branch -d editable-number
 </code></pre>
 
-<h2 id="deploy-to-fly">Deploy to Fly</h2>
+<h2 id="deploy-to-csci312dev">Deploy to csci312.dev</h2>
 
-<p>We are going to use the <a href="https://fly.io">Fly.io</a> to deploy our applications. You should have already received an invitation to the “csci312a-s23” organization (via your Middlebury e-mail). The shared organization will enable us to all work under an account the department pays for. <em>Note, Fly.io e-mails seem to end up in quarantine. If you don’t see an invitation, check your junk mail folder and any <a href="https://security.microsoft.com/quarantine">quarantined messages</a>.</em></p>
+<p>To support deployment without requiring you to enter a credit card or running into limits on team sizes, etc. we have our own simple cloud deployment platform csci312.dev. Similar to other platforms like Heroku or fly.io, you will push your code to a deployment repository at csci312.dev, which will then build and deploy your application at <code>https://&lt;project name&gt;.csci312.dev</code>.</p>
+
+<p>Before you deploy, I encourage you to test the production version of your application locally. You can do so with:</p>
+<pre><code class="language-plaintext">💻 npm run build
+💻 npm run start
+</code></pre>
+<p>This will build the production version of your application and start it the same way the server will (e.g., setting the <code>production</code> environment). If this doesn’t work locally, it is unlikely to work remotely!</p>
 
 <ol>
-  <li>Start by downloading the <code>flyctl</code> tool for your system from <a href="https://fly.io/docs/hands-on/install-flyctl/">here</a></li>
-  <li>If you already have an account sign in, if not, sign up for a free account. <em>You should have already been invited to the csci312a-s23 organization and so should not need to enter a credit card to launch applications under that organization.</em></li>
-  <li>Once you have signed up or signed in, you can prepare to deploy your application with <code>💻 flyctl launch</code>. You should generally choose the default options for the subsequent questions, with a location near us, and the “csci312a-s23” organization but do <em>not</em> choose to deploy right now.</li>
-  <li>The <code>launch</code> command will have created several files for you: <code>Dockerfile</code> (and corresponding <code>.dockerignore</code>) and <code>fly.toml</code>. We will need to edit the <code>Dockerfile</code> for our application. Specifically:
-    <ol>
-      <li>One lines 2 change <code>FROM node:16-alpine AS builder</code> to <code>FROM node:18-alpine AS builder</code> and on line 25 change <code>FROM node:16-alpine AS runner</code> to <code>FROM node:18-alpine AS runner</code>. This ensures we are using the same Node version on Fly.io as we are using locally.</li>
-      <li>In multiple locations you will find commands for the <code>yarn</code> package manager. Comment those out and uncomment the corresponding lines for using <code>npm</code> (included in the file). We are using <code>npm</code> not <code>yarn</code>.</li>
-    </ol>
-  </li>
-  <li>You are now ready to deploy your application by executing <code>💻 flyctl deploy</code>.</li>
-  <li>When the deployment is complete execute <code>💻 flyctl open</code> to use your application!</li>
+  <li>As a prerequisite, you should have added an <a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account">SSH key to GitHub</a> as described in the <a href="getting_started.html">getting started</a> instructions. Doing so is necessary to obtain deploy permissions. If you have not created a key yet, or if you attempt the below and get permission-related errors, contact the instructor to make sure your key has been added to the deployment server.</li>
+  <li>Add the deployment repository as a remote in your repository with the name <code>deploy</code>: <code>💻 git remote add deploy git@csci312.dev:&lt;midd username&gt;-practical06</code> replace <code>&lt;midd username&gt;</code> with your Middlebury username, e.g., <code>💻 git remote add deploy git@csci312.dev:mlinderman-practical06</code>. Note that the name matters, it must be your Middlebury username followed by “-practical06”.</li>
+  <li>Push the <code>main</code> branch to the deploy repository:  <code>💻 git push deploy main</code>. This should automatically build and deploy your application at <code>https://&lt;midd username&gt;-practical06.csci312.dev</code>. Note that the push will not complete until the application deploys, so it will take a minute or so. Any errors should (hopefully) be reported in the terminal as the push proceeds.</li>
+  <li>To view the most recent logs from your application execute <code>💻 ssh git@csci312.dev logs &lt;midd username&gt;-practical06</code>. You can optionally add a <code>--lines</code> argument, e.g., <code>--line 50</code> to look at more lines.</li>
+  <li>If you need to make a change or want to update your application, merge new commits into the <code>main</code> branch and push them to the <code>deploy</code> remote as you did above. That will re-deploy your application automatically.</li>
 </ol>
+
+<p>When the deployment completes successfully, open <code>https://&lt;midd username&gt;-practical06.csci312.dev</code> in the browser, e.g., <a href="https://mlinderman-practical06.csci312.dev">https://mlinderman-practical06.csci312.dev</a>, to see your application live! Note that these sites are visible to anyone (i.e., you can send your awesome color picker to friends, family or anyone you want impress😀).</p>
+
+<div class="alert alert-info">
+  <h4 class="alert-heading">csci312.dev caveats</h4>
+
+  <p>There are some more features of this platform that we will use when we deploy our projects. For that process, we will follow these similar, but more detailed, <a href="/~mlinderman/courses/cs312/f23/resources/deployment.html">instructions</a>.</p>
+
+  <p class="mb-0">⚠️ This platform is home-rolled, and while adequate for the needs of 5 concurrent projects, I am not sure it will hold up to 30 simultaneous deployments. We will see how it goes...</p>
+</div>
 
 <h3 id="finishing-up">Finishing up</h3>
 
-<p>Commit any additional changes you may have made (don’t forget the newly created <code>fly.toml</code>, <code>Dockerfile</code> and <code>.dockerignore</code> files, and then push your changes to GitHub. You should then submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</p>
+<p>Commit any additional changes you may have made and then push your changes to GitHub. You should then submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</p>
 
 <h2 id="grading">Grading</h2>
 
@@ -208,7 +217,7 @@ input element. The numerical input will be very similar to its slider counterpar
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-04-04 07:41:44 -0400.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-10-09 13:03:30 -0400.</em>
             </div>
         </footer>
 
@@ -231,7 +240,7 @@ input element. The numerical input will be very similar to its slider counterpar
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

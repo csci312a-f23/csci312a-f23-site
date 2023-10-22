@@ -11,12 +11,12 @@
         <meta name="description" content="CSCI312 at Middlebury College
 ">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" >
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/vs2015.min.css" integrity="sha512-w8aclkBlN3Ha08SMwFKXFJqhSUx2qlvTBFLLelF8sm4xQnlg64qmGB/A6pBIKy0W8Bo51yDMDtQiPLNRq1WMcQ==" crossorigin="anonymous" />
 
-        <link rel="stylesheet" href="/~mlinderman/courses/cs312/s23/css/main.css">
-        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/s23/practicals/practical-react.html">
+        <link rel="stylesheet" href="/~mlinderman/courses/cs312/f23/css/main.css">
+        <link rel="canonical" href="http://localhost:4000/~mlinderman/courses/cs312/f23/practicals/practical-react.html">
     </head>
     <body>
 
@@ -24,9 +24,9 @@
             <h1 id="practical-react-page">Practical: React page</h1>
 
 <p>
-<strong>Initial Due Date: 2023-02-28 8:15AM</strong> <br />
+<strong>Initial Due Date: 2023-09-27 11:15AM</strong> <br />
 
-<strong>Final Due Date: 2023-04-07 4:15PM</strong>
+<strong>Final Due Date: 2023-10-27 4:15PM</strong>
 
 </p>
 
@@ -42,7 +42,7 @@
 <h2 id="prerequisite">Prerequisite</h2>
 
 <ol>
-  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/XLBMJPBO">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
+  <li>Create the git repository for your practical by <a href="https://classroom.github.com/a/k6fzU9TT">accepting the assignment from GitHub Classroom</a>. This will create a new repository for you with a skeleton application already setup for you.</li>
   <li>Clone the repository to you computer with <code>💻 git clone</code> (get the URL of the repository from GitHub).</li>
   <li>Open up the <code>package.json</code> file and add your name as the author of the package.</li>
   <li>Install the module dependencies by executing <code>💻 npm install</code> in the terminal.</li>
@@ -52,17 +52,17 @@
 
 <p>In this practical, you are going to put together a basic React app that shows the courses in the CS catalog. It looks like this:</p>
 
-<p><img src="/~mlinderman/courses/cs312/s23/assets/practical03-course-catalog.png" class="img-fluid" style="max-width: 600px" /></p>
+<p><img src="/~mlinderman/courses/cs312/f23/assets/practical03-course-catalog.png" class="img-fluid" style="max-width: 600px" /></p>
 
 <h2 id="getting-situated">Getting situated</h2>
 
-<p>I’ve provided you with the framework of the application, which was created with the <code>create-next-app</code> tool. For the moment, we will ignore many of the features of the Next framework. Our focus today is the  <code>index.js</code> file in <code>src/pages</code> that is the root React component for your site and the <code>components</code> directory in <code>src</code>, where you will find the individual components.</p>
+<p>I’ve provided you with the framework of the application, which was created with the <code>create-next-app</code> tool. For the moment, we will ignore many of the features of the Next framework. Our focus today is the <code>index.js</code> file in <code>src/pages</code> that is the root React component for your site and the <code>components</code> directory in <code>src</code>, where you will find the individual components.</p>
 
 <h3 id="the-development-server">The development server</h3>
 
 <p>To run the development server, execute <code>💻 npm run dev</code> in the terminal (or click the “play” button next to <code>dev</code> in the NPM Scripts section VSCode). As we discussed in class, there is a certain degree of translation that needs to happen to make your code runnable in the browser. The development server will handle that processing in real time as you update your code and serve your web pages as if it were a normal web server.</p>
 
-<p>Once the development server spins up, you can visit the site in your browser at <code>localhost:3000</code>.</p>
+<p>Once the development server spins up, you can visit the site in your browser at <a href="http://localhost:3000">http://localhost:3000</a>.</p>
 
 <h3 id="testing">Testing</h3>
 
@@ -76,7 +76,7 @@
 
 <h3 id="pages">pages</h3>
 
-<p>Open up <code>src/pages/index.js</code>. This is where we will put the “root” of the application. You will see that the JSX in this file matches what you can see in the development server. Try a simple interaction by adding the following below the “h1” header:</p>
+<p>Open up <code>src/pages/index.js</code>. This is where we will put the “root” of the application. You will see that the JSX in this file matches what you can see in the development server. Try a simple interaction by adding the following below the <code>&lt;h1&gt;</code> header, but within <code>&lt;main&gt;</code>:</p>
 
 <pre><code class="language-html">&lt;h2&gt;Don't Panic!&lt;/h2&gt;
 </code></pre>
@@ -107,24 +107,26 @@
 
 <h2 id="the-components">The components</h2>
 
-<p>You are going to add two components to the application: <code>CourseEntry</code> (which represents a single class), and <code>CourseList</code> (which represents the entire list of classes). I have started these already, and you will find the relevant files in <code>src/components</code>.</p>
+<p>You are going to add two components to the application: <code>CourseEntry</code> (which represents a single class), and <code>CourseList</code> (which represents the entire list of classes). The skeleton contains starter code for both; you will find the relevant files in <code>src/components</code>.</p>
 
 <h4 id="courseentry">CourseEntry</h4>
 
-<p>Take a look at <code>CourseEntry</code>. I’ve given you a working implementation of the component with some basic functionality.</p>
+<p>Take a look at <code>CourseEntry</code>. The skeleton provides a working implementation of the component with some basic functionality.</p>
 
 <pre><code class="language-jsx">export default function CourseEntry({ course }) {
-  let summaryClass = "";
+  let summaryStyle = "";
   return (
     &lt;details className={styles.description}&gt;
-      &lt;summary className={summaryClass}&gt;CSCI {course.number} - {course.name} &lt;/summary&gt;
+      &lt;summary className={summaryStyle}&gt;
+        CSCI {course.number} - {course.name}{" "}
+      &lt;/summary&gt;
       &lt;p&gt;{course.description}&lt;/p&gt;
     &lt;/details&gt;
   );
 }
 </code></pre>
 
-<p>This makes use of the <a href="https://www.w3schools.com/TAGS/tag_details.asp">details</a> HTML tag, which is a less well known HTML tag. It is a simple interactive widget that shows a text summary which can expand to show more detail.</p>
+<p>We make use of the <a href="https://www.w3schools.com/TAGS/tag_details.asp">details</a> HTML tag, which is a less well known HTML tag. It is a simple interactive widget that shows a text summary which can expand to show more detail.</p>
 
 <div>
 <details>
@@ -146,7 +148,7 @@
 <div class="alert alert-info" role="alert">
   <h4 class="alert-heading">Javascript Note</h4>
 
-  <p class="mb-0">The component function is expecting a single object as an argument. By writing the function definition as <code>function CourseEntry({ course }) {</code>, we are “destructuring” that single object argument into individual variables by name, i.e., the values of the <code>courses</code> property is assigned to the <code>courses</code> variable.</p>
+  <p class="mb-0">The component function is expecting a single object as an argument. By writing the function definition as <code>function CourseEntry({ course }) {...</code>, we are “destructuring” that single object argument into individual variables by name, i.e., the values of the <code>courses</code> property is assigned to the <code>courses</code> variable.</p>
 </div>
 
 <h4 id="courselist">CourseList</h4>
@@ -172,7 +174,7 @@
 <pre><code class="language-jsx">const items = courses.map((course) =&gt; ());
 </code></pre>
 
-<p>The question is, what is that inner function returning? Well, we want it to be a <code>CourseEntry</code> component, and, as it turns out, we aren’t restricted to using JSX only in return statements, we can put them anywhere where it makes sense to be talking about a component. Here are we are creating an array of <code>CourseEntry</code> components.</p>
+<p>What should that inner function return? The <code>CourseEntry</code> component we want to render for that course. We aren’t restricted to using JSX only in return statements, we can put them anywhere where it makes sense to be talking about creating component. Here are we are creating an array of <code>CourseEntry</code> components.</p>
 
 <pre><code class="language-jsx">const items = courses.map((course) =&gt; (&lt;CourseEntry /&gt;));
 </code></pre>
@@ -182,17 +184,17 @@
 <pre><code class="language-javascript">import CourseEntry from "./CourseEntry";
 </code></pre>
 
-<p>Now that we have the component imported, we can return to creating our <code>CourseEntry</code> components. We need to give the <code>CourseEntry</code> the course we want it to display, so we will add that as a prop (i.e., within the angle brackets). Recall that we specify props by name and provide the values in curly brackets. Anything within the curly brackets in JSX is Javascript code, in this case a reference to the <code>courses</code> variable.</p>
+<p>Now that we have the component imported, we can return to creating our <code>CourseEntry</code> components. We need to give the <code>CourseEntry</code> the course we want it to display, so we will add that as a prop (i.e., within the angle brackets). Recall that we specify props by name and provide the values in curly brackets. Anything within the curly brackets in JSX is Javascript code, in this case a reference to the <code>course</code> parameter.</p>
 
 <pre><code class="language-javascript">const items = courses.map((course) =&gt; (&lt;CourseEntry course={course}/&gt;));
 </code></pre>
 
-<p>When we make a list of React components, it is important that we add a <code>key</code> property so that React can uniquely identify individual child components during rendering. When React is diff’ing the virtual DOM and the actual DOM, it needs to have a quick way to tell which component(s) has changed. Without a key, React falls back on simple ordering, and weird things happen if you delete an element out of the middle of a list. The <a href="https://reactjs.org/docs/lists-and-keys.html">React documentation on lists</a> goes into more detail. The key can be anything, provided it is a unique identifier. In this case, course number will work well (though if we incorporated courses from other departments we would want to use the full name, e.g., “CSCI312”). Note that although <code>key</code> is specified like other props, it is not passed through to the component, it is one of several properties used by React itself.</p>
+<p>When we make a list of React components, it is important that we add a <code>key</code> property so that React can uniquely identify individual child components during rendering. When React is diff’ing the virtual DOM and the actual DOM, it needs to have a quick way to tell which component(s) has changed. Without a key, React falls back on simple ordering, and weird things happen if you delete an element out of the middle of a list. The <a href="https://react.dev/learn/rendering-lists">React documentation on lists</a> goes into more detail. The key can be anything, provided it is a unique identifier. In this case, course number will work well (though if we incorporated courses from other departments we would want to use the full name, e.g., “CSCI312”). Note that although <code>key</code> is specified like other props, it is not passed through to the component, it is one of several properties used by React itself.</p>
 
 <pre><code class="language-javascript">const items = courses.map((course) =&gt; (&lt;CourseEntry key={course.number} course={course}/&gt;));
 </code></pre>
 
-<p>Now that we have the items, we want to return them. We can only return a single component, so we need a wrapper around all of our <code>CourseEntry</code> components. In this instance, a <code>div</code> is a good choice. Change the return statement to return a <code>div</code>. To put the list of <code>CourseEntry</code> components into the <code>div</code>, you just need to stick the <code>items</code> variable in there (remembering to surround it with curly braces since it is JavaScript). We are going to style the <code>div</code> a little, so add <code>className={styles.listContainer}</code>as an attribute of the <code>div</code> tag (we will learn more about this shortly).</p>
+<p>Now that we have the items, we want to return them. We can only return a single component, so we need a wrapper around all of our <code>CourseEntry</code> components. In this instance, a <code>div</code> is a good choice. Change the return statement to return a <code>div</code> element. To put the list of <code>CourseEntry</code> components into the <code>div</code>, you just need to stick the <code>items</code> variable in there (remembering to surround it with curly braces since it is JavaScript). We are going to style the <code>div</code> a little, so add <code>className={styles.listContainer}</code>as an attribute of the <code>div</code> tag (we will learn more about this shortly).</p>
 
 <pre><code class="language-jsx">return (&lt;div className={styles.listContainer}&gt;{items}&lt;/div&gt;);
 </code></pre>
@@ -233,14 +235,14 @@
 
 <p>When the cursor enters the region of our <code>details</code> component in <code>CourseEntry.js</code>, we want it to call <code>setCurrentCourse</code> with the course associated with the component. Add the <code>onMouseEnter</code> listener to the <code>details</code> as shown below.</p>
 
-<pre><code class="language-jsx">&lt;details lassName={styles.description} onMouseEnter={() =&gt; setCurrentCourse(course)} &gt;
+<pre><code class="language-jsx">&lt;details className={styles.description} onMouseEnter={() =&gt; setCurrentCourse(course)} &gt;
 </code></pre>
 
 <p>Now, as the user mouses over the list, the listener will “fire”, invoking the <code>setCurrentCourse</code> callback to update the current course. To see this in action, add a <code>console.log(currentCourse)</code> to the <code>CourseList</code> component and then open up the console tab in the browser developer tools (documentation for finding the developer tools <a href="https://developer.chrome.com/docs/devtools/open/">Chrome</a>).</p>
 
 <h3 id="add-some-styling">Add some styling</h3>
 
-<p>Printing things to the console is useful for debugging, we want users to be able to see what they are doing. So, we will change the styling so that the summary of the current course is bolded.</p>
+<p>Printing things to the console is useful for debugging, but we want users to be able to see what they are doing. So, we will change the styling so that the summary of the current course is bolded.</p>
 
 <p>We are using CSS modules for this example, so you will find the stylesheet for <code>CourseEntry</code> in <code>src/styles/CourseEntry.module.css</code>. I would like you to add a new class in that file that sets the <code>font-weight</code> to <code>bold</code> (if you aren’t sure what this says, please <a href="https://www.w3schools.com/Css/">read up on CSS</a>).</p>
 
@@ -255,9 +257,9 @@
 
 <p>Now we need to apply this CSS class to the <code>summary</code> element in <code>CourseEntry</code>.To access a class from a CSS module, we import the module (which I’ve already done for you), and then we can refer to the class name as <code>styles.class-name</code> (where <code>styles</code> is determined by the import). So, in this instance, it will be <code>styles.current</code>.</p>
 
-<p>We only want the style to applied when the course we are rendering is actually the current course, so we are going to set the value conditionally.  Create a new variable called <code>summaryStyle</code> and initialize it to <code>""</code>, i.e., no style by default. If the <code>course</code> is equal to <code>currentCourse</code>, set the variable to <code>styles.current</code> (don’t forget to use <code>===</code> for the equality check).</p>
+<p>We only want the style to applied when the course we are rendering is actually the current course, so we are going to set the value conditionally. Look for a (create a new) variable called <code>summaryStyle</code>. If the <code>course</code> is equal to <code>currentCourse</code>, set the variable to <code>styles.current</code> (don’t forget to use <code>===</code> for the equality check), if not set it to <code>""</code> (the empty string).</p>
 
-<p>Add a <code>className</code> attribute to <code>summary</code> and set it to <code>summaryStyle</code>, e.g, <code>&lt;summary className={summaryStyle} ...&gt;</code>. The courses should now show up bold as you mouse over them.</p>
+<p>Add a <code>className</code> attribute to <code>summary</code> and set it to <code>summaryStyle</code>, e.g, <code>&lt;summary className={summaryStyle} ...&gt;</code>. The courses should now show up in bold as you mouse over them.</p>
 
 <h3 id="add-styling-for-prerequisites">Add styling for prerequisites</h3>
 
@@ -297,9 +299,9 @@
 
 <h2 id="finishing-up">Finishing up</h2>
 
-<p>While this isn’t the most complex web application, you now have an example of the React development process and it’s component-based approach. Building a more sophisticated application is the same process, just with more and more complex components.</p>
+<p>While this isn’t the most complex web application, you now have an example of the React development process and it’s component-based approach. Note how we implemented the interactivity. We didn’t need to specify how to change the web page when the user hovers over a different course. Instead we specified how the site should render given the <code>currentCourse</code> state and how to change that state in response to user actions. React fills in the rest. Building a more sophisticated, even more interactive, application is the same process, just with more and more complex components.</p>
 
-<p>Commit any changes you may have made and then push your changes to GitHub. You should then submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</p>
+<p>Make sure the tests are passing (with <code>💻 npm test</code>) and there are no linting errors (with <code>💻 npm run lint</code>). Once you have fixed any test or linting errors, commit any changes you may have made and then push your changes to GitHub. You should then submit your repository to <a href="https://www.gradescope.com/">Gradescope</a>.</p>
 
 <h2 id="grading">Grading</h2>
 
@@ -319,7 +321,7 @@
         <footer class="footer">
             <div class="container">
                 <hr/ class="divider">
-                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-03-30 07:30:52 -0400.</em>
+                <em>&copy; Michael Linderman and Christopher Andrews 2019-2023. Last modified at: 2023-09-16 16:31:43 -0400.</em>
             </div>
         </footer>
 
@@ -342,7 +344,7 @@
                 });
             });
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
     </body>

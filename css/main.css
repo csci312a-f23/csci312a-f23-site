@@ -7,6 +7,10 @@ body { font-size: 0.875rem; }
 
 table .MathJax_Display { margin-top: 0; margin-bottom: 0; text-align: left !important; }
 
+table.syllabus thead > tr { border: calc(var(--bs-border-width) * 2) solid #dee2e6; }
+
+table.syllabus tr.week-end { border-bottom: calc(var(--bs-border-width) * 2) solid #dee2e6; }
+
 .table-auto { width: auto; }
 
 .explanation { margin-bottom: 1rem; }
